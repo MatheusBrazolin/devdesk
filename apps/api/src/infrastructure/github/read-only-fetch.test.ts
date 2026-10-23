@@ -64,6 +64,47 @@ describe('assertReadOnly', () => {
     ).toThrow(GitHubWriteBlockedError)
   })
 
+  it('bloqueia mutation escondida atrás de um # dentro de uma string', () => {
+    const query =
+      'query A { search(query: "#", type: REPOSITORY, first: 1) { repositoryCount } } mutation B { addStar(input: {starrableId: "x"}) { clientMutationId } }'
+    expect(() =>
+      assertReadOnly('https://api.github.com/graphql', {
+        method: 'POST',
+        body: JSON.stringify({ query, operationName: 'B' }),
+      }),
+    ).toThrow(/mutation/)
+  })
+
+  it('bloqueia mutation atrás de block string com #', () => {
+    const query =
+      'query A { search(query: """#""", type: REPOSITORY, first: 1) { repositoryCount } } mutation { x }'
+    expect(() => assertReadOnly('https://api.github.com/graphql', graphql(query))).toThrow(
+      GitHubWriteBlockedError,
+    )
+  })
+
+  it('bloqueia subscription e GraphQL inválido', () => {
+    expect(() =>
+      assertReadOnly('https://api.github.com/graphql', graphql('subscription { x }')),
+    ).toThrow(/subscription/)
+    expect(() => assertReadOnly('https://api.github.com/graphql', graphql('query {'))).toThrow(
+      /inválido/,
+    )
+  })
+
+  it('bloqueia persisted query sem o texto da consulta', () => {
+    expect(() =>
+      assertReadOnly('https://api.github.com/graphql', {
+        method: 'POST',
+        body: JSON.stringify({ extensions: { persistedQuery: { sha256Hash: 'x' } } }),
+      }),
+    ).toThrow(/sem query/)
+  })
+
+  it('bloqueia HTTP sem TLS, que mandaria o token às claras', () => {
+    expect(() => assertReadOnly('http://api.github.com/user')).toThrow(/HTTPS/)
+  })
+
   it('bloqueia corpo GraphQL que não dá para ler', () => {
     expect(() =>
       assertReadOnly('https://api.github.com/graphql', { method: 'POST', body: 'x' }),
@@ -78,6 +119,18 @@ describe('assertReadOnly', () => {
 })
 
 describe('createReadOnlyFetch', () => {
+  it('recusa objetos Request, cujo método não é conferido', async () => {
+    let sent = 0
+    const guarded = createReadOnlyFetch((async () => {
+      sent += 1
+      return new Response('{}')
+    }) as unknown as typeof fetch)
+    await expect(
+      guarded(new Request('https://api.github.com/repos/o/r', { method: 'DELETE' })),
+    ).rejects.toThrow(GitHubWriteBlockedError)
+    expect(sent).toBe(0)
+  })
+
   it('não deixa a requisição de escrita sair', async () => {
     let sent = 0
     const inner = (async () => {

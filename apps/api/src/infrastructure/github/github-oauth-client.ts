@@ -6,6 +6,7 @@ import { githubReconnect, upstream } from '../../domain/errors.js'
 import type { GitHubTokens } from '../../domain/github-tokens.js'
 import { GitHubProfileClient } from './github-profile-client.js'
 import { createReadOnlyFetch } from './read-only-fetch.js'
+import { readGitHubJson } from './read-github-json.js'
 
 /** Escopos mínimos para ler PRs, reviews e issues, inclusive de repositórios privados. */
 export const GITHUB_SCOPES = ['read:user', 'read:org', 'repo'] as const
@@ -78,7 +79,7 @@ export class GitHubOAuthClient implements GitHubOAuth {
       }),
     })
     if (!response.ok) throw upstream(`GitHub respondeu ${response.status} ao emitir o token.`)
-    return tokenResponseSchema.parse(await response.json())
+    return readGitHubJson(response, tokenResponseSchema, 'emitir o token')
   }
 
   private toTokens(body: {

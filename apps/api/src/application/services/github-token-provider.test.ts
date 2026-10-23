@@ -82,6 +82,14 @@ describe('GitHubTokenProvider', () => {
     expect(oauth.refreshCalls).toEqual([])
   })
 
+  it('token guardado que não decifra (chave trocada) pede reconexão, não erro 500', async () => {
+    const { githubTokens, userId, users } = await loggedIn()
+    users.tokens.set(userId, { ...users.tokens.get(userId)!, accessToken: 'lixo.que.nao.decifra' })
+    await expect(githubTokens.getAccessToken(userId)).rejects.toMatchObject({
+      code: 'GITHUB_RECONNECT',
+    })
+  })
+
   it('token que não expira é usado para sempre', async () => {
     const ctx = createTestContext()
     await ctx.deps.github!.completeLogin.execute('bom')

@@ -3,6 +3,7 @@ import type { GitHubProfiles } from '../../application/ports/github-profiles.js'
 import type { GitHubProfile } from '../../application/ports/user-repository.js'
 import { githubReconnect, upstream } from '../../domain/errors.js'
 import { createReadOnlyFetch } from './read-only-fetch.js'
+import { readGitHubJson } from './read-github-json.js'
 
 const profileSchema = z.object({
   id: z.number(),
@@ -25,7 +26,7 @@ export class GitHubProfileClient implements GitHubProfiles {
     if (response.status === 401) throw githubReconnect('O GitHub recusou o token.')
     if (!response.ok) throw upstream(`GitHub respondeu ${response.status} ao buscar o perfil.`)
 
-    const profile = profileSchema.parse(await response.json())
+    const profile = await readGitHubJson(response, profileSchema, 'buscar o perfil')
     return {
       githubId: profile.id,
       login: profile.login,

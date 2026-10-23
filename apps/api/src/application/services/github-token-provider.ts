@@ -47,10 +47,22 @@ export class GitHubTokenProvider {
     if (!stored) throw githubReconnect()
 
     const now = this.clock.now()
-    if (!needsRefresh(stored, now)) return this.cipher.decrypt(stored.accessToken)
+    if (!needsRefresh(stored, now)) return this.decrypt(stored.accessToken)
     if (!canRefresh(stored, now) || !this.oauth) throw githubReconnect()
 
-    return this.refresh(userId, this.cipher.decrypt(stored.refreshToken!), this.oauth)
+    return this.refresh(userId, this.decrypt(stored.refreshToken!), this.oauth)
+  }
+
+  /**
+   * Chave trocada ou dado corrompido: o token guardado não serve mais, e o
+   * caminho certo é entrar de novo, não um erro 500 a cada página.
+   */
+  private decrypt(payload: string): string {
+    try {
+      return this.cipher.decrypt(payload)
+    } catch {
+      throw githubReconnect('O token guardado não pôde ser lido. Conecte a conta de novo.')
+    }
   }
 
   private async refresh(userId: string, refreshToken: string, oauth: GitHubOAuth): Promise<string> {
