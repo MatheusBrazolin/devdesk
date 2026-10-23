@@ -2,6 +2,8 @@
 
 Painel de trabalho para desenvolvedores: o que pede a sua atenção no GitHub, suas notas e sua agenda, num lugar só.
 
+**[Ver a demonstração online →](https://devdesk-tklq.onrender.com)** (modo demonstração, com dados de exemplo; a primeira visita pode levar alguns segundos para o servidor acordar)
+
 > **Estado:** as cinco fases do roteiro concluídas. Pronto para publicar como demonstração (veja [docs/DEPLOY.md](docs/DEPLOY.md)).
 
 ![Painel Hoje: indicadores, o que pede atenção, gráficos, agenda e notas, numa tela só](docs/screenshots/hoje.png)
