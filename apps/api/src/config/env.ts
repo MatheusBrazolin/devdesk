@@ -25,13 +25,22 @@ const envSchema = z
      */
     GITHUB_PERSONAL_TOKEN: z.string().optional(),
     DEMO_ENABLED: booleanFromString.optional(),
+    /**
+     * Quantos proxies reversos há na frente da API (ex.: 1). Com isso o IP real
+     * de quem pede vem do X-Forwarded-For, e o limite de requisições passa a ser
+     * por pessoa, não um só para todo mundo atrás do proxy.
+     */
+    TRUST_PROXY: z.coerce.number().int().min(0).max(10).default(0),
   })
   .transform((env) => ({
     ...env,
     DEMO_ENABLED: env.DEMO_ENABLED ?? env.NODE_ENV !== 'production',
     githubLoginEnabled: Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET),
     // Quem chega na API entra como o dono do token: nunca num servidor público.
-    personalTokenEnabled: Boolean(env.GITHUB_PERSONAL_TOKEN) && env.NODE_ENV !== 'production',
+    // Com proxy, o IP vem de um cabeçalho que dá para forjar: o modo pessoal, que
+    // confia no IP local, fica desligado.
+    personalTokenEnabled:
+      Boolean(env.GITHUB_PERSONAL_TOKEN) && env.NODE_ENV !== 'production' && env.TRUST_PROXY === 0,
   }))
 
 export type Env = z.infer<typeof envSchema>

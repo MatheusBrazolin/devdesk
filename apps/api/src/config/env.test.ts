@@ -29,6 +29,15 @@ describe('loadEnv', () => {
     expect(env.personalTokenEnabled).toBe(false)
   })
 
+  it('modo pessoal desliga atrás de proxy, onde o IP local pode ser forjado', () => {
+    const env = loadEnv({
+      TOKEN_ENCRYPTION_KEY: TEST_KEY,
+      GITHUB_PERSONAL_TOKEN: 'ghp_x',
+      TRUST_PROXY: '1',
+    })
+    expect(env.personalTokenEnabled).toBe(false)
+  })
+
   it('explica o que está errado', () => {
     expect(() => loadEnv({ TOKEN_ENCRYPTION_KEY: 'curta' })).toThrow(/TOKEN_ENCRYPTION_KEY/)
   })

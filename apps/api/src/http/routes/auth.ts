@@ -18,6 +18,10 @@ const callbackQuerySchema = z.object({
 })
 
 const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1'])
+const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '[::1]'])
+
+/** "localhost:5173" → "localhost"; "[::1]:3333" → "[::1]". */
+const hostnameOf = (host: string | undefined) => (host ?? '').replace(/:\d+$/, '').toLowerCase()
 
 const sameState = (a: string, b: string) =>
   a.length === b.length && timingSafeEqual(Buffer.from(a), Buffer.from(b))
@@ -67,6 +71,13 @@ export async function authRoutes(app: FastifyInstance, deps: AppDependencies): P
   app.post('/auth/personal', async (request, reply) => {
     if (!deps.personal) throw new AppError('NOT_FOUND', 'Modo pessoal desligado.')
     if (!LOOPBACK.has(request.ip)) throw forbidden('O modo pessoal só aceita acesso desta máquina.')
+    // DNS rebinding: um site que aponta o próprio domínio para 127.0.0.1 passa no teste
+    // do IP, mas o Host continua sendo o domínio dele. Só nomes locais entram.
+    if (!LOCAL_HOSTNAMES.has(hostnameOf(request.headers.host))) {
+      throw forbidden('O modo pessoal só aceita acesso pelo endereço local.')
+    }
+    const origin = request.headers.origin
+    if (origin && origin !== config.webOrigin) throw forbidden('Origem não permitida.')
     // Corpo JSON obriga o navegador a pedir permissão (CORS) antes de um POST
     // vindo de outro site, e a API não concede: bloqueia login forjado.
     if (!request.headers['content-type']?.startsWith('application/json')) {

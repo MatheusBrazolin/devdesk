@@ -83,6 +83,42 @@ describe('modo pessoal', () => {
     expect(res.statusCode).toBe(403)
   })
 
+  it('DNS rebinding: Host de outro domínio, mesmo vindo de 127.0.0.1, é recusado', async () => {
+    const { app } = await createTestApp({ personalToken: 'ghp_valido' })
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/auth/personal',
+      headers: { ...json, host: 'evil.example:3333' },
+      payload: {},
+    })
+    expect(res.statusCode).toBe(403)
+    expect(res.headers['set-cookie']).toBeUndefined()
+  })
+
+  it('aceita Host local com porta, inclusive IPv6', async () => {
+    const { app } = await createTestApp({ personalToken: 'ghp_valido' })
+    for (const host of ['localhost:5173', '127.0.0.1:3333', '[::1]:3333']) {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/auth/personal',
+        headers: { ...json, host },
+        payload: {},
+      })
+      expect(res.statusCode).toBe(200)
+    }
+  })
+
+  it('Origin de outro site é recusada', async () => {
+    const { app } = await createTestApp({ personalToken: 'ghp_valido' })
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/auth/personal',
+      headers: { ...json, origin: 'https://evil.example' },
+      payload: {},
+    })
+    expect(res.statusCode).toBe(403)
+  })
+
   it('token revogado no login pede reconexão', async () => {
     const { app } = await createTestApp({ personalToken: 'ghp_revogado' })
     const res = await app.inject({

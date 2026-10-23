@@ -19,7 +19,7 @@ O usuário não quer pedir acesso às organizações.
 Um segundo modo de autenticação, para uma instalação local de uma pessoa: a API lê `GITHUB_PERSONAL_TOKEN` (um PAT _classic_ com `repo` e `read:org`), e a tela de login mostra "Entrar como <dono do token>".
 
 - O token passa pelo mesmo `GitHubTokenProvider` do OAuth: fica cifrado no banco e o painel não sabe de onde veio.
-- A rota `POST /auth/personal` abre sessão sem credencial nenhuma, então só existe fora de produção, só aceita loopback e exige corpo JSON. Isso impede que outro site force um login com um `POST` simples, porque o navegador precisaria de uma permissão CORS que a API não concede.
+- A rota `POST /auth/personal` abre sessão sem credencial nenhuma, então só existe fora de produção e sem proxy (`TRUST_PROXY=0`), só aceita loopback, exige `Host` local (`localhost`, `127.0.0.1`, `[::1]`), recusa `Origin` de outro site e exige corpo JSON. O JSON impede um `POST` simples de outro site; o `Host` impede o _DNS rebinding_, em que um site aponta o próprio domínio para 127.0.0.1 e passa no teste do IP.
 - PAT _fine-grained_ é recusado no setup: para repositórios de organização ele precisa da aprovação de cada uma, que é justamente o que este modo evita.
 
 ## Consequências
