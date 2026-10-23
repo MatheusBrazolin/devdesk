@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
-import { toast } from 'sonner'
 import { addDaysToKey } from '@/lib/calendar-dates'
+import { notify } from '@/lib/notifications'
 import { calendarQuery } from './queries'
 import { useToday } from '@/lib/use-today'
 
@@ -10,8 +10,8 @@ const HORIZON_MS = 24 * 60 * 60 * 1000
 
 /**
  * Avisa na hora de cada lembrete com horário de hoje e amanhã, enquanto o
- * DevDesk estiver aberto. Sem permissão de notificação do sistema: é um aviso
- * dentro da página.
+ * DevDesk estiver aberto: dentro da página e, com as notificações ligadas e
+ * a aba em segundo plano, também no sistema.
  */
 export function useReminderToasts(): void {
   const today = useToday()
@@ -30,9 +30,10 @@ export function useReminderToasts(): void {
       return [
         setTimeout(
           () =>
-            toast(`Lembrete: ${event.title}`, {
-              description: event.description || undefined,
-              duration: 15_000,
+            notify({
+              title: `Lembrete: ${event.title}`,
+              body: event.description || undefined,
+              tag: `lembrete:${event.id}`,
             }),
           delay,
         ),
