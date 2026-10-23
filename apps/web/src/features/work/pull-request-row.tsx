@@ -45,6 +45,12 @@ export function PullRequestRow({
       />
 
       <div className="min-w-0 flex-1">
+        {/* No celular o selo vem antes do título: ao lado, ele espremia o texto. */}
+        {reason && (
+          <Badge tone={REASON_LABEL[reason].tone} className="mb-1 sm:hidden">
+            {REASON_LABEL[reason].text}
+          </Badge>
+        )}
         <a
           href={pr.url}
           target="_blank"
@@ -97,7 +103,9 @@ export function PullRequestRow({
           }}
         />
         {reason ? (
-          <Badge tone={REASON_LABEL[reason].tone}>{REASON_LABEL[reason].text}</Badge>
+          <Badge tone={REASON_LABEL[reason].tone} className="hidden sm:inline-flex">
+            {REASON_LABEL[reason].text}
+          </Badge>
         ) : (
           !merged && <PullRequestStatus pr={pr} />
         )}

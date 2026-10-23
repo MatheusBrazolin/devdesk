@@ -55,7 +55,7 @@ export function ColumnChart({ columns, unit, highlightKey, tone = 'ink' }: Colum
                   )}
                   <span
                     className={cn(
-                      'w-full max-w-7 origin-bottom animate-grow-up rounded-t-[4px] transition-opacity group-hover:opacity-80',
+                      'w-full max-w-7 origin-bottom 2xl:max-w-12 animate-grow-up rounded-t-[4px] transition-opacity group-hover:opacity-80',
                       BAR[tone],
                       !highlighted && tone !== 'ink' && 'opacity-55',
                       highlighted && tone === 'ink' && 'bg-chart-accent',

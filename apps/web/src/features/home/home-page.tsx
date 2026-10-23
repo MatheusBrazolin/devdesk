@@ -6,12 +6,10 @@ import {
   CircleAlert,
   CircleCheck,
   CircleDot,
-  Crosshair,
   Eye,
   GitMerge,
   GitPullRequest,
   Hourglass,
-  MessageSquareText,
   Timer,
   type LucideIcon,
 } from 'lucide-react'
@@ -21,7 +19,6 @@ import { BarList } from '@/components/charts/bar-list'
 import { ChartTooltipProvider } from '@/components/charts/chart-tooltip'
 import { ColumnChart } from '@/components/charts/column-chart'
 import { StatTile, statTileClass } from '@/components/charts/stat-tile'
-import { buttonVariants } from '@/components/ui/button-variants'
 import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
 import { OwnerAvatar } from '@/components/ui/owner-avatar'
@@ -84,20 +81,12 @@ export function HomePage() {
               {data && <> · {attentionSummary(data.attention.length, staleCount)}</>}
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <SyncStatus />
-            <Link to="/standup" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-              <MessageSquareText /> Standup
-            </Link>
-            <Link to="/foco" className={buttonVariants({ size: 'sm' })}>
-              <Crosshair /> Foco
-            </Link>
-          </div>
+          <SyncStatus />
         </motion.header>
 
         <section
           aria-label="Indicadores"
-          className="grid shrink-0 grid-cols-2 gap-4 xl:grid-cols-4"
+          className="grid shrink-0 grid-cols-2 gap-4 lg:grid-cols-4"
         >
           <motion.div {...fadeUp(0.03)}>
             <Link
@@ -168,7 +157,7 @@ export function HomePage() {
           <motion.section
             {...fadeUp(0.21)}
             aria-label="Gráficos"
-            className="grid min-h-0 grid-cols-1 gap-4 md:col-span-2 md:grid-cols-3 xl:col-span-4 xl:col-start-6 xl:row-span-2 xl:row-start-1 xl:grid-cols-1 xl:grid-rows-[minmax(0,1fr)_auto_auto]"
+            className="grid min-h-0 grid-cols-1 gap-4 md:col-span-2 md:grid-cols-3 xl:col-span-4 xl:col-start-6 xl:row-span-2 xl:row-start-1 xl:grid-cols-1 xl:grid-rows-[minmax(0,1.6fr)_minmax(min-content,1fr)_minmax(min-content,1fr)]"
           >
             <ChartCard
               title="Mergeados por dia"
@@ -342,7 +331,8 @@ function ChartCard({
       </CardHeader>
       {/* Os gráficos se ajustam ao espaço: nunca rolam. */}
       <CardBody className="flex flex-col overflow-hidden px-4 py-2.5">
-        <div className="flex-1">{children}</div>
+        {/* Em tela alta sobra espaço: as barras ficam no meio, não grudadas no topo. */}
+        <div className="flex flex-1 flex-col justify-center">{children}</div>
       </CardBody>
     </Card>
   )

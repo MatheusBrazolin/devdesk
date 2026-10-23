@@ -18,6 +18,16 @@ export function AppShell() {
   // No foco, a barra lateral sai da frente: a saída é o botão da própria página.
   const focus = pathname === '/foco'
 
+  // No modo TV a página ocupa a tela inteira: sem barra lateral nem topo.
+  // Os avisos continuam valendo (os hooks acima rodam em qualquer rota).
+  if (pathname === '/tv') {
+    return (
+      <CommandPaletteProvider>
+        <Outlet />
+      </CommandPaletteProvider>
+    )
+  }
+
   return (
     <CommandPaletteProvider>
       <div className="flex min-h-dvh">
@@ -32,7 +42,7 @@ export function AppShell() {
             className={cn(
               'mx-auto w-full flex-1 px-4 py-6 sm:px-6 lg:px-8',
               // O painel Hoje usa a tela toda; as listas ficam numa largura de leitura.
-              pathname === '/' ? 'max-w-[100rem]' : 'max-w-6xl',
+              pathname === '/' ? 'max-w-[160rem]' : 'max-w-6xl',
             )}
           >
             <Outlet />
