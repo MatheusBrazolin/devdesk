@@ -23,3 +23,11 @@ export function CardHeader({ className, ...props }: ComponentProps<'header'>) {
 export function CardTitle({ className, ...props }: ComponentProps<'h2'>) {
   return <h2 className={cn('text-[13px] font-semibold', className)} {...props} />
 }
+
+/**
+ * Corpo que ocupa o resto do cartão e rola por dentro quando não cabe: no
+ * painel, o cartão tem altura fixa e a página não rola.
+ */
+export function CardBody({ className, ...props }: ComponentProps<'div'>) {
+  return <div className={cn('scroll-thin min-h-0 flex-1 overflow-y-auto', className)} {...props} />
+}

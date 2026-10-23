@@ -1,5 +1,6 @@
 import { RefreshCw, Unplug } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useQuery } from '@tanstack/react-query'
 import { GITHUB_LOGIN_URL, configQuery } from '@/features/auth/queries'
 import { ApiRequestError } from '@/lib/api'
@@ -9,14 +10,12 @@ export function ListSkeleton({ rows = 4 }: { rows?: number }) {
     <ul aria-busy="true" aria-label="Carregando" className="divide-y divide-border">
       {Array.from({ length: rows }, (_, index) => (
         <li key={index} className="flex items-start gap-3 px-4 py-3">
-          <span className="mt-0.5 size-4 shrink-0 animate-pulse rounded-full bg-elevated" />
+          <Skeleton className="mt-0.5 size-4 shrink-0 rounded-full" />
           <span className="flex-1 space-y-2">
-            <span
-              className="block h-3.5 animate-pulse rounded bg-elevated"
-              style={{ width: `${70 - index * 9}%` }}
-            />
-            <span className="block h-2.5 w-40 animate-pulse rounded bg-elevated" />
+            <Skeleton className="h-3.5" style={{ width: `${78 - ((index * 13) % 36)}%` }} />
+            <Skeleton className="h-2.5 w-40" />
           </span>
+          <Skeleton className="mt-0.5 h-5 w-16 shrink-0" />
         </li>
       ))}
     </ul>

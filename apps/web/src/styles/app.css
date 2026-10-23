@@ -38,6 +38,13 @@
   --chart-accent: #b8700f;
   --chart-muted: #cfccc6;
   --chart-ink: #5b5954;
+  /*
+   * Cores de identidade do painel: mergeado (roxo, como no GitHub) e
+   * organizações (azul-petróleo). Com o âmbar, o trio passa no validador:
+   * ΔE mínimo 11,6 (deuteranopia) e 20,3 (normal), contraste >= 3:1.
+   */
+  --merged: #8250df;
+  --info: #0082a0;
 }
 
 .dark {
@@ -61,6 +68,9 @@
   --chart-accent: #c07f24;
   --chart-muted: #5a5752;
   --chart-ink: #a6a39d;
+  /* Trio no escuro: ΔE mínimo 9,4 (deuteranopia) e 20,0 (normal). */
+  --merged: #9673e0;
+  --info: #00a3ae;
 }
 
 @theme inline {
@@ -85,6 +95,8 @@
   --color-chart-accent: var(--chart-accent);
   --color-chart-muted: var(--chart-muted);
   --color-chart-ink: var(--chart-ink);
+  --color-merged: var(--merged);
+  --color-info: var(--info);
 
   /* Sombra só para o que flutua (menus, diálogos). Painéis usam borda. */
   --shadow-pop: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px -6px rgb(0 0 0 / 0.18);
@@ -92,6 +104,46 @@
   --animate-overlay-in: overlay-in 140ms ease-out;
   --animate-pop-in: pop-in 160ms cubic-bezier(0.2, 0.9, 0.3, 1);
   --animate-drawer-in: drawer-in 220ms cubic-bezier(0.2, 0.9, 0.3, 1);
+  /* Barras crescem a partir da linha de base ao aparecer. */
+  --animate-grow-up: grow-up 520ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+  --animate-grow-right: grow-right 520ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+@keyframes grow-up {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes grow-right {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* Esqueleto de carregamento: um brilho que passa, no lugar do piscar. */
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@utility skeleton {
+  border-radius: 0.25rem;
+  background: linear-gradient(
+      90deg,
+      var(--elevated) 0%,
+      color-mix(in oklab, var(--elevated), var(--border-strong) 45%) 50%,
+      var(--elevated) 100%
+    )
+    0 0 / 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+/* Rolagem interna discreta nos cartões do painel. */
+@utility scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
 }
 
 @keyframes overlay-in {
