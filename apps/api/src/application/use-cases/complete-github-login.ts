@@ -1,21 +1,22 @@
 import type { GitHubOAuth } from '../ports/github-oauth.js'
-import type { TokenCipher } from '../ports/security.js'
 import type { UserRepository } from '../ports/user-repository.js'
+import type { GitHubTokenProvider } from '../services/github-token-provider.js'
 import type { CreateSession, CreatedSession } from './create-session.js'
 
-/** Troca o code do OAuth por token, registra o usuário e abre a sessão. */
+/** Troca o code do OAuth por tokens, registra o usuário e abre a sessão. */
 export class CompleteGitHubLogin {
   constructor(
     private readonly github: GitHubOAuth,
     private readonly users: UserRepository,
-    private readonly cipher: TokenCipher,
+    private readonly tokens: GitHubTokenProvider,
     private readonly createSession: CreateSession,
   ) {}
 
   async execute(code: string): Promise<CreatedSession> {
-    const accessToken = await this.github.exchangeCode(code)
-    const profile = await this.github.fetchProfile(accessToken)
-    const user = await this.users.upsertFromGitHub(profile, this.cipher.encrypt(accessToken))
+    const tokens = await this.github.exchangeCode(code)
+    const profile = await this.github.fetchProfile(tokens.accessToken)
+    const user = await this.users.upsertFromGitHub(profile)
+    await this.tokens.save(user.id, tokens)
     return this.createSession.execute(user.id)
   }
 }

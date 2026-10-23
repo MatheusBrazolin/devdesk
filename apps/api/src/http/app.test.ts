@@ -13,7 +13,12 @@ describe('HTTP', () => {
   it('GET /api/config conta ao front o que está ligado', async () => {
     const { app } = await createTestApp({ github: false })
     const res = await app.inject({ method: 'GET', url: '/api/config' })
-    expect(res.json()).toEqual({ githubLoginEnabled: false, demoEnabled: true })
+    expect(res.json()).toEqual({
+      githubLoginEnabled: false,
+      demoEnabled: true,
+      personalTokenEnabled: false,
+      personalLogin: null,
+    })
   })
 
   it('GET /api/me sem sessão responde 401 no formato padrão', async () => {

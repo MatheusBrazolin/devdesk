@@ -2,6 +2,8 @@ import { z } from 'zod'
 
 export const apiErrorCodeSchema = z.enum([
   'UNAUTHENTICATED',
+  /** A sessão vale, mas o GitHub recusou o token (revogado ou expirado). */
+  'GITHUB_RECONNECT',
   'FORBIDDEN',
   'NOT_FOUND',
   'VALIDATION',

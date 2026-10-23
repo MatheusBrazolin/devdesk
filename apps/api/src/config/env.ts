@@ -19,12 +19,19 @@ const envSchema = z
     TOKEN_ENCRYPTION_KEY: z.string().refine((value) => Buffer.from(value, 'base64').length === 32, {
       message: 'precisa ter 32 bytes em base64 (gere com: openssl rand -base64 32)',
     }),
+    /**
+     * Token pessoal (PAT classic) para o modo de uma pessoa só. Age como você,
+     * então enxerga repositórios de organizações que bloqueiam OAuth Apps.
+     */
+    GITHUB_PERSONAL_TOKEN: z.string().optional(),
     DEMO_ENABLED: booleanFromString.optional(),
   })
   .transform((env) => ({
     ...env,
     DEMO_ENABLED: env.DEMO_ENABLED ?? env.NODE_ENV !== 'production',
     githubLoginEnabled: Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET),
+    // Quem chega na API entra como o dono do token: nunca num servidor público.
+    personalTokenEnabled: Boolean(env.GITHUB_PERSONAL_TOKEN) && env.NODE_ENV !== 'production',
   }))
 
 export type Env = z.infer<typeof envSchema>

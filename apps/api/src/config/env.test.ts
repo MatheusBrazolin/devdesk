@@ -15,6 +15,20 @@ describe('loadEnv', () => {
     expect(env.DEMO_ENABLED).toBe(false)
   })
 
+  it('modo pessoal liga com o token, fora de produção', () => {
+    const env = loadEnv({ TOKEN_ENCRYPTION_KEY: TEST_KEY, GITHUB_PERSONAL_TOKEN: 'ghp_x' })
+    expect(env.personalTokenEnabled).toBe(true)
+  })
+
+  it('modo pessoal nunca liga em produção', () => {
+    const env = loadEnv({
+      TOKEN_ENCRYPTION_KEY: TEST_KEY,
+      GITHUB_PERSONAL_TOKEN: 'ghp_x',
+      NODE_ENV: 'production',
+    })
+    expect(env.personalTokenEnabled).toBe(false)
+  })
+
   it('explica o que está errado', () => {
     expect(() => loadEnv({ TOKEN_ENCRYPTION_KEY: 'curta' })).toThrow(/TOKEN_ENCRYPTION_KEY/)
   })

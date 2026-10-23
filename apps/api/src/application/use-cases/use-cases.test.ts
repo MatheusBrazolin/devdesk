@@ -10,8 +10,9 @@ describe('CompleteGitHubLogin', () => {
 
     const [user] = [...users.items.values()]
     expect(user?.login).toBe('octocat')
-    expect(cipher.decrypt(users.tokens.get(user!.id)!)).toBe('gho_token_de_teste')
-    expect(users.tokens.get(user!.id)).not.toContain('gho_')
+    const stored = users.tokens.get(user!.id)!
+    expect(cipher.decrypt(stored.accessToken)).toBe('gho_token_de_teste')
+    expect(stored.accessToken).not.toContain('gho_')
     expect(sessions.items.has(tokens.hash(session.token))).toBe(true)
   })
 

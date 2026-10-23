@@ -1,27 +1,31 @@
 import { z } from 'zod'
 import type { GitHubOAuth } from '../../application/ports/github-oauth.js'
+import type { Clock } from '../../application/ports/security.js'
 import type { GitHubProfile } from '../../application/ports/user-repository.js'
-import { upstream } from '../../domain/errors.js'
+import { githubReconnect, upstream } from '../../domain/errors.js'
+import type { GitHubTokens } from '../../domain/github-tokens.js'
+import { GitHubProfileClient } from './github-profile-client.js'
+import { createReadOnlyFetch } from './read-only-fetch.js'
 
 /** Escopos mínimos para ler PRs, reviews e issues, inclusive de repositórios privados. */
 export const GITHUB_SCOPES = ['read:user', 'read:org', 'repo'] as const
 
 const tokenResponseSchema = z.union([
-  z.object({ access_token: z.string() }),
+  z.object({
+    access_token: z.string(),
+    /** Só vêm quando o app usa tokens que expiram. Em segundos. */
+    expires_in: z.number().optional(),
+    refresh_token: z.string().optional(),
+    refresh_token_expires_in: z.number().optional(),
+  }),
   z.object({ error: z.string(), error_description: z.string().optional() }),
 ])
-
-const profileSchema = z.object({
-  id: z.number(),
-  login: z.string(),
-  name: z.string().nullable(),
-  avatar_url: z.string().nullable(),
-})
 
 interface Options {
   clientId: string
   clientSecret: string
   redirectUri: string
+  clock: Clock
   fetch?: typeof fetch
 }
 
@@ -29,7 +33,7 @@ export class GitHubOAuthClient implements GitHubOAuth {
   private readonly fetch: typeof fetch
 
   constructor(private readonly options: Options) {
-    this.fetch = options.fetch ?? globalThis.fetch
+    this.fetch = options.fetch ?? createReadOnlyFetch()
   }
 
   authorizeUrl(state: string): string {
@@ -42,42 +46,59 @@ export class GitHubOAuthClient implements GitHubOAuth {
     return url.toString()
   }
 
-  async exchangeCode(code: string): Promise<string> {
+  async exchangeCode(code: string): Promise<GitHubTokens> {
+    const body = await this.requestToken({ code, redirect_uri: this.options.redirectUri })
+    if ('error' in body) {
+      throw upstream(`GitHub recusou o login: ${body.error_description ?? body.error}`)
+    }
+    return this.toTokens(body)
+  }
+
+  async refreshTokens(refreshToken: string): Promise<GitHubTokens> {
+    const body = await this.requestToken({
+      grant_type: 'refresh_token',
+      refresh_token: refreshToken,
+    })
+    if ('error' in body) {
+      // bad_refresh_token: revogado, expirado ou já usado.
+      if (body.error === 'bad_refresh_token') throw githubReconnect()
+      throw upstream(`GitHub recusou a renovação: ${body.error_description ?? body.error}`)
+    }
+    return this.toTokens(body)
+  }
+
+  private async requestToken(params: Record<string, string>) {
     const response = await this.fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
       headers: { accept: 'application/json', 'content-type': 'application/json' },
       body: JSON.stringify({
         client_id: this.options.clientId,
         client_secret: this.options.clientSecret,
-        code,
-        redirect_uri: this.options.redirectUri,
+        ...params,
       }),
     })
-    if (!response.ok) throw upstream(`GitHub respondeu ${response.status} ao trocar o code.`)
-
-    const body = tokenResponseSchema.parse(await response.json())
-    if ('error' in body) {
-      throw upstream(`GitHub recusou o login: ${body.error_description ?? body.error}`)
-    }
-    return body.access_token
+    if (!response.ok) throw upstream(`GitHub respondeu ${response.status} ao emitir o token.`)
+    return tokenResponseSchema.parse(await response.json())
   }
 
-  async fetchProfile(accessToken: string): Promise<GitHubProfile> {
-    const response = await this.fetch('https://api.github.com/user', {
-      headers: {
-        accept: 'application/vnd.github+json',
-        authorization: `Bearer ${accessToken}`,
-        'x-github-api-version': '2022-11-28',
-      },
-    })
-    if (!response.ok) throw upstream(`GitHub respondeu ${response.status} ao buscar o perfil.`)
-
-    const profile = profileSchema.parse(await response.json())
+  private toTokens(body: {
+    access_token: string
+    expires_in?: number
+    refresh_token?: string
+    refresh_token_expires_in?: number
+  }): GitHubTokens {
+    const now = this.options.clock.now().getTime()
+    const at = (seconds: number | undefined) =>
+      seconds === undefined ? null : new Date(now + seconds * 1000)
     return {
-      githubId: profile.id,
-      login: profile.login,
-      name: profile.name,
-      avatarUrl: profile.avatar_url,
+      accessToken: body.access_token,
+      accessTokenExpiresAt: at(body.expires_in),
+      refreshToken: body.refresh_token ?? null,
+      refreshTokenExpiresAt: at(body.refresh_token_expires_in),
     }
+  }
+
+  fetchProfile(accessToken: string): Promise<GitHubProfile> {
+    return new GitHubProfileClient(this.fetch).fetchProfile(accessToken)
   }
 }

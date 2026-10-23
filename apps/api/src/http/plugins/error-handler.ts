@@ -5,6 +5,7 @@ import { AppError } from '../../domain/errors.js'
 
 const STATUS_BY_CODE: Record<ApiErrorCode, number> = {
   UNAUTHENTICATED: 401,
+  GITHUB_RECONNECT: 401,
   FORBIDDEN: 403,
   NOT_FOUND: 404,
   VALIDATION: 400,

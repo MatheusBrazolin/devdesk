@@ -8,6 +8,9 @@ export const users = pgTable('users', {
   avatarUrl: text('avatar_url'),
   isDemo: boolean('is_demo').notNull().default(false),
   accessTokenEncrypted: text('access_token_encrypted'),
+  accessTokenExpiresAt: timestamp('access_token_expires_at', { withTimezone: true }),
+  refreshTokenEncrypted: text('refresh_token_encrypted'),
+  refreshTokenExpiresAt: timestamp('refresh_token_expires_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 })

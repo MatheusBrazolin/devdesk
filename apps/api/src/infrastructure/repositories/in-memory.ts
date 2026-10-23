@@ -1,27 +1,38 @@
 import { randomUUID } from 'node:crypto'
 import type { SessionRepository } from '../../application/ports/session-repository.js'
-import type { GitHubProfile, UserRepository } from '../../application/ports/user-repository.js'
+import type {
+  EncryptedGitHubTokens,
+  GitHubProfile,
+  UserRepository,
+} from '../../application/ports/user-repository.js'
 import type { Session } from '../../domain/session.js'
 import type { User } from '../../domain/user.js'
 
 /** Implementações em memória das portas. Usadas nos testes. */
 export class InMemoryUserRepository implements UserRepository {
   readonly items = new Map<string, User>()
-  readonly tokens = new Map<string, string>()
+  readonly tokens = new Map<string, EncryptedGitHubTokens>()
 
   async findById(id: string): Promise<User | null> {
     return this.items.get(id) ?? null
   }
 
-  async upsertFromGitHub(profile: GitHubProfile, encryptedAccessToken: string): Promise<User> {
+  async upsertFromGitHub(profile: GitHubProfile): Promise<User> {
     const existing = [...this.items.values()].find((u) => u.githubId === profile.githubId)
     const now = new Date()
     const user: User = existing
       ? { ...existing, ...profile, updatedAt: now }
       : { id: randomUUID(), ...profile, isDemo: false, createdAt: now, updatedAt: now }
     this.items.set(user.id, user)
-    this.tokens.set(user.id, encryptedAccessToken)
     return user
+  }
+
+  async findGitHubTokens(userId: string): Promise<EncryptedGitHubTokens | null> {
+    return this.tokens.get(userId) ?? null
+  }
+
+  async saveGitHubTokens(userId: string, tokens: EncryptedGitHubTokens): Promise<void> {
+    this.tokens.set(userId, tokens)
   }
 
   async findOrCreateDemo(): Promise<User> {

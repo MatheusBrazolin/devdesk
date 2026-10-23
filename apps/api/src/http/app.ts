@@ -5,6 +5,7 @@ import Fastify, { type FastifyServerOptions } from 'fastify'
 import type { AppDependencies } from './dependencies.js'
 import { registerErrorHandler } from './plugins/error-handler.js'
 import { authRoutes } from './routes/auth.js'
+import { dashboardRoutes } from './routes/dashboard.js'
 import { meRoutes } from './routes/me.js'
 import { systemRoutes } from './routes/system.js'
 
@@ -21,6 +22,7 @@ export async function buildApp(deps: AppDependencies, options: FastifyServerOpti
       await systemRoutes(api, deps)
       await authRoutes(api, deps)
       await meRoutes(api, deps)
+      await dashboardRoutes(api, deps)
     },
     { prefix: '/api' },
   )

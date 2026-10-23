@@ -19,3 +19,6 @@ export const forbidden = (message: string) => new AppError('FORBIDDEN', message)
 
 export const upstream = (message: string, cause?: unknown) =>
   new AppError('UPSTREAM', message, { cause })
+
+export const githubReconnect = (message = 'O GitHub recusou o acesso. Conecte a conta de novo.') =>
+  new AppError('GITHUB_RECONNECT', message)

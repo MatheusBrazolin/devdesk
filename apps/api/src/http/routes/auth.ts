@@ -1,7 +1,7 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto'
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
-import { AppError } from '../../domain/errors.js'
+import { AppError, forbidden } from '../../domain/errors.js'
 import type { AppDependencies } from '../dependencies.js'
 import { presentUser } from '../presenters.js'
 import {
@@ -16,6 +16,8 @@ const callbackQuerySchema = z.object({
   state: z.string().min(1).optional(),
   error: z.string().optional(),
 })
+
+const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1'])
 
 const sameState = (a: string, b: string) =>
   a.length === b.length && timingSafeEqual(Buffer.from(a), Buffer.from(b))
@@ -60,6 +62,21 @@ export async function authRoutes(app: FastifyInstance, deps: AppDependencies): P
       request.log.warn({ err: error }, 'falha no callback do GitHub')
       return reply.redirect(loginErrorUrl('github'))
     }
+  })
+
+  app.post('/auth/personal', async (request, reply) => {
+    if (!deps.personal) throw new AppError('NOT_FOUND', 'Modo pessoal desligado.')
+    if (!LOOPBACK.has(request.ip)) throw forbidden('O modo pessoal só aceita acesso desta máquina.')
+    // Corpo JSON obriga o navegador a pedir permissão (CORS) antes de um POST
+    // vindo de outro site, e a API não concede: bloqueia login forjado.
+    if (!request.headers['content-type']?.startsWith('application/json')) {
+      throw new AppError('VALIDATION', 'Envie a requisição como JSON.')
+    }
+
+    const session = await deps.personal.execute()
+    setSessionCookie(reply, cookies, session)
+    const user = await useCases.getCurrentUser.execute(session.token)
+    return { user: presentUser(user) }
   })
 
   app.post('/auth/demo', async (_request, reply) => {
