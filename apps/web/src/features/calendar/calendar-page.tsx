@@ -19,6 +19,7 @@ import {
   parseMonth,
 } from '@/lib/calendar-dates'
 import { cn } from '@/lib/cn'
+import { useMediaQuery } from '@/lib/use-media-query'
 import { AgendaList, AgendaSkeleton } from './agenda-list'
 import { EventDialog } from './event-dialog'
 import { calendarQuery, deadlinesQuery, ICS_URL } from './queries'
@@ -48,8 +49,8 @@ export function CalendarPage() {
   const eventsOn = (day: string) =>
     calendar.data?.events.filter((event) => occursOn(event, day)).sort(compareEvents) ?? []
   const deadlinesOn = (day: string) => deadlines.data?.deadlines.filter((d) => d.date === day) ?? []
+  const small = !useMediaQuery('(min-width: 640px)')
   const openDay = (day: string) => {
-    const small = !window.matchMedia('(min-width: 640px)').matches
     if (small && eventsOn(day).length + deadlinesOn(day).length > 0) setDaySheet(day)
     else setDialog({ event: null, day })
   }
@@ -147,6 +148,7 @@ export function CalendarPage() {
                   deadlines={
                     deadlines.data?.deadlines.filter((deadline) => deadline.date === day) ?? []
                   }
+                  compact={small}
                   onCreate={() => openDay(day)}
                   onSelect={(event) => setDialog({ event, day })}
                 />
@@ -209,6 +211,8 @@ interface DayCellProps {
   lastRow: boolean
   events: CalendarEvent[]
   deadlines: Deadline[]
+  /** Celular: a grade só tem pontos e tocar num dia com algo abre a lista. */
+  compact: boolean
   onCreate: () => void
   onSelect: (event: CalendarEvent) => void
 }
@@ -221,6 +225,7 @@ function DayCell({
   lastRow,
   events,
   deadlines,
+  compact,
   onCreate,
   onSelect,
 }: DayCellProps) {
@@ -242,7 +247,7 @@ function DayCell({
       <button
         type="button"
         onClick={onCreate}
-        aria-label={`Novo evento em ${fromKey(day).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' })}`}
+        aria-label={dayLabel(day, compact ? items : 0)}
         className="absolute inset-0 hover:bg-elevated/40 focus-visible:bg-elevated/40"
       />
       <span
@@ -378,4 +383,11 @@ function DaySheet({
       </Dialog.Portal>
     </Dialog.Root>
   )
+}
+
+/** O que o botão do dia faz, dito do jeito que acontece: criar ou ver a lista. */
+function dayLabel(day: string, listed: number): string {
+  const date = fromKey(day).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' })
+  if (listed === 0) return `Novo evento em ${date}`
+  return `${date}: ver ${listed === 1 ? '1 item' : `${listed} itens`}`
 }

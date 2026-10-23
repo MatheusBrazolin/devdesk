@@ -15,10 +15,31 @@ const node = (n: number, extra: object = {}) => ({
   ...extra,
 })
 
-function fakeGitHub(nodesFor: (q: string) => unknown[]) {
+/** Contribuição de review como o perfil do GitHub devolve. */
+const contribution = (n: number, state: string, occurredAt: string) => ({
+  occurredAt,
+  pullRequestReview: { state },
+  pullRequest: node(n),
+})
+
+function fakeGitHub(nodesFor: (q: string) => unknown[], contributions: unknown[] | 'error' = []) {
   const requests: { q: string; login?: string }[] = []
   const impl = (async (_url: string, init: RequestInit) => {
-    const { variables } = JSON.parse(String(init.body))
+    const { query, variables } = JSON.parse(String(init.body))
+    if (String(query).includes('contributionsCollection')) {
+      if (contributions === 'error') return new Response('{}', { status: 502 })
+      return new Response(
+        JSON.stringify({
+          data: {
+            viewer: {
+              contributionsCollection: {
+                pullRequestReviewContributions: { nodes: contributions },
+              },
+            },
+          },
+        }),
+      )
+    }
     requests.push(variables)
     return new Response(JSON.stringify({ data: { search: { nodes: nodesFor(variables.q) } } }))
   }) as unknown as typeof fetch
@@ -59,6 +80,49 @@ describe('GitHubActivitySource', () => {
     )
     const activity = await new GitHubActivitySource(impl).fetchActivity('t', 'eu', from, to)
     expect(activity.reviewed.map((r) => [r.number, r.verdict])).toEqual([[1, 'approved']])
+  })
+
+  it('soma as reviews do perfil: a que passou do teto da busca aparece', async () => {
+    const { impl } = fakeGitHub(
+      (q) =>
+        q.includes('reviewed-by')
+          ? [
+              node(1, {
+                reviews: { nodes: [{ state: 'COMMENTED', submittedAt: '2026-10-22T13:00:00Z' }] },
+              }),
+            ]
+          : [],
+      [
+        // A mesma review do PR 1 e uma resposta mais nova nele.
+        contribution(1, 'COMMENTED', '2026-10-22T13:00:00Z'),
+        contribution(1, 'APPROVED', '2026-10-22T20:00:00Z'),
+        // Fora da busca (teto de 50): só o perfil traz.
+        contribution(7, 'CHANGES_REQUESTED', '2026-10-22T15:00:00Z'),
+        // Fora do período.
+        contribution(8, 'APPROVED', '2026-10-21T15:00:00Z'),
+      ],
+    )
+    const activity = await new GitHubActivitySource(impl).fetchActivity('t', 'eu', from, to)
+    expect(activity.reviewed.map((r) => [r.number, r.verdict])).toEqual([
+      [1, 'approved'],
+      [7, 'changes_requested'],
+    ])
+  })
+
+  it('se o perfil falhar, o standup segue com a busca', async () => {
+    const { impl } = fakeGitHub(
+      (q) =>
+        q.includes('reviewed-by')
+          ? [
+              node(1, {
+                reviews: { nodes: [{ state: 'APPROVED', submittedAt: '2026-10-22T13:00:00Z' }] },
+              }),
+            ]
+          : [],
+      'error',
+    )
+    const activity = await new GitHubActivitySource(impl).fetchActivity('t', 'eu', from, to)
+    expect(activity.reviewed.map((r) => r.number)).toEqual([1])
   })
 
   it('token recusado pede reconexão', async () => {

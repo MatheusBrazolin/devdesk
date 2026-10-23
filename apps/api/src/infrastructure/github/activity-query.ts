@@ -31,6 +31,27 @@ export const ACTIVITY_QUERIES = {
 
 export type ActivityList = keyof typeof ACTIVITY_QUERIES
 
+/**
+ * As reviews da pessoa pela data em que foram enviadas, direto do perfil.
+ * Complementa a busca `reviewed-by`, que não filtra pela data da review e
+ * tem teto de 50 PRs: num dia cheio, o que passar do teto aparece por aqui.
+ */
+export const REVIEW_CONTRIBUTIONS_QUERY = /* GraphQL */ `
+  query StandupReviewContributions($from: DateTime!, $to: DateTime!) {
+    viewer {
+      contributionsCollection(from: $from, to: $to) {
+        pullRequestReviewContributions(first: 100) {
+          nodes {
+            occurredAt
+            pullRequestReview { state }
+            pullRequest { ${REF_FIELDS} }
+          }
+        }
+      }
+    }
+  }
+`
+
 /** Instante no formato que a busca do GitHub aceita: sem milissegundos. */
 const stamp = (date: Date) => date.toISOString().replace(/\.\d{3}Z$/, 'Z')
 

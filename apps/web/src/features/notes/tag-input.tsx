@@ -1,6 +1,6 @@
 import { NOTE_LIMITS } from '@devdesk/shared'
 import { X } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface TagInputProps {
   value: string[]
@@ -25,6 +25,20 @@ export function TagInput({ value, onChange, max = 10 }: TagInputProps) {
     add([draft])
     setDraft('')
   }
+
+  // Trocar de nota desmonta o editor sem blur: o que estava digitado vira tag
+  // em vez de sumir. O salvamento automático envia mesmo depois da saída.
+  const latest = useRef({ draft, add })
+  useEffect(() => {
+    latest.current = { draft, add }
+  })
+  useEffect(
+    () => () => {
+      const { draft: pending, add: addTags } = latest.current
+      if (pending.trim()) addTags([pending])
+    },
+    [],
+  )
 
   /** Vírgula ou espaço confirmam, venham de tecla, colagem ou autocompletar. */
   const handleChange = (text: string) => {

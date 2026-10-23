@@ -86,7 +86,9 @@ export function StatTile({ label, icon: Icon, tone, value, hint, trend, alert }:
 
 /**
  * Número que conta até o valor na primeira vez e a cada mudança. Escreve
- * direto no texto do elemento: são dezenas de quadros, sem render a cada um.
+ * direto no texto de um elemento que o React deixa vazio: são dezenas de
+ * quadros, sem render a cada um, e o React nunca disputa o mesmo nó de texto.
+ * O valor final fica num texto à parte, que é o que o leitor de tela lê.
  */
 function CountUp({ value }: { value: number }) {
   const reduce = useReducedMotion()
@@ -98,6 +100,7 @@ function CountUp({ value }: { value: number }) {
     if (!element) return
     const start = reduce ? value : from.current
     from.current = value
+    element.textContent = String(start)
     const controls = animate(start, value, {
       duration: reduce ? 0 : 0.6,
       ease: 'easeOut',
@@ -108,5 +111,10 @@ function CountUp({ value }: { value: number }) {
     return () => controls.stop()
   }, [value, reduce])
 
-  return <span ref={ref}>{value}</span>
+  return (
+    <>
+      <span ref={ref} aria-hidden />
+      <span className="sr-only">{value}</span>
+    </>
+  )
 }
