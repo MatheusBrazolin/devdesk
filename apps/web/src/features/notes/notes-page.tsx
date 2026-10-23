@@ -3,6 +3,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import { Loader2, NotebookPen, Plus, Search, SearchX, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
+import { Skeleton } from '@/components/ui/skeleton'
 import { ListSkeleton } from '@/features/work/list-states'
 import { cn } from '@/lib/cn'
 import { NoteEditor } from './note-editor'
@@ -39,7 +40,10 @@ export function NotesPage() {
         >
           <div className="space-y-3 border-b border-border p-3">
             <div className="flex items-center justify-between">
-              <h1 className="text-sm font-semibold">
+              <h1 className="flex items-center gap-2 text-sm font-semibold">
+                <span className="grid size-6 place-items-center rounded-md bg-merged/12 text-merged">
+                  <NotebookPen className="size-3.5" strokeWidth={2} />
+                </span>
                 Notas
                 {list.data && (
                   <span className="ml-1.5 font-mono text-[11px] font-normal text-fg-subtle">
@@ -161,9 +165,16 @@ function SelectedNote({
   const note = useQuery(noteQuery(id))
 
   if (note.isPending) {
+    // A forma do editor: título, linha de tags e parágrafos.
     return (
-      <div className="grid h-full place-items-center">
-        <Loader2 className="size-5 animate-spin text-fg-subtle" />
+      <div aria-busy="true" aria-label="Carregando nota" className="space-y-4 p-6">
+        <Skeleton className="h-6 w-2/5" />
+        <Skeleton className="h-4 w-32" />
+        <div className="space-y-2.5 pt-2">
+          {[92, 84, 88, 60].map((width) => (
+            <Skeleton key={width} className="h-3" style={{ width: `${width}%` }} />
+          ))}
+        </div>
       </div>
     )
   }

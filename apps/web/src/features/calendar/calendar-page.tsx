@@ -2,9 +2,10 @@ import * as Dialog from '@radix-ui/react-dialog'
 import type { CalendarEvent, Deadline } from '@devdesk/shared'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import { Bell, ChevronLeft, ChevronRight, Download, Flag, Plus } from 'lucide-react'
+import { Bell, CalendarClock, ChevronLeft, ChevronRight, Download, Flag, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { PageHeader, Reveal } from '@/components/layout/page-header'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   addDaysToKey,
@@ -18,7 +19,7 @@ import {
   parseMonth,
 } from '@/lib/calendar-dates'
 import { cn } from '@/lib/cn'
-import { AgendaList } from './agenda-list'
+import { AgendaList, AgendaSkeleton } from './agenda-list'
 import { EventDialog } from './event-dialog'
 import { calendarQuery, deadlinesQuery, ICS_URL } from './queries'
 import { useToday } from '@/lib/use-today'
@@ -57,49 +58,53 @@ export function CalendarPage() {
 
   return (
     <div className="space-y-5">
-      <header className="flex flex-wrap items-center gap-3">
-        <h1 className="text-xl font-semibold">Calendário</h1>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Mês anterior"
-            onClick={() => goTo(year, month - 1)}
-          >
-            <ChevronLeft />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Próximo mês"
-            onClick={() => goTo(year, month + 1)}
-          >
-            <ChevronRight />
-          </Button>
-          <span className="min-w-36 text-sm font-medium first-letter:uppercase" aria-live="polite">
-            {monthFormat.format(new Date(year, month, 1, 12))}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => void navigate({ search: {}, replace: true })}
-          >
-            Hoje
-          </Button>
-        </div>
-        <div className="ml-auto flex gap-2">
-          <a
-            href={ICS_URL}
-            download
-            className="inline-flex h-8 items-center gap-2 rounded-md border border-border-strong bg-surface px-3 text-[13px] font-medium hover:bg-elevated"
-          >
-            <Download className="size-4" /> Exportar .ics
-          </a>
-          <Button onClick={() => setDialog({ event: null, day: today })}>
-            <Plus /> Novo evento
-          </Button>
-        </div>
-      </header>
+      <PageHeader
+        section="/calendario"
+        subtitle="Eventos, lembretes e prazos das milestones do GitHub."
+        actions={
+          <>
+            <a
+              href={ICS_URL}
+              download
+              className="inline-flex h-8 items-center gap-2 rounded-md border border-border-strong bg-surface px-3 text-[13px] font-medium hover:bg-elevated"
+            >
+              <Download className="size-4" /> Exportar .ics
+            </a>
+            <Button onClick={() => setDialog({ event: null, day: today })}>
+              <Plus /> Novo evento
+            </Button>
+          </>
+        }
+      />
+
+      <Reveal delay={0.04} className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Mês anterior"
+          onClick={() => goTo(year, month - 1)}
+        >
+          <ChevronLeft />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Próximo mês"
+          onClick={() => goTo(year, month + 1)}
+        >
+          <ChevronRight />
+        </Button>
+        <span className="min-w-36 text-sm font-medium first-letter:uppercase" aria-live="polite">
+          {monthFormat.format(new Date(year, month, 1, 12))}
+        </span>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => void navigate({ search: {}, replace: true })}
+        >
+          Hoje
+        </Button>
+      </Reveal>
 
       {deadlines.data && !deadlines.data.available && (
         <p
@@ -111,7 +116,7 @@ export function CalendarPage() {
         </p>
       )}
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
+      <Reveal delay={0.08} className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
         <Card className="overflow-hidden">
           <div className="grid grid-cols-7 border-b border-border">
             {WEEKDAYS.map((weekday) => (
@@ -151,7 +156,10 @@ export function CalendarPage() {
 
         <Card className="self-start overflow-hidden">
           <CardHeader>
-            <CardTitle>Próximos {AGENDA_DAYS} dias</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <CalendarClock className="size-3.5 shrink-0 text-info" strokeWidth={2} />
+              Próximos {AGENDA_DAYS} dias
+            </CardTitle>
           </CardHeader>
           {agenda.data ? (
             <AgendaList
@@ -163,10 +171,10 @@ export function CalendarPage() {
               empty="Nada nos próximos dias. Clique num dia do calendário para marcar algo."
             />
           ) : (
-            <p className="px-4 py-6 text-[13px] text-fg-subtle">Carregando…</p>
+            <AgendaSkeleton />
           )}
         </Card>
-      </div>
+      </Reveal>
 
       <DaySheet
         day={daySheet}

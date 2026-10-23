@@ -15,11 +15,14 @@ import {
   NotebookPen,
   RotateCcw,
   type LucideIcon,
+  ClipboardCopy,
+  ListChecks,
 } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { PageHeader, Reveal } from '@/components/layout/page-header'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import { calendarQuery } from '@/features/calendar/queries'
 import { useCreateNote } from '@/features/notes/queries'
@@ -106,42 +109,39 @@ export function StandupPage() {
 
   return (
     <div className="space-y-5">
-      <header className="flex flex-wrap items-center gap-3">
-        <div>
-          <h1 className="text-xl font-semibold">Standup</h1>
-          <p className="mt-0.5 text-[13px] text-fg-muted">
-            O que você fez, o que vem hoje e o que está travado, montado a partir do GitHub e da
-            agenda.
-          </p>
-        </div>
-        <div className="ml-auto flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Dia anterior"
-            onClick={() => goToDay(addDaysToKey(window.first, -1))}
-          >
-            <ChevronLeft />
-          </Button>
-          <span className="min-w-40 text-center text-[13px] font-medium first-letter:uppercase">
-            Ontem: {sinceLabel}
-          </span>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Dia seguinte"
-            disabled={window.last >= addDaysToKey(today, -1)}
-            onClick={() => goToDay(addDaysToKey(window.last, 1))}
-          >
-            <ChevronRight />
-          </Button>
-          {dia && (
-            <Button variant="outline" size="sm" onClick={() => goToDay(undefined)}>
-              Dia útil anterior
+      <PageHeader
+        section="/standup"
+        subtitle="O que você fez, o que vem hoje e o que está travado, a partir do GitHub e da agenda."
+        actions={
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Dia anterior"
+              onClick={() => goToDay(addDaysToKey(window.first, -1))}
+            >
+              <ChevronLeft />
             </Button>
-          )}
-        </div>
-      </header>
+            <span className="min-w-40 text-center text-[13px] font-medium first-letter:uppercase">
+              Ontem: {sinceLabel}
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Dia seguinte"
+              disabled={window.last >= addDaysToKey(today, -1)}
+              onClick={() => goToDay(addDaysToKey(window.last, 1))}
+            >
+              <ChevronRight />
+            </Button>
+            {dia && (
+              <Button variant="outline" size="sm" onClick={() => goToDay(undefined)}>
+                Dia útil anterior
+              </Button>
+            )}
+          </div>
+        }
+      />
 
       {standup.data?.isSample && (
         <Badge tone="accent" className="w-fit">
@@ -149,10 +149,16 @@ export function StandupPage() {
         </Badge>
       )}
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <Reveal
+        delay={0.06}
+        className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
+      >
         <Card className="overflow-hidden">
           <CardHeader>
-            <CardTitle>Resumo</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <ListChecks className="size-3.5 shrink-0 text-success" strokeWidth={2} />
+              Resumo
+            </CardTitle>
           </CardHeader>
           {standup.isPending ? (
             <ListSkeleton rows={5} />
@@ -191,7 +197,10 @@ export function StandupPage() {
 
         <Card className="flex flex-col overflow-hidden">
           <CardHeader>
-            <CardTitle>Texto para colar</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <ClipboardCopy className="size-3.5 shrink-0 text-accent" strokeWidth={2} />
+              Texto para colar
+            </CardTitle>
             <div
               role="radiogroup"
               aria-label="Formato"
@@ -256,7 +265,7 @@ export function StandupPage() {
             )}
           </footer>
         </Card>
-      </div>
+      </Reveal>
     </div>
   )
 }

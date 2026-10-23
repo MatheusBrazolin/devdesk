@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { CircleDot, SearchX } from 'lucide-react'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
+import { PageHeader, Reveal } from '@/components/layout/page-header'
 import { EmptyState } from '@/components/ui/empty-state'
 import { OwnerAvatar } from '@/components/ui/owner-avatar'
 import { groupByRepository } from './group-by-repository'
@@ -26,17 +27,13 @@ export function IssuesPage() {
 
   return (
     <div className="space-y-5">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold">Issues</h1>
-          {dashboard.data && (
-            <p className="mt-0.5 text-[13px] text-fg-muted">
-              {dashboard.data.summary.assignedIssues} abertas e atribuídas a você
-            </p>
-          )}
-        </div>
-        <SyncStatus />
-      </header>
+      <PageHeader
+        section="/issues"
+        subtitle={
+          dashboard.data && `${dashboard.data.summary.assignedIssues} abertas e atribuídas a você`
+        }
+        actions={<SyncStatus />}
+      />
 
       {all.length > 0 && (
         <ListToolbar
@@ -75,21 +72,23 @@ export function IssuesPage() {
           />
         </Card>
       ) : (
-        groupByRepository(visible).map(([repository, issues]) => (
-          <Card key={repository} className="overflow-hidden">
-            <CardHeader>
-              <CardTitle className="flex min-w-0 items-center gap-2 font-mono text-[12px] font-medium">
-                <OwnerAvatar owner={ownerOf(repository)} className="size-5" />
-                <span className="truncate">{repository}</span>
-              </CardTitle>
-              <span className="font-mono text-[11px] text-fg-subtle">{issues.length}</span>
-            </CardHeader>
-            <ul className="divide-y divide-border">
-              {issues.map((issue) => (
-                <IssueRow key={issue.id} issue={issue} showRepository={false} />
-              ))}
-            </ul>
-          </Card>
+        groupByRepository(visible).map(([repository, issues], index) => (
+          <Reveal key={repository} delay={0.05 + Math.min(index, 6) * 0.04}>
+            <Card className="overflow-hidden">
+              <CardHeader>
+                <CardTitle className="flex min-w-0 items-center gap-2 font-mono text-[12px] font-medium">
+                  <OwnerAvatar owner={ownerOf(repository)} className="size-5" />
+                  <span className="truncate">{repository}</span>
+                </CardTitle>
+                <span className="font-mono text-[11px] text-fg-subtle">{issues.length}</span>
+              </CardHeader>
+              <ul className="divide-y divide-border">
+                {issues.map((issue) => (
+                  <IssueRow key={issue.id} issue={issue} showRepository={false} />
+                ))}
+              </ul>
+            </Card>
+          </Reveal>
         ))
       )}
     </div>

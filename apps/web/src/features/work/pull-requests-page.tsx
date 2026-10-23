@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { Eye, GitMerge, GitPullRequest, SearchX } from 'lucide-react'
 import { Card } from '@/components/ui/card'
+import { PageHeader, Reveal } from '@/components/layout/page-header'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Tabs } from '@/components/ui/tabs'
 import { applyFilter, applySort, isStale, ownerCounts } from './list-filters'
@@ -54,33 +55,33 @@ export function PullRequestsPage() {
 
   return (
     <div className="space-y-5">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold">Pull requests</h1>
-          {dashboard.data && <Summary items={byTab.meus} />}
-        </div>
-        <SyncStatus />
-      </header>
-
-      <Tabs
-        layoutId="pr-tabs"
-        value={aba}
-        // Trocar de aba limpa o filtro de organização, que pode não existir na outra.
-        search={(value) => ({ aba: value, q: filters.q })}
-        items={[
-          {
-            value: 'review',
-            label: 'Pedidas a você',
-            count: dashboard.data?.summary.reviewRequested,
-          },
-          { value: 'meus', label: 'Seus PRs', count: dashboard.data?.summary.openPullRequests },
-          {
-            value: 'mergeados',
-            label: 'Mergeados (7 dias)',
-            count: dashboard.data?.summary.mergedThisWeek,
-          },
-        ]}
+      <PageHeader
+        section="/pull-requests"
+        subtitle={dashboard.data ? summary(byTab.meus) : undefined}
+        actions={<SyncStatus />}
       />
+
+      <Reveal delay={0.05}>
+        <Tabs
+          layoutId="pr-tabs"
+          value={aba}
+          // Trocar de aba limpa o filtro de organização, que pode não existir na outra.
+          search={(value) => ({ aba: value, q: filters.q })}
+          items={[
+            {
+              value: 'review',
+              label: 'Pedidas a você',
+              count: dashboard.data?.summary.reviewRequested,
+            },
+            { value: 'meus', label: 'Seus PRs', count: dashboard.data?.summary.openPullRequests },
+            {
+              value: 'mergeados',
+              label: 'Mergeados (7 dias)',
+              count: dashboard.data?.summary.mergedThisWeek,
+            },
+          ]}
+        />
+      </Reveal>
 
       {all.length > 0 && (
         <ListToolbar
@@ -91,40 +92,42 @@ export function PullRequestsPage() {
         />
       )}
 
-      <Card className="overflow-hidden">
-        {dashboard.isPending ? (
-          <ListSkeleton rows={6} />
-        ) : dashboard.isError ? (
-          <DashboardError error={dashboard.error} onRetry={() => void dashboard.refetch()} />
-        ) : all.length === 0 ? (
-          <EmptyState
-            icon={empty.icon}
-            title={empty.title}
-            description={empty.description}
-            className="py-10"
-          />
-        ) : visible.length === 0 ? (
-          <EmptyState
-            icon={SearchX}
-            title="Nada com esse filtro"
-            description="Tente outra busca ou mostre todas as organizações."
-            className="py-10"
-          />
-        ) : (
-          <ul className="divide-y divide-border">
-            {visible.map((pr) => (
-              <PullRequestRow key={pr.id} pullRequest={pr} showAuthor={aba === 'review'} />
-            ))}
-          </ul>
-        )}
-      </Card>
+      <Reveal delay={0.1}>
+        <Card className="overflow-hidden">
+          {dashboard.isPending ? (
+            <ListSkeleton rows={6} />
+          ) : dashboard.isError ? (
+            <DashboardError error={dashboard.error} onRetry={() => void dashboard.refetch()} />
+          ) : all.length === 0 ? (
+            <EmptyState
+              icon={empty.icon}
+              title={empty.title}
+              description={empty.description}
+              className="py-10"
+            />
+          ) : visible.length === 0 ? (
+            <EmptyState
+              icon={SearchX}
+              title="Nada com esse filtro"
+              description="Tente outra busca ou mostre todas as organizações."
+              className="py-10"
+            />
+          ) : (
+            <ul className="divide-y divide-border">
+              {visible.map((pr) => (
+                <PullRequestRow key={pr.id} pullRequest={pr} showAuthor={aba === 'review'} />
+              ))}
+            </ul>
+          )}
+        </Card>
+      </Reveal>
     </div>
   )
 }
 
 /** Uma linha que resume os seus PRs abertos: o que está bem e o que está parado. */
-function Summary({ items }: { items: PullRequest[] }) {
-  if (items.length === 0) return null
+function summary(items: PullRequest[]): string | undefined {
+  if (items.length === 0) return undefined
   const approved = items.filter(
     (pr) =>
       pr.approvals > 0 && pr.changesRequested === 0 && pr.reviewDecision !== 'changes_requested',
@@ -139,5 +142,5 @@ function Summary({ items }: { items: PullRequest[] }) {
     stale > 0 && `${stale} parados há mais de 7 dias`,
   ].filter(Boolean)
 
-  return <p className="mt-0.5 text-[13px] text-fg-muted">{parts.join(' · ')}</p>
+  return parts.join(' · ')
 }
