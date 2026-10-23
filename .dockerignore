@@ -1,0 +1,13 @@
+# Nada de segredos nem artefatos locais dentro da imagem.
+.env
+.env.*
+!.env.example
+**/node_modules
+**/dist
+**/.turbo
+**/coverage
+**/*.tsbuildinfo
+.git
+.github
+docs
+*.md

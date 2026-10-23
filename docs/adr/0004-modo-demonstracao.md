@@ -1,6 +1,6 @@
 # 0004. Modo demonstração
 
-- **Status:** aceito
+- **Status:** aceito; o usuário único foi substituído por um por visita no [ADR 0010](0010-demonstracao-publica.md)
 - **Data:** 2026-10-23
 
 ## Contexto

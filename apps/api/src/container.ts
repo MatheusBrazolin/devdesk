@@ -78,7 +78,7 @@ export function createContainer(env: Env, db: Database): AppDependencies {
           )
         : null,
     useCases: {
-      startDemoSession: new StartDemoSession(env.DEMO_ENABLED, users, createSession),
+      startDemoSession: new StartDemoSession(env.DEMO_ENABLED, users, createSession, systemClock),
       getCurrentUser: new GetCurrentUser(sessions, users, tokens, systemClock),
       logout: new Logout(sessions, tokens),
       getDashboard,

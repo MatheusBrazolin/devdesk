@@ -17,6 +17,11 @@ export interface UserRepository {
   upsertFromGitHub(profile: GitHubProfile): Promise<User>
   findGitHubTokens(userId: string): Promise<EncryptedGitHubTokens | null>
   saveGitHubTokens(userId: string, tokens: EncryptedGitHubTokens): Promise<void>
-  /** O usuário de demonstração é um só, criado na primeira vez. */
-  findOrCreateDemo(): Promise<User>
+  /**
+   * Cada visita ao modo demonstração ganha um usuário próprio: numa demo
+   * pública, o que um visitante escreve não aparece para o próximo.
+   */
+  createDemo(now: Date): Promise<User>
+  /** Apaga os usuários demo criados antes do instante; notas e eventos vão junto. */
+  deleteDemosCreatedBefore(date: Date): Promise<number>
 }

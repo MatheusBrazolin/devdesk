@@ -47,10 +47,13 @@ export class InMemoryUserRepository implements UserRepository {
     this.tokens.set(userId, tokens)
   }
 
-  async findOrCreateDemo(): Promise<User> {
-    const existing = [...this.items.values()].find((u) => u.isDemo)
-    if (existing) return existing
-    const now = new Date()
+  async deleteDemosCreatedBefore(date: Date): Promise<number> {
+    const old = [...this.items.values()].filter((u) => u.isDemo && u.createdAt < date)
+    old.forEach((u) => this.items.delete(u.id))
+    return old.length
+  }
+
+  async createDemo(now: Date): Promise<User> {
     const user: User = {
       id: randomUUID(),
       githubId: null,

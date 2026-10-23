@@ -1,5 +1,5 @@
 import type { ApiError, ApiErrorCode } from '@devdesk/shared'
-import type { FastifyInstance } from 'fastify'
+import type { FastifyInstance, FastifyReply } from 'fastify'
 import { ZodError } from 'zod'
 import { AppError } from '../../domain/errors.js'
 
@@ -38,8 +38,8 @@ export function registerErrorHandler(app: FastifyInstance): void {
     request.log.error({ err: error }, 'erro inesperado')
     return reply.status(500).send(body('INTERNAL', 'Algo deu errado do nosso lado.'))
   })
-
-  app.setNotFoundHandler((_request, reply) =>
-    reply.status(404).send(body('NOT_FOUND', 'Rota não encontrada.')),
-  )
 }
+
+/** 404 da API, em JSON. O app decide onde ligar: sozinho ou atrás do front. */
+export const sendNotFound = (reply: FastifyReply) =>
+  reply.status(404).send(body('NOT_FOUND', 'Rota não encontrada.'))

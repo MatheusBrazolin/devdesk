@@ -6,16 +6,7 @@
     <meta name="color-scheme" content="light dark" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>DevDesk</title>
-    <script>
-      // Aplica o tema antes do primeiro paint, para não piscar.
-      try {
-        const saved = localStorage.getItem('devdesk:theme') ?? 'system'
-        const dark =
-          saved === 'dark' ||
-          (saved === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
-        document.documentElement.classList.toggle('dark', dark)
-      } catch {}
-    </script>
+    <script src="/theme-init.js"></script>
   </head>
   <body>
     <div id="root"></div>

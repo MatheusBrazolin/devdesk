@@ -31,6 +31,8 @@ const envSchema = z
      * por pessoa, não um só para todo mundo atrás do proxy.
      */
     TRUST_PROXY: z.coerce.number().int().min(0).max(10).default(0),
+    /** Pasta do front compilado; com ela, a API serve o app inteiro (produção). */
+    WEB_DIST_DIR: z.string().optional(),
   })
   .transform((env) => ({
     ...env,

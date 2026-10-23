@@ -3,7 +3,8 @@ import helmet from '@fastify/helmet'
 import rateLimit from '@fastify/rate-limit'
 import Fastify, { type FastifyServerOptions } from 'fastify'
 import type { AppDependencies } from './dependencies.js'
-import { registerErrorHandler } from './plugins/error-handler.js'
+import { registerErrorHandler, sendNotFound } from './plugins/error-handler.js'
+import { registerWebApp } from './plugins/web-app.js'
 import { authRoutes } from './routes/auth.js'
 import { calendarRoutes } from './routes/calendar.js'
 import { dashboardRoutes } from './routes/dashboard.js'
@@ -12,10 +13,33 @@ import { notesRoutes } from './routes/notes.js'
 import { standupRoutes } from './routes/standup.js'
 import { systemRoutes } from './routes/system.js'
 
-export async function buildApp(deps: AppDependencies, options: FastifyServerOptions = {}) {
-  const app = Fastify(options)
+interface BuildOptions extends FastifyServerOptions {
+  /** Pasta do front compilado. Sem ela (desenvolvimento), o Vite serve o front. */
+  webDistDir?: string
+}
 
-  await app.register(helmet)
+/**
+ * Política de conteúdo para a página servida daqui: só scripts próprios
+ * (nada inline), imagens dos avatares do GitHub e chamadas à própria origem.
+ */
+const contentSecurityPolicy = {
+  directives: {
+    'default-src': ["'self'"],
+    'script-src': ["'self'"],
+    'style-src': ["'self'", "'unsafe-inline'"],
+    'img-src': ["'self'", 'data:', 'https://github.com', 'https://avatars.githubusercontent.com'],
+    'font-src': ["'self'"],
+    'connect-src': ["'self'"],
+    'frame-ancestors': ["'none'"],
+    'form-action': ["'self'", 'https://github.com'],
+  },
+}
+
+export async function buildApp(deps: AppDependencies, options: BuildOptions = {}) {
+  const { webDistDir, ...fastifyOptions } = options
+  const app = Fastify(fastifyOptions)
+
+  await app.register(helmet, { contentSecurityPolicy })
   await app.register(cookie)
   await app.register(rateLimit, { max: 300, timeWindow: '1 minute' })
   registerErrorHandler(app)
@@ -32,6 +56,10 @@ export async function buildApp(deps: AppDependencies, options: FastifyServerOpti
     },
     { prefix: '/api' },
   )
+
+  // Com o front, o 404 de uma página devolve o app; em /api continua JSON.
+  if (webDistDir) await registerWebApp(app, webDistDir)
+  else app.setNotFoundHandler((_request, reply) => sendNotFound(reply))
 
   return app
 }

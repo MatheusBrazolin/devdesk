@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createTestContext } from '../../../test/helpers.js'
 import { SESSION_TTL_MS } from '../../domain/session.js'
+import { DEMO_TTL_MS } from './start-demo-session.js'
 
 describe('CompleteGitHubLogin', () => {
   it('cria o usuário, guarda o token cifrado e abre uma sessão', async () => {
@@ -62,9 +63,21 @@ describe('StartDemoSession', () => {
     })
   })
 
-  it('reaproveita o mesmo usuário demo', async () => {
+  it('cada visita ganha um usuário demo próprio', async () => {
     const { deps, users } = createTestContext()
+    const first = await deps.useCases.startDemoSession.execute()
+    const second = await deps.useCases.startDemoSession.execute()
+    expect(users.items.size).toBe(2)
+    const [a, b] = await Promise.all(
+      [first, second].map((s) => deps.useCases.getCurrentUser.execute(s.token)),
+    )
+    expect(a!.id).not.toBe(b!.id)
+  })
+
+  it('a visita seguinte apaga as que passaram de 24 horas', async () => {
+    const { deps, users, clock } = createTestContext()
     await deps.useCases.startDemoSession.execute()
+    clock.advance(DEMO_TTL_MS + 1)
     await deps.useCases.startDemoSession.execute()
     expect(users.items.size).toBe(1)
   })

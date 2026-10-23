@@ -1,0 +1,27 @@
+# Blueprint do Render (render.com → New → Blueprint, apontando para este repositório).
+# Sobe a demonstração pública: um serviço web com a imagem do Dockerfile.
+# O banco fica fora (Neon, Supabase ou o Postgres do próprio Render): cole a
+# URL em DATABASE_URL no painel. Guia completo em docs/DEPLOY.md.
+services:
+  - type: web
+    name: devdesk
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      # 32 bytes aleatórios em base64, gerados pelo Render na criação.
+      - key: TOKEN_ENCRYPTION_KEY
+        generateValue: true
+      - key: DEMO_ENABLED
+        value: 'true'
+      # O Render tem um proxy na frente: um salto confiável.
+      - key: TRUST_PROXY
+        value: '1'
+      # Troque pelo endereço que o Render der ao serviço.
+      - key: WEB_ORIGIN
+        value: https://devdesk.onrender.com
+      - key: API_PUBLIC_URL
+        value: https://devdesk.onrender.com/api

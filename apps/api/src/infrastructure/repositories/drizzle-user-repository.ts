@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { and, eq, lt } from 'drizzle-orm'
 import type {
   EncryptedGitHubTokens,
   GitHubProfile,
@@ -64,15 +64,21 @@ export class DrizzleUserRepository implements UserRepository {
       .where(eq(users.id, userId))
   }
 
-  async findOrCreateDemo(): Promise<User> {
-    const [existing] = await this.db.select().from(users).where(eq(users.isDemo, true)).limit(1)
-    if (existing) return toDomain(existing)
-
+  async createDemo(now: Date): Promise<User> {
     const [created] = await this.db
       .insert(users)
-      .values({ login: 'demo', name: 'Visitante', isDemo: true })
+      .values({ login: 'demo', name: 'Visitante', isDemo: true, createdAt: now, updatedAt: now })
       .returning()
     if (!created) throw new Error('criação do usuário demo não retornou linha')
     return toDomain(created)
+  }
+
+  async deleteDemosCreatedBefore(date: Date): Promise<number> {
+    // As chaves estrangeiras com cascade levam sessões, notas e eventos junto.
+    const removed = await this.db
+      .delete(users)
+      .where(and(eq(users.isDemo, true), lt(users.createdAt, date)))
+      .returning({ id: users.id })
+    return removed.length
   }
 }

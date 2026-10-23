@@ -194,7 +194,12 @@ export function createTestContext(
         )
       : null,
     useCases: {
-      startDemoSession: new StartDemoSession(options.demoEnabled ?? true, users, createSession),
+      startDemoSession: new StartDemoSession(
+        options.demoEnabled ?? true,
+        users,
+        createSession,
+        clock,
+      ),
       getCurrentUser: new GetCurrentUser(sessions, users, tokens, clock),
       logout: new Logout(sessions, tokens),
       getDashboard,
