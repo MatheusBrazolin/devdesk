@@ -18,6 +18,12 @@ describe('escapeText', () => {
     expect(escapeText('a, b; c\\d\ne')).toBe('a\\, b\\; c\\\\d\\ne')
   })
 
+  it('CR sozinho também vira quebra escapada, e controles somem', () => {
+    const backslash = String.fromCharCode(92)
+    expect(escapeText('a\rb')).toBe(`a${backslash}nb`)
+    expect(escapeText('a\u0007b\u0000c\td')).toBe('abc\td')
+  })
+
   it('cada caractere especial ganha exatamente uma barra na frente', () => {
     // Conferido por código de caractere, para não depender de como o texto está escrito aqui.
     const backslash = String.fromCharCode(92)

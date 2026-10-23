@@ -3,8 +3,16 @@ import { noteLinkSchema } from './notes.js'
 
 export const EVENT_LIMITS = { title: 200, description: 5_000 } as const
 
-/** Data de calendário, sem fuso: "2026-10-24". */
-export const calendarDateSchema = z.iso.date()
+const yearInRange = (value: string) => {
+  const year = Number(value.slice(0, 4))
+  return year >= 1970 && year <= 9999
+}
+
+/** Data de calendário, sem fuso: "2026-10-24". Ano 0000 o Postgres nem aceita. */
+export const calendarDateSchema = z.iso.date().refine(yearInRange, 'ano fora do intervalo')
+
+/** Instante em ISO, entre 1970 e 9999. */
+export const instantSchema = z.iso.datetime().refine(yearInRange, 'ano fora do intervalo')
 
 /**
  * Quando um evento acontece. Dia inteiro é uma data (não muda com o fuso);
@@ -20,8 +28,8 @@ export const eventTimingSchema = z.discriminatedUnion('allDay', [
   }),
   z.object({
     allDay: z.literal(false),
-    startsAt: z.iso.datetime(),
-    endsAt: z.iso.datetime().nullable().default(null),
+    startsAt: instantSchema,
+    endsAt: instantSchema.nullable().default(null),
   }),
 ])
 

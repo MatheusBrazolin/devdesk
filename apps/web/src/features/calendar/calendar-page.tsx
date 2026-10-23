@@ -1,3 +1,4 @@
+import * as Dialog from '@radix-ui/react-dialog'
 import type { CalendarEvent, Deadline } from '@devdesk/shared'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -8,7 +9,6 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   addDaysToKey,
   compareEvents,
-  dateKey,
   formatTime,
   fromKey,
   gridRange,
@@ -21,6 +21,7 @@ import { cn } from '@/lib/cn'
 import { AgendaList } from './agenda-list'
 import { EventDialog } from './event-dialog'
 import { calendarQuery, deadlinesQuery, ICS_URL } from './queries'
+import { useToday } from '@/lib/use-today'
 
 const route = getRouteApi('/app/calendario')
 const WEEKDAYS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
@@ -31,7 +32,7 @@ const AGENDA_DAYS = 14
 export function CalendarPage() {
   const { mes } = route.useSearch()
   const navigate = route.useNavigate()
-  const today = dateKey(new Date())
+  const today = useToday()
   const { year, month } = parseMonth(mes)
   const range = gridRange(year, month)
   const calendar = useQuery(calendarQuery(range))
@@ -41,6 +42,16 @@ export function CalendarPage() {
   const agendaDeadlines = useQuery(deadlinesQuery(agendaRange))
 
   const [dialog, setDialog] = useState<{ event: CalendarEvent | null; day: string } | null>(null)
+  // Celular: a grade só tem pontos, então tocar num dia com algo abre a lista dele.
+  const [daySheet, setDaySheet] = useState<string | null>(null)
+  const eventsOn = (day: string) =>
+    calendar.data?.events.filter((event) => occursOn(event, day)).sort(compareEvents) ?? []
+  const deadlinesOn = (day: string) => deadlines.data?.deadlines.filter((d) => d.date === day) ?? []
+  const openDay = (day: string) => {
+    const small = !window.matchMedia('(min-width: 640px)').matches
+    if (small && eventsOn(day).length + deadlinesOn(day).length > 0) setDaySheet(day)
+    else setDialog({ event: null, day })
+  }
   const goTo = (y: number, m: number) =>
     void navigate({ search: { mes: monthKey(y, m) }, replace: true })
 
@@ -131,7 +142,7 @@ export function CalendarPage() {
                   deadlines={
                     deadlines.data?.deadlines.filter((deadline) => deadline.date === day) ?? []
                   }
-                  onCreate={() => setDialog({ event: null, day })}
+                  onCreate={() => openDay(day)}
                   onSelect={(event) => setDialog({ event, day })}
                 />
               ))}
@@ -156,6 +167,21 @@ export function CalendarPage() {
           )}
         </Card>
       </div>
+
+      <DaySheet
+        day={daySheet}
+        events={daySheet ? eventsOn(daySheet) : []}
+        deadlines={daySheet ? deadlinesOn(daySheet) : []}
+        onClose={() => setDaySheet(null)}
+        onSelect={(event) => {
+          setDaySheet(null)
+          setDialog({ event, day: daySheet! })
+        }}
+        onCreate={() => {
+          setDaySheet(null)
+          setDialog({ event: null, day: daySheet! })
+        }}
+      />
 
       <EventDialog
         open={dialog !== null}
@@ -272,5 +298,76 @@ function DayCell({
         {hidden > 0 && <li className="px-1 text-[11px] text-fg-subtle">+{hidden} mais</li>}
       </ul>
     </div>
+  )
+}
+
+function DaySheet({
+  day,
+  events,
+  deadlines,
+  onClose,
+  onSelect,
+  onCreate,
+}: {
+  day: string | null
+  events: CalendarEvent[]
+  deadlines: Deadline[]
+  onClose: () => void
+  onSelect: (event: CalendarEvent) => void
+  onCreate: () => void
+}) {
+  return (
+    <Dialog.Root open={day !== null} onOpenChange={(open) => !open && onClose()}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/30 animate-overlay-in" />
+        <Dialog.Content className="fixed inset-x-0 bottom-0 z-50 max-h-[70vh] overflow-y-auto rounded-t-xl border-t border-border bg-surface p-4 shadow-pop animate-pop-in">
+          <Dialog.Title className="text-sm font-semibold first-letter:uppercase">
+            {day &&
+              fromKey(day).toLocaleDateString('pt-BR', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+              })}
+          </Dialog.Title>
+          <Dialog.Description className="sr-only">Eventos e prazos do dia</Dialog.Description>
+          <ul className="mt-3 space-y-1">
+            {deadlines.map((deadline) => (
+              <li key={deadline.id}>
+                <a
+                  href={deadline.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 rounded-md px-2 py-2 text-[13px] hover:bg-elevated"
+                >
+                  <Flag className="size-4 shrink-0 text-accent" />
+                  Prazo: {deadline.title}
+                </a>
+              </li>
+            ))}
+            {events.map((event) => (
+              <li key={event.id}>
+                <button
+                  type="button"
+                  onClick={() => onSelect(event)}
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-[13px] hover:bg-elevated"
+                >
+                  {event.kind === 'reminder' ? (
+                    <Bell aria-label="lembrete" className="size-4 shrink-0 text-accent" />
+                  ) : (
+                    <span className="w-11 shrink-0 font-mono text-[11px] text-fg-subtle">
+                      {event.allDay ? 'dia todo' : formatTime(event.startsAt)}
+                    </span>
+                  )}
+                  <span className="truncate">{event.title}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <Button variant="outline" className="mt-3 w-full" onClick={onCreate}>
+            <Plus /> Novo evento neste dia
+          </Button>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   )
 }

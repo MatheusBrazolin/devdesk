@@ -18,6 +18,7 @@ import { IssuesPage } from '@/features/work/issues-page'
 import { type ListSearch, parseListSearch } from '@/features/work/list-search'
 import { type PullRequestTab, PullRequestsPage } from '@/features/work/pull-requests-page'
 import { isUnauthenticated } from '@/lib/api'
+import { dateKey, fromKey } from '@/lib/calendar-dates'
 
 interface RouterContext {
   queryClient: QueryClient
@@ -99,7 +100,11 @@ const standupRoute = createRoute({
   path: '/standup',
   validateSearch: (search: Record<string, unknown>): { dia?: string } => {
     const dia = text(search.dia)
-    return { dia: dia && /^\d{4}-\d{2}-\d{2}$/.test(dia) ? dia : undefined }
+    // Só datas que existem: "2026-13-45" viraria outra data em silêncio.
+    return {
+      dia:
+        dia && /^\d{4}-\d{2}-\d{2}$/.test(dia) && dateKey(fromKey(dia)) === dia ? dia : undefined,
+    }
   },
   component: StandupPage,
 })

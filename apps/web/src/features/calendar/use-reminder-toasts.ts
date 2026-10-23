@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { toast } from 'sonner'
-import { addDaysToKey, dateKey } from '@/lib/calendar-dates'
+import { addDaysToKey } from '@/lib/calendar-dates'
 import { calendarQuery } from './queries'
+import { useToday } from '@/lib/use-today'
 
 /** Só agenda avisos para as próximas 24 horas; o resto entra quando a página recarregar. */
 const HORIZON_MS = 24 * 60 * 60 * 1000
@@ -13,8 +14,12 @@ const HORIZON_MS = 24 * 60 * 60 * 1000
  * dentro da página.
  */
 export function useReminderToasts(): void {
-  const today = dateKey(new Date())
-  const events = useQuery(calendarQuery({ from: today, to: addDaysToKey(today, 1) }))
+  const today = useToday()
+  const events = useQuery({
+    ...calendarQuery({ from: today, to: addDaysToKey(today, 1) }),
+    // De hora em hora: lembretes criados noutra aba ou que entram na janela de 24 h.
+    refetchInterval: 60 * 60 * 1000,
+  })
 
   useEffect(() => {
     const now = Date.now()

@@ -37,6 +37,15 @@ describe('createEventInputSchema', () => {
     ).toThrow()
   })
 
+  it('recusa ano 0000, que o banco não aceita', () => {
+    expect(() =>
+      createEventInputSchema.parse({ title: 'x', allDay: true, date: '0000-01-01' }),
+    ).toThrow()
+    expect(() =>
+      createEventInputSchema.parse({ title: 'x', allDay: false, startsAt: '0000-01-01T00:00:00Z' }),
+    ).toThrow()
+  })
+
   it('recusa data inválida', () => {
     expect(() =>
       createEventInputSchema.parse({ title: 'x', allDay: true, date: '2026-02-30' }),

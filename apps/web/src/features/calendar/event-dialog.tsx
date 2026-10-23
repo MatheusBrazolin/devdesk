@@ -4,7 +4,7 @@ import { Bell, CalendarDays, Loader2, Trash2, X } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/cn'
-import { dateKey } from '@/lib/calendar-dates'
+import { addDaysToKey, dateKey } from '@/lib/calendar-dates'
 import { useDeleteEvent, useSaveEvent } from './queries'
 
 const pad = (n: number) => String(n).padStart(2, '0')
@@ -69,12 +69,11 @@ function toInput(draft: Draft, event: CalendarEvent | null): CreateEventInput {
   }
   if (draft.allDay)
     return { ...common, allDay: true, date: draft.date, endDate: draft.endDate || null }
-  return {
-    ...common,
-    allDay: false,
-    startsAt: toInstant(draft.date, draft.startTime),
-    endsAt: draft.endTime ? toInstant(draft.date, draft.endTime) : null,
-  }
+  const startsAt = toInstant(draft.date, draft.startTime)
+  let endsAt = draft.endTime ? toInstant(draft.date, draft.endTime) : null
+  // 23:00 às 01:00: o fim é no dia seguinte, não antes do começo.
+  if (endsAt && endsAt <= startsAt) endsAt = toInstant(addDaysToKey(draft.date, 1), draft.endTime)
+  return { ...common, allDay: false, startsAt, endsAt }
 }
 
 interface EventDialogProps {
@@ -119,6 +118,7 @@ function EventForm({
   const [draft, setDraft] = useState(() => draftFrom(event, day))
   const save = useSaveEvent()
   const remove = useDeleteEvent()
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) =>
     setDraft((d) => ({ ...d, [key]: value }))
 
@@ -280,10 +280,16 @@ function EventForm({
             variant="ghost"
             className="text-danger hover:text-danger"
             disabled={remove.isPending}
-            onClick={() => remove.mutate(event.id, { onSuccess: onDone })}
+            // Dois cliques: o primeiro pede confirmação, o segundo apaga.
+            onClick={() =>
+              confirmingDelete
+                ? remove.mutate(event.id, { onSuccess: onDone })
+                : setConfirmingDelete(true)
+            }
+            onBlur={() => setConfirmingDelete(false)}
           >
             {remove.isPending ? <Loader2 className="animate-spin" /> : <Trash2 />}
-            Apagar
+            {confirmingDelete ? 'Confirmar: apagar' : 'Apagar'}
           </Button>
         )}
         <div className="ml-auto flex gap-2">

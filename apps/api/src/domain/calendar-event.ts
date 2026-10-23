@@ -29,7 +29,8 @@ export function assertValidTiming(timing: EventTiming): void {
   if (timing.allDay) {
     if (!timing.endDate) return
     if (timing.endDate < timing.date) throw invalid('O último dia vem antes do primeiro.')
-    const days = (Date.parse(timing.endDate) - Date.parse(timing.date)) / DAY_MS
+    // Os dois dias contam: de 1º a 3 são 3 dias, não 2.
+    const days = (Date.parse(timing.endDate) - Date.parse(timing.date)) / DAY_MS + 1
     if (days > MAX_DAYS) throw invalid(`Um evento pode durar até ${MAX_DAYS} dias.`)
     return
   }

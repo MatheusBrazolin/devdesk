@@ -11,11 +11,18 @@ const MAX_LINE_OCTETS = 75
 
 /** Texto escapado conforme a RFC: barra, ponto e vírgula, vírgula e quebras de linha. */
 export function escapeText(text: string): string {
-  return text
-    .replace(/\\/g, '\\\\')
-    .replace(/;/g, '\\;')
-    .replace(/,/g, '\\,')
-    .replace(/\r?\n/g, '\\n')
+  return (
+    text
+      // Caracteres de controle são proibidos em TEXT (RFC 5545 3.3.11); o tab fica.
+      // eslint-disable-next-line no-control-regex -- é exatamente o que removemos
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+      .replace(/\\/g, '\\\\')
+      // String.raw: a barra + ponto e vírgula sai literal, sem depender de escape.
+      .replace(/;/g, String.raw`\;`)
+      .replace(/,/g, '\\,')
+      // CRLF, LF ou CR sozinho: todos viram uma quebra escapada.
+      .replace(/\r\n|\r|\n/g, '\\n')
+  )
 }
 
 /** Dobra linhas longas em pedaços de até 75 bytes, sem cortar um caractere UTF-8 no meio. */

@@ -1,15 +1,16 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
-import { addDaysToKey, dateKey } from '@/lib/calendar-dates'
+import { addDaysToKey } from '@/lib/calendar-dates'
 import { AgendaList } from './agenda-list'
 import { calendarQuery, deadlinesQuery } from './queries'
+import { useToday } from '@/lib/use-today'
 
 const DAYS = 7
 
 /** Os próximos sete dias no painel Hoje: eventos, lembretes e prazos. */
 export function WeekAgendaCard() {
-  const today = dateKey(new Date())
+  const today = useToday()
   const range = { from: today, to: addDaysToKey(today, DAYS - 1) }
   const events = useQuery(calendarQuery(range))
   const deadlines = useQuery(deadlinesQuery(range))

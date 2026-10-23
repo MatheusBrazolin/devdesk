@@ -24,6 +24,15 @@ describe('assertValidTiming', () => {
     )
   })
 
+  it('dia inteiro conta os dois extremos: 62 dias passa, 63 não', () => {
+    expect(() =>
+      assertValidTiming({ allDay: true, date: '2026-01-01', endDate: '2026-03-03' }),
+    ).not.toThrow()
+    expect(() =>
+      assertValidTiming({ allDay: true, date: '2026-01-01', endDate: '2026-03-04' }),
+    ).toThrow(/até 62 dias/)
+  })
+
   it('recusa eventos longos demais', () => {
     expect(() =>
       assertValidTiming({ allDay: true, date: '2026-01-01', endDate: '2026-06-01' }),
