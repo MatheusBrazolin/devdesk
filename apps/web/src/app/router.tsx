@@ -6,12 +6,12 @@ import {
   Outlet,
   redirect,
 } from '@tanstack/react-router'
-import { CalendarDays, NotebookPen } from 'lucide-react'
 import { NotFound, RouteError } from '@/app/route-states'
 import { AppShell } from '@/components/layout/app-shell'
 import { LoginPage } from '@/features/auth/login-page'
 import { meQuery } from '@/features/auth/queries'
-import { ComingSoonPage } from '@/features/home/coming-soon-page'
+import { CalendarPage } from '@/features/calendar/calendar-page'
+import { NotesPage } from '@/features/notes/notes-page'
 import { HomePage } from '@/features/home/home-page'
 import { IssuesPage } from '@/features/work/issues-page'
 import { type ListSearch, parseListSearch } from '@/features/work/list-search'
@@ -69,6 +69,30 @@ const pullRequestsRoute = createRoute({
   component: PullRequestsPage,
 })
 
+const text = (value: unknown) => (typeof value === 'string' && value ? value : undefined)
+
+const notesRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/notas',
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { nota?: string; q?: string; tag?: string } => ({
+    nota: text(search.nota),
+    q: text(search.q),
+    tag: text(search.tag),
+  }),
+  component: NotesPage,
+})
+
+const calendarRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/calendario',
+  validateSearch: (search: Record<string, unknown>): { mes?: string } => ({
+    mes: text(search.mes),
+  }),
+  component: CalendarPage,
+})
+
 const issuesRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/issues',
@@ -79,35 +103,9 @@ const issuesRoute = createRoute({
   component: IssuesPage,
 })
 
-const comingSoon = <TPath extends string>(
-  path: TPath,
-  props: Parameters<typeof ComingSoonPage>[0],
-) =>
-  createRoute({
-    getParentRoute: () => appRoute,
-    path,
-    component: () => <ComingSoonPage {...props} />,
-  })
-
 const routeTree = rootRoute.addChildren([
   loginRoute,
-  appRoute.addChildren([
-    homeRoute,
-    pullRequestsRoute,
-    issuesRoute,
-    comingSoon('/notas', {
-      title: 'Notas',
-      icon: NotebookPen,
-      stage: 'Fase 3',
-      description: 'Notas em markdown, com tags e vínculo direto com PRs e issues.',
-    }),
-    comingSoon('/calendario', {
-      title: 'Calendário',
-      icon: CalendarDays,
-      stage: 'Fase 4',
-      description: 'Eventos, lembretes e os prazos das suas milestones num calendário só.',
-    }),
-  ]),
+  appRoute.addChildren([homeRoute, pullRequestsRoute, issuesRoute, notesRoute, calendarRoute]),
 ])
 
 export function createAppRouter(queryClient: QueryClient) {

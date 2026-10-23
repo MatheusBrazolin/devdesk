@@ -3,6 +3,8 @@
 @import '@fontsource/ibm-plex-mono/400.css';
 @import '@fontsource/ibm-plex-mono/500.css';
 
+@plugin '@tailwindcss/typography';
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
@@ -10,6 +12,8 @@
  * Paleta neutra e quente; o acento (âmbar) aparece só em estado ativo e foco.
  */
 :root {
+  /* Controles nativos (checkbox, select, scroll) seguem o tema do app, não o do sistema. */
+  color-scheme: light;
   --bg: #fafaf9;
   --surface: #ffffff;
   --elevated: #f4f4f2;
@@ -28,6 +32,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --bg: #121211;
   --surface: #181817;
   --elevated: #20201e;
@@ -90,6 +95,34 @@
   from {
     transform: translateX(-100%);
   }
+}
+
+/* Markdown das notas usa as mesmas cores do resto da interface. */
+.prose {
+  --tw-prose-body: var(--fg-muted);
+  --tw-prose-headings: var(--fg);
+  --tw-prose-bold: var(--fg);
+  --tw-prose-links: var(--fg);
+  --tw-prose-code: var(--fg);
+  --tw-prose-quotes: var(--fg-muted);
+  --tw-prose-quote-borders: var(--border-strong);
+  --tw-prose-bullets: var(--fg-subtle);
+  --tw-prose-counters: var(--fg-subtle);
+  --tw-prose-hr: var(--border);
+  --tw-prose-th-borders: var(--border-strong);
+  --tw-prose-td-borders: var(--border);
+  --tw-prose-pre-bg: var(--elevated);
+  --tw-prose-pre-code: var(--fg);
+}
+
+/* Listas de tarefa (GFM): a caixa já é o marcador. */
+.prose .contains-task-list {
+  list-style: none;
+  padding-left: 0.25rem;
+}
+
+.prose input[type='checkbox'] {
+  accent-color: var(--accent);
 }
 
 @layer base {

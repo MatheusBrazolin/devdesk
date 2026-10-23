@@ -1,7 +1,7 @@
 import * as Dialog from '@radix-ui/react-dialog'
 import { useNavigate } from '@tanstack/react-router'
 import { Command } from 'cmdk'
-import { LogOut, Moon, Search, Sun } from 'lucide-react'
+import { LogOut, Moon, NotebookPen, Search, Sun } from 'lucide-react'
 import {
   createContext,
   type ReactNode,
@@ -13,6 +13,7 @@ import {
 } from 'react'
 import { Kbd } from '@/components/ui/kbd'
 import { useLogout } from '@/features/auth/queries'
+import { useCreateNote } from '@/features/notes/queries'
 import { NAV_ITEMS } from '@/lib/navigation'
 import { useTheme } from '@/lib/theme'
 
@@ -65,6 +66,7 @@ function CommandPalette({
   const navigate = useNavigate()
   const { resolved, toggle } = useTheme()
   const logout = useLogout()
+  const createNote = useCreateNote()
 
   const run = useCallback(
     (action: () => void) => {
@@ -114,6 +116,27 @@ function CommandPalette({
                     </span>
                   </Command.Item>
                 ))}
+              </Command.Group>
+
+              <Command.Group heading="Criar">
+                <Command.Item
+                  value="nova nota criar anotar"
+                  onSelect={() =>
+                    run(() =>
+                      createNote.mutate(
+                        {},
+                        {
+                          onSuccess: (note) =>
+                            void navigate({ to: '/notas', search: { nota: note.id } }),
+                        },
+                      ),
+                    )
+                  }
+                  className={itemClass}
+                >
+                  <NotebookPen />
+                  Nova nota
+                </Command.Item>
               </Command.Group>
 
               <Command.Group heading="Preferências">

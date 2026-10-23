@@ -1,5 +1,6 @@
 import { Outlet, useRouterState } from '@tanstack/react-router'
 import { motion } from 'motion/react'
+import { useReminderToasts } from '@/features/calendar/use-reminder-toasts'
 import { CommandPaletteProvider } from '@/features/commands/command-palette'
 import { useGoToShortcuts } from '@/features/commands/use-go-to-shortcuts'
 import { Sidebar } from './sidebar'
@@ -8,6 +9,7 @@ import { Topbar } from './topbar'
 export function AppShell() {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   useGoToShortcuts()
+  useReminderToasts()
 
   return (
     <CommandPaletteProvider>

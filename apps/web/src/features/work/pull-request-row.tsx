@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { OwnerAvatar } from '@/components/ui/owner-avatar'
 import { cn } from '@/lib/cn'
 import { formatRelative } from '@/lib/time'
+import { NoteButton } from '@/features/notes/note-button'
 import { REASON_LABEL } from './labels'
 import { daysSince, isStale, ownerOf } from './list-filters'
 
@@ -86,6 +87,15 @@ export function PullRequestRow({
       </div>
 
       <div className="relative mt-0.5 flex shrink-0 items-center gap-3">
+        <NoteButton
+          item={{
+            kind: 'pull_request',
+            repository: pr.repository,
+            number: pr.number,
+            url: pr.url,
+            title: pr.title,
+          }}
+        />
         {reason ? (
           <Badge tone={REASON_LABEL[reason].tone}>{REASON_LABEL[reason].text}</Badge>
         ) : (

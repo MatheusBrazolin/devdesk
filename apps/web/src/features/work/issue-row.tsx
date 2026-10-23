@@ -2,6 +2,7 @@ import type { Issue } from '@devdesk/shared'
 import { CircleDot, MessageSquare } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { formatRelative } from '@/lib/time'
+import { NoteButton } from '@/features/notes/note-button'
 import { daysSince, isStale } from './list-filters'
 
 export function IssueRow({
@@ -58,12 +59,23 @@ export function IssueRow({
           </ul>
         )}
       </div>
-      {issue.comments > 0 && (
-        <span className="hidden items-center gap-1 font-mono text-[11px] text-fg-subtle sm:flex">
-          <MessageSquare className="size-3" />
-          {issue.comments}
-        </span>
-      )}
+      <div className="relative mt-0.5 flex shrink-0 items-center gap-3">
+        <NoteButton
+          item={{
+            kind: 'issue',
+            repository: issue.repository,
+            number: issue.number,
+            url: issue.url,
+            title: issue.title,
+          }}
+        />
+        {issue.comments > 0 && (
+          <span className="hidden items-center gap-1 font-mono text-[11px] text-fg-subtle sm:flex">
+            <MessageSquare className="size-3" />
+            {issue.comments}
+          </span>
+        )}
+      </div>
     </li>
   )
 }

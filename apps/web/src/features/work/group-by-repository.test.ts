@@ -13,6 +13,7 @@ const issue = (repository: string, number: number): Issue => ({
   updatedAt: '2026-10-20T10:00:00Z',
   labels: [],
   comments: 0,
+  milestone: null,
 })
 
 describe('groupByRepository', () => {

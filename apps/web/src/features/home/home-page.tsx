@@ -1,11 +1,13 @@
 import type { Dashboard, PullRequest } from '@devdesk/shared'
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { CalendarDays, CircleCheck, NotebookPen } from 'lucide-react'
+import { CircleCheck } from 'lucide-react'
 import { motion } from 'motion/react'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
 import { meQuery } from '@/features/auth/queries'
+import { WeekAgendaCard } from '@/features/calendar/week-agenda-card'
+import { PinnedNotesCard } from '@/features/notes/pinned-notes-card'
 import { applySort, isStale } from '@/features/work/list-filters'
 import { DashboardError, ListSkeleton } from '@/features/work/list-states'
 import { PullRequestRow } from '@/features/work/pull-request-row'
@@ -164,26 +166,8 @@ export function HomePage() {
         </motion.div>
 
         <motion.div {...fadeUp(0.15)} className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Agenda de hoje</CardTitle>
-            </CardHeader>
-            <EmptyState
-              icon={CalendarDays}
-              title="Nada marcado"
-              description="Reuniões, lembretes e prazos de milestones vão aparecer aqui (fase 4)."
-            />
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Notas fixadas</CardTitle>
-            </CardHeader>
-            <EmptyState
-              icon={NotebookPen}
-              title="Nenhuma nota"
-              description="Notas rápidas e as ligadas a PRs e issues ficam à mão aqui (fase 3)."
-            />
-          </Card>
+          <WeekAgendaCard />
+          <PinnedNotesCard />
         </motion.div>
       </div>
     </div>
