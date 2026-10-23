@@ -3,6 +3,7 @@ import type { CompleteGitHubLogin } from '../application/use-cases/complete-gith
 import type { GetDashboard } from '../application/use-cases/get-dashboard.js'
 import type { GetCurrentUser } from '../application/use-cases/get-current-user.js'
 import type { Calendar } from '../application/use-cases/calendar.js'
+import type { GetStandup } from '../application/use-cases/get-standup.js'
 import type { Notes } from '../application/use-cases/notes.js'
 import type { Logout } from '../application/use-cases/logout.js'
 import type { StartPersonalSession } from '../application/use-cases/start-personal-session.js'
@@ -29,5 +30,6 @@ export interface AppDependencies {
     getDashboard: GetDashboard
     notes: Notes
     calendar: Calendar
+    getStandup: GetStandup
   }
 }

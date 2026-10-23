@@ -3,12 +3,13 @@ import {
   CircleDot,
   GitPullRequest,
   type LucideIcon,
+  MessageSquareText,
   NotebookPen,
   Sun,
 } from 'lucide-react'
 
 export interface NavItem {
-  to: '/' | '/pull-requests' | '/issues' | '/notas' | '/calendario'
+  to: '/' | '/pull-requests' | '/issues' | '/notas' | '/calendario' | '/standup'
   label: string
   icon: LucideIcon
   /** Atalho "g + tecla", no estilo do GitHub e do Linear. */
@@ -22,4 +23,5 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/issues', label: 'Issues', icon: CircleDot, shortcut: 'i' },
   { to: '/notas', label: 'Notas', icon: NotebookPen, shortcut: 'n' },
   { to: '/calendario', label: 'Calendário', icon: CalendarDays, shortcut: 'c' },
+  { to: '/standup', label: 'Standup', icon: MessageSquareText, shortcut: 's' },
 ]

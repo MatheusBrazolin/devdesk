@@ -9,6 +9,7 @@ import { calendarRoutes } from './routes/calendar.js'
 import { dashboardRoutes } from './routes/dashboard.js'
 import { meRoutes } from './routes/me.js'
 import { notesRoutes } from './routes/notes.js'
+import { standupRoutes } from './routes/standup.js'
 import { systemRoutes } from './routes/system.js'
 
 export async function buildApp(deps: AppDependencies, options: FastifyServerOptions = {}) {
@@ -27,6 +28,7 @@ export async function buildApp(deps: AppDependencies, options: FastifyServerOpti
       await dashboardRoutes(api, deps)
       await notesRoutes(api, deps)
       await calendarRoutes(api, deps)
+      await standupRoutes(api, deps)
     },
     { prefix: '/api' },
   )

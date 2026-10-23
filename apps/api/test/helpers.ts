@@ -1,3 +1,4 @@
+import type { ActivitySource } from '../src/application/ports/activity-source.js'
 import type { GitHubOAuth } from '../src/application/ports/github-oauth.js'
 import type { GitHubProfiles } from '../src/application/ports/github-profiles.js'
 import type { GitHubProfile } from '../src/application/ports/user-repository.js'
@@ -9,12 +10,14 @@ import { GitHubTokenProvider } from '../src/application/services/github-token-pr
 import { GetDashboard } from '../src/application/use-cases/get-dashboard.js'
 import { GetCurrentUser } from '../src/application/use-cases/get-current-user.js'
 import { Calendar } from '../src/application/use-cases/calendar.js'
+import { GetStandup } from '../src/application/use-cases/get-standup.js'
 import { Notes } from '../src/application/use-cases/notes.js'
 import { Logout } from '../src/application/use-cases/logout.js'
 import { StartPersonalSession } from '../src/application/use-cases/start-personal-session.js'
 import { StartDemoSession } from '../src/application/use-cases/start-demo-session.js'
 import { buildApp } from '../src/http/app.js'
 import type { AppDependencies } from '../src/http/dependencies.js'
+import type { Activity } from '../src/domain/activity.js'
 import { githubReconnect } from '../src/domain/errors.js'
 import type { GitHubTokens } from '../src/domain/github-tokens.js'
 import type { WorkSnapshot } from '../src/domain/work.js'
@@ -27,6 +30,7 @@ import {
   InMemorySessionRepository,
   InMemoryUserRepository,
 } from '../src/infrastructure/repositories/in-memory.js'
+import { SampleActivitySource } from '../src/infrastructure/sample/sample-activity-source.js'
 import { SampleWorkSource } from '../src/infrastructure/sample/sample-work-source.js'
 
 export const TEST_KEY = Buffer.alloc(32, 7).toString('base64')
@@ -102,6 +106,17 @@ export class FakeGitHubProfiles implements GitHubProfiles {
   }
 }
 
+/** Atividade falsa do GitHub: registra os períodos pedidos. */
+export class FakeActivitySource implements ActivitySource {
+  readonly calls: { login: string; from: Date; to: Date }[] = []
+  result: Activity = { merged: [], opened: [], reviewed: [], closedIssues: [] }
+
+  async fetchActivity(_token: string, login: string, from: Date, to: Date): Promise<Activity> {
+    this.calls.push({ login, from, to })
+    return this.result
+  }
+}
+
 /** Fonte do GitHub falsa: registra com qual token foi chamada. */
 export class FakeWorkSource implements WorkSource {
   readonly calls: string[] = []
@@ -148,6 +163,7 @@ export function createTestContext(
   const notes = new InMemoryNoteRepository()
   const events = new InMemoryEventRepository()
   const snapshotCache = new InMemorySnapshotCache()
+  const activity = new FakeActivitySource()
   const getDashboard = new GetDashboard(
     { github: githubWork, sample: new SampleWorkSource(clock) },
     githubTokens,
@@ -184,6 +200,12 @@ export function createTestContext(
       getDashboard,
       notes: new Notes(notes, clock),
       calendar: new Calendar(events, getDashboard, clock),
+      getStandup: new GetStandup(
+        getDashboard,
+        { github: activity, sample: new SampleActivitySource() },
+        githubTokens,
+        clock,
+      ),
     },
   }
 
@@ -202,6 +224,7 @@ export function createTestContext(
     notes,
     events,
     snapshotCache,
+    activity,
   }
 }
 

@@ -4,6 +4,7 @@ import { CreateSession } from './application/use-cases/create-session.js'
 import { GetDashboard } from './application/use-cases/get-dashboard.js'
 import { GetCurrentUser } from './application/use-cases/get-current-user.js'
 import { Calendar } from './application/use-cases/calendar.js'
+import { GetStandup } from './application/use-cases/get-standup.js'
 import { Notes } from './application/use-cases/notes.js'
 import { Logout } from './application/use-cases/logout.js'
 import { StartPersonalSession } from './application/use-cases/start-personal-session.js'
@@ -19,12 +20,14 @@ import {
   PostgresSnapshotCache,
 } from './infrastructure/cache/postgres-snapshot-cache.js'
 import { GitHubProfileClient } from './infrastructure/github/github-profile-client.js'
+import { GitHubActivitySource } from './infrastructure/github/github-activity-source.js'
 import { GitHubOAuthClient } from './infrastructure/github/github-oauth-client.js'
 import { GitHubWorkSource } from './infrastructure/github/github-work-source.js'
 import { DrizzleEventRepository } from './infrastructure/repositories/drizzle-event-repository.js'
 import { DrizzleNoteRepository } from './infrastructure/repositories/drizzle-note-repository.js'
 import { DrizzleSessionRepository } from './infrastructure/repositories/drizzle-session-repository.js'
 import { DrizzleUserRepository } from './infrastructure/repositories/drizzle-user-repository.js'
+import { SampleActivitySource } from './infrastructure/sample/sample-activity-source.js'
 import { SampleWorkSource } from './infrastructure/sample/sample-work-source.js'
 
 /** Raiz de composição: o único lugar que conhece as implementações concretas. */
@@ -81,6 +84,12 @@ export function createContainer(env: Env, db: Database): AppDependencies {
       getDashboard,
       notes: new Notes(new DrizzleNoteRepository(db), systemClock),
       calendar: new Calendar(new DrizzleEventRepository(db), getDashboard, systemClock),
+      getStandup: new GetStandup(
+        getDashboard,
+        { github: new GitHubActivitySource(), sample: new SampleActivitySource() },
+        githubTokens,
+        systemClock,
+      ),
     },
   }
 }

@@ -12,6 +12,7 @@ import { LoginPage } from '@/features/auth/login-page'
 import { meQuery } from '@/features/auth/queries'
 import { CalendarPage } from '@/features/calendar/calendar-page'
 import { NotesPage } from '@/features/notes/notes-page'
+import { StandupPage } from '@/features/standup/standup-page'
 import { HomePage } from '@/features/home/home-page'
 import { IssuesPage } from '@/features/work/issues-page'
 import { type ListSearch, parseListSearch } from '@/features/work/list-search'
@@ -93,6 +94,16 @@ const calendarRoute = createRoute({
   component: CalendarPage,
 })
 
+const standupRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/standup',
+  validateSearch: (search: Record<string, unknown>): { dia?: string } => {
+    const dia = text(search.dia)
+    return { dia: dia && /^\d{4}-\d{2}-\d{2}$/.test(dia) ? dia : undefined }
+  },
+  component: StandupPage,
+})
+
 const issuesRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/issues',
@@ -105,7 +116,14 @@ const issuesRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   loginRoute,
-  appRoute.addChildren([homeRoute, pullRequestsRoute, issuesRoute, notesRoute, calendarRoute]),
+  appRoute.addChildren([
+    homeRoute,
+    pullRequestsRoute,
+    issuesRoute,
+    notesRoute,
+    calendarRoute,
+    standupRoute,
+  ]),
 ])
 
 export function createAppRouter(queryClient: QueryClient) {

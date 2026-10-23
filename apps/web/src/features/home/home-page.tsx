@@ -1,8 +1,9 @@
 import type { Dashboard, PullRequest } from '@devdesk/shared'
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { CircleCheck } from 'lucide-react'
+import { CircleCheck, MessageSquareText } from 'lucide-react'
 import { motion } from 'motion/react'
+import { buttonVariants } from '@/components/ui/button-variants'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
 import { meQuery } from '@/features/auth/queries'
@@ -71,7 +72,12 @@ export function HomePage() {
             {formatLongDate(now)}
           </p>
         </div>
-        <SyncStatus />
+        <div className="flex items-center gap-3">
+          <SyncStatus />
+          <Link to="/standup" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+            <MessageSquareText /> Standup
+          </Link>
+        </div>
       </motion.header>
 
       <motion.dl
