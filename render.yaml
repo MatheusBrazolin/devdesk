@@ -1,15 +1,19 @@
 # Blueprint do Render (render.com → New → Blueprint, apontando para este repositório).
 # Sobe a demonstração pública: um serviço web com a imagem do Dockerfile.
-# O banco fica fora (Neon, Supabase ou o Postgres do próprio Render): cole a
-# URL em DATABASE_URL no painel. Guia completo em docs/DEPLOY.md.
+# O banco fica no Neon (gratuito, sem prazo): o Render pede a URL dele ao
+# criar o blueprint. A chave de criptografia o Render gera sozinho. Guia
+# completo em docs/DEPLOY.md.
 services:
   - type: web
     name: devdesk
     runtime: docker
     plan: free
+    # Mesma região do banco no Neon (AWS us-east-1): menos latência.
+    region: virginia
     healthCheckPath: /api/health
     autoDeploy: true
     envVars:
+      # URL de conexão do Neon, colada por você na criação (contém a senha).
       - key: DATABASE_URL
         sync: false
       # 32 bytes aleatórios em base64, gerados pelo Render na criação.
@@ -20,8 +24,4 @@ services:
       # O Render tem um proxy na frente: um salto confiável.
       - key: TRUST_PROXY
         value: '1'
-      # Troque pelo endereço que o Render der ao serviço.
-      - key: WEB_ORIGIN
-        value: https://devdesk.onrender.com
-      - key: API_PUBLIC_URL
-        value: https://devdesk.onrender.com/api
+      # WEB_ORIGIN e API_PUBLIC_URL saem de RENDER_EXTERNAL_URL, que o Render define.

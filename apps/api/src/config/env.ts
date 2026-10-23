@@ -10,9 +10,14 @@ const envSchema = z
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
     DATABASE_URL: z.string().default('postgres://devdesk:devdesk@localhost:5432/devdesk'),
     /** Endereço do front; o login termina redirecionando para cá. */
-    WEB_ORIGIN: z.url().default('http://localhost:5173'),
+    WEB_ORIGIN: z.url().optional(),
     /** Endereço público da API, usado para montar a URL de callback do OAuth. */
-    API_PUBLIC_URL: z.url().default('http://localhost:5173/api'),
+    API_PUBLIC_URL: z.url().optional(),
+    /**
+     * Endereço público que o Render dá ao serviço. Sem WEB_ORIGIN e
+     * API_PUBLIC_URL, vale ele: o nome do serviço pode mudar sem mexer em nada.
+     */
+    RENDER_EXTERNAL_URL: z.url().optional(),
     GITHUB_CLIENT_ID: z.string().optional(),
     GITHUB_CLIENT_SECRET: z.string().optional(),
     /** 32 bytes em base64. Cifra o token do GitHub guardado no banco. */
@@ -34,16 +39,24 @@ const envSchema = z
     /** Pasta do front compilado; com ela, a API serve o app inteiro (produção). */
     WEB_DIST_DIR: z.string().optional(),
   })
-  .transform((env) => ({
-    ...env,
-    DEMO_ENABLED: env.DEMO_ENABLED ?? env.NODE_ENV !== 'production',
-    githubLoginEnabled: Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET),
-    // Quem chega na API entra como o dono do token: nunca num servidor público.
-    // Com proxy, o IP vem de um cabeçalho que dá para forjar: o modo pessoal, que
-    // confia no IP local, fica desligado.
-    personalTokenEnabled:
-      Boolean(env.GITHUB_PERSONAL_TOKEN) && env.NODE_ENV !== 'production' && env.TRUST_PROXY === 0,
-  }))
+  .transform((env) => {
+    const publicUrl = env.RENDER_EXTERNAL_URL?.replace(/\/+$/, '')
+    return {
+      ...env,
+      WEB_ORIGIN: env.WEB_ORIGIN ?? publicUrl ?? 'http://localhost:5173',
+      API_PUBLIC_URL:
+        env.API_PUBLIC_URL ?? (publicUrl ? `${publicUrl}/api` : 'http://localhost:5173/api'),
+      DEMO_ENABLED: env.DEMO_ENABLED ?? env.NODE_ENV !== 'production',
+      githubLoginEnabled: Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET),
+      // Quem chega na API entra como o dono do token: nunca num servidor público.
+      // Com proxy, o IP vem de um cabeçalho que dá para forjar: o modo pessoal, que
+      // confia no IP local, fica desligado.
+      personalTokenEnabled:
+        Boolean(env.GITHUB_PERSONAL_TOKEN) &&
+        env.NODE_ENV !== 'production' &&
+        env.TRUST_PROXY === 0,
+    }
+  })
 
 export type Env = z.infer<typeof envSchema>
 

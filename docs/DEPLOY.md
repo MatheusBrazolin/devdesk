@@ -31,20 +31,26 @@ docker run --rm -p 3333:3333 \
 Abra http://localhost:3333 e entre no modo demonstração. Fora do `localhost`,
 os cookies exigem HTTPS (a imagem roda com `NODE_ENV=production`).
 
-## No Render (sugestão: tem plano gratuito para Docker)
+## No Render, com o banco no Neon
 
-1. Crie um Postgres gratuito no [Neon](https://neon.tech) e copie a URL de
-   conexão (com `?sslmode=require`).
-2. No Render, **New → Blueprint** e escolha este repositório. O `render.yaml`
-   cria o serviço `devdesk`.
-3. No painel do serviço, cole a URL do banco em `DATABASE_URL`. A
-   `TOKEN_ENCRYPTION_KEY` o Render gera sozinho.
-4. Se o endereço final não for `https://devdesk.onrender.com`, ajuste
-   `WEB_ORIGIN` e `API_PUBLIC_URL`.
+Os dois têm plano gratuito; o Postgres do Neon não expira (o do Render
+gratuito some em 30 dias, por isso fica de fora).
+
+1. No [Neon](https://neon.tech), crie um projeto na região **AWS US East 1
+   (N. Virginia)**, a mesma do serviço no Render. Copie a URL de conexão
+   (_Connection string_). Pode colar como vem: o app tira sozinho o
+   `channel_binding`, que o driver não aceita.
+2. No [Render](https://render.com), entre com o GitHub e dê acesso ao
+   repositório.
+3. **New → Blueprint** e escolha este repositório. O `render.yaml` cria o
+   serviço `devdesk` e pede a `DATABASE_URL`: cole a URL do Neon ali.
+4. O resto já vem pronto: a `TOKEN_ENCRYPTION_KEY` é gerada pelo Render e o
+   endereço público sai de `RENDER_EXTERNAL_URL`.
 5. Depois do primeiro deploy, `/api/health` responde `{"status":"ok"}`.
 
-O plano gratuito do Render dorme sem uso: a primeira visita depois de um tempo
-leva alguns segundos para acordar.
+O serviço gratuito do Render dorme sem uso: a primeira visita depois de um
+tempo leva alguns segundos para acordar. O banco do Neon também dorme e
+acorda sozinho.
 
 ## Login com GitHub na demonstração (opcional)
 

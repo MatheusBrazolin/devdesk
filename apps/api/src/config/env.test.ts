@@ -38,6 +38,24 @@ describe('loadEnv', () => {
     expect(env.personalTokenEnabled).toBe(false)
   })
 
+  it('no Render, o endereço público vem do próprio Render', () => {
+    const env = loadEnv({
+      TOKEN_ENCRYPTION_KEY: TEST_KEY,
+      RENDER_EXTERNAL_URL: 'https://devdesk-x1y2.onrender.com/',
+    })
+    expect(env.WEB_ORIGIN).toBe('https://devdesk-x1y2.onrender.com')
+    expect(env.API_PUBLIC_URL).toBe('https://devdesk-x1y2.onrender.com/api')
+  })
+
+  it('endereço explícito vence o do Render', () => {
+    const env = loadEnv({
+      TOKEN_ENCRYPTION_KEY: TEST_KEY,
+      RENDER_EXTERNAL_URL: 'https://devdesk.onrender.com',
+      WEB_ORIGIN: 'https://devdesk.exemplo.dev',
+    })
+    expect(env.WEB_ORIGIN).toBe('https://devdesk.exemplo.dev')
+  })
+
   it('explica o que está errado', () => {
     expect(() => loadEnv({ TOKEN_ENCRYPTION_KEY: 'curta' })).toThrow(/TOKEN_ENCRYPTION_KEY/)
   })
