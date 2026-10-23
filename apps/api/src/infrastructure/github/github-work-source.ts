@@ -2,13 +2,27 @@ import { z } from 'zod'
 import type { Clock } from '../../application/ports/security.js'
 import type { WorkSource } from '../../application/ports/work-source.js'
 import { githubReconnect, upstream } from '../../domain/errors.js'
-import type { CiStatus, Issue, PullRequest, WorkSnapshot } from '../../domain/work.js'
+import type { CiStatus, Issue, Milestone, PullRequest, WorkSnapshot } from '../../domain/work.js'
 import { DASHBOARD_QUERY, dashboardVariables } from './dashboard-query.js'
 import { createReadOnlyFetch } from './read-only-fetch.js'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
 const actorSchema = z.object({ login: z.string(), avatarUrl: z.string().nullable() }).nullable()
+
+const milestoneSchema = z
+  .object({ title: z.string(), dueOn: z.string().nullable(), url: z.string() })
+  .nullable()
+  .optional()
+
+/**
+ * O GitHub guarda o prazo como data, mas devolve um instante. A parte da data
+ * em UTC é o dia que aparece na interface do GitHub.
+ */
+function toMilestone(node: z.infer<typeof milestoneSchema>): Milestone | null {
+  if (!node) return null
+  return { title: node.title, dueOn: node.dueOn ? node.dueOn.slice(0, 10) : null, url: node.url }
+}
 
 const pullRequestNodeSchema = z.object({
   __typename: z.literal('PullRequest'),
@@ -28,6 +42,7 @@ const pullRequestNodeSchema = z.object({
   latestOpinionatedReviews: z
     .object({ nodes: z.array(z.object({ state: z.string() }).nullable()) })
     .nullable(),
+  milestone: milestoneSchema,
   commits: z.object({
     nodes: z.array(
       z
@@ -55,6 +70,7 @@ const issueNodeSchema = z.object({
   labels: z
     .object({ nodes: z.array(z.object({ name: z.string(), color: z.string() }).nullable()) })
     .nullable(),
+  milestone: milestoneSchema,
 })
 
 /** Nós que não batem com o esperado (ex.: repositório bloqueado por SAML) são descartados. */
@@ -111,6 +127,7 @@ function toPullRequest(node: z.infer<typeof pullRequestNodeSchema>): PullRequest
     mergeable: node.mergeable.toLowerCase() as PullRequest['mergeable'],
     approvals: reviews.filter((review) => review?.state === 'APPROVED').length,
     comments: node.comments.totalCount,
+    milestone: toMilestone(node.milestone),
   }
 }
 
@@ -126,6 +143,7 @@ function toIssue(node: z.infer<typeof issueNodeSchema>): Issue {
     updatedAt: new Date(node.updatedAt),
     labels: (node.labels?.nodes ?? []).filter((label) => label !== null),
     comments: node.comments.totalCount,
+    milestone: toMilestone(node.milestone),
   }
 }
 

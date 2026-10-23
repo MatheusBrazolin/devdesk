@@ -1,4 +1,6 @@
+export * from './calendar.js'
 export * from './config.js'
 export * from './dashboard.js'
 export * from './errors.js'
+export * from './notes.js'
 export * from './user.js'

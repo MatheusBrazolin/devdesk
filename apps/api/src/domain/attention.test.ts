@@ -21,6 +21,7 @@ function pr(overrides: Partial<PullRequest> = {}): PullRequest {
     mergeable: 'mergeable',
     approvals: 0,
     comments: 0,
+    milestone: null,
     ...overrides,
   }
 }

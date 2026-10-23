@@ -97,6 +97,30 @@ describe('GitHubWorkSource', () => {
     expect(snapshot.reviewRequested[0]?.ciStatus).toBe(expected)
   })
 
+  it('lê o prazo da milestone como data', async () => {
+    const node = prNode({
+      milestone: {
+        title: 'Sprint 42',
+        dueOn: '2026-10-31T00:00:00Z',
+        url: 'https://github.com/acme/app/milestone/42',
+      },
+    })
+    const { impl } = fakeFetch(200, {
+      data: {
+        reviewRequested: search([]),
+        authored: search([node]),
+        merged: search([]),
+        issues: search([]),
+      },
+    })
+    const snapshot = await new GitHubWorkSource(clock, impl).fetchSnapshot('gho_x')
+    expect(snapshot.authored[0]?.milestone).toEqual({
+      title: 'Sprint 42',
+      dueOn: '2026-10-31',
+      url: 'https://github.com/acme/app/milestone/42',
+    })
+  })
+
   it('PR sem CI configurado fica com status nulo', async () => {
     const node = prNode({ commits: { nodes: [{ commit: { statusCheckRollup: null } }] } })
     const { impl } = fakeFetch(200, {

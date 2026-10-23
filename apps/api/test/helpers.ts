@@ -8,6 +8,8 @@ import type { WorkSource } from '../src/application/ports/work-source.js'
 import { GitHubTokenProvider } from '../src/application/services/github-token-provider.js'
 import { GetDashboard } from '../src/application/use-cases/get-dashboard.js'
 import { GetCurrentUser } from '../src/application/use-cases/get-current-user.js'
+import { Calendar } from '../src/application/use-cases/calendar.js'
+import { Notes } from '../src/application/use-cases/notes.js'
 import { Logout } from '../src/application/use-cases/logout.js'
 import { StartPersonalSession } from '../src/application/use-cases/start-personal-session.js'
 import { StartDemoSession } from '../src/application/use-cases/start-demo-session.js'
@@ -20,6 +22,8 @@ import { InMemorySnapshotCache } from '../src/infrastructure/cache/in-memory-sna
 import { AesTokenCipher } from '../src/infrastructure/crypto/aes-token-cipher.js'
 import { RandomSessionTokens } from '../src/infrastructure/crypto/session-tokens.js'
 import {
+  InMemoryEventRepository,
+  InMemoryNoteRepository,
   InMemorySessionRepository,
   InMemoryUserRepository,
 } from '../src/infrastructure/repositories/in-memory.js'
@@ -138,6 +142,13 @@ export function createTestContext(
   const oauth = new FakeGitHubOAuth(clock, options.tokenExpiresInMs ?? null)
   const githubTokens = new GitHubTokenProvider(users, oauth, cipher, clock)
   const profiles = new FakeGitHubProfiles()
+  const notes = new InMemoryNoteRepository()
+  const events = new InMemoryEventRepository()
+  const getDashboard = new GetDashboard(
+    { github: githubWork, sample: new SampleWorkSource(clock) },
+    githubTokens,
+    new InMemorySnapshotCache(clock),
+  )
 
   const deps: AppDependencies = {
     config: {
@@ -165,11 +176,9 @@ export function createTestContext(
       startDemoSession: new StartDemoSession(options.demoEnabled ?? true, users, createSession),
       getCurrentUser: new GetCurrentUser(sessions, users, tokens, clock),
       logout: new Logout(sessions, tokens),
-      getDashboard: new GetDashboard(
-        { github: githubWork, sample: new SampleWorkSource(clock) },
-        githubTokens,
-        new InMemorySnapshotCache(clock),
-      ),
+      getDashboard,
+      notes: new Notes(notes, clock),
+      calendar: new Calendar(events, getDashboard, clock),
     },
   }
 
@@ -185,6 +194,8 @@ export function createTestContext(
     oauth,
     githubTokens,
     profiles,
+    notes,
+    events,
   }
 }
 

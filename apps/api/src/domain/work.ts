@@ -3,6 +3,13 @@ export interface Actor {
   avatarUrl: string | null
 }
 
+export interface Milestone {
+  title: string
+  /** Data do prazo ("2026-10-31"), ou nula. */
+  dueOn: string | null
+  url: string
+}
+
 export type CiStatus = 'success' | 'failure' | 'pending' | null
 export type ReviewDecision = 'approved' | 'changes_requested' | 'review_required' | null
 export type Mergeable = 'mergeable' | 'conflicting' | 'unknown'
@@ -23,6 +30,7 @@ export interface PullRequest {
   mergeable: Mergeable
   approvals: number
   comments: number
+  milestone: Milestone | null
 }
 
 export interface Issue {
@@ -36,6 +44,7 @@ export interface Issue {
   updatedAt: Date
   labels: { name: string; color: string }[]
   comments: number
+  milestone: Milestone | null
 }
 
 /** O retrato do trabalho de uma pessoa num instante, como veio da fonte. */

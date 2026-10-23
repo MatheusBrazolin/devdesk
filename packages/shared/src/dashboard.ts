@@ -7,6 +7,13 @@ export const actorSchema = z.object({
   avatarUrl: z.url().nullable(),
 })
 
+export const milestoneSchema = z.object({
+  title: z.string(),
+  /** Data do prazo, sem fuso ("2026-10-31"); nula quando a milestone não tem data. */
+  dueOn: z.iso.date().nullable(),
+  url: z.url(),
+})
+
 export const ciStatusSchema = z.enum(['success', 'failure', 'pending']).nullable()
 export const reviewDecisionSchema = z
   .enum(['approved', 'changes_requested', 'review_required'])
@@ -38,6 +45,7 @@ export const pullRequestSchema = z.object({
   mergeable: mergeableSchema,
   approvals: z.number().int().nonnegative(),
   comments: z.number().int().nonnegative(),
+  milestone: milestoneSchema.nullable(),
 })
 
 export const issueSchema = z.object({
@@ -51,6 +59,7 @@ export const issueSchema = z.object({
   updatedAt: z.iso.datetime(),
   labels: z.array(z.object({ name: z.string(), color: z.string() })),
   comments: z.number().int().nonnegative(),
+  milestone: milestoneSchema.nullable(),
 })
 
 export const attentionItemSchema = z.object({
@@ -79,6 +88,7 @@ export const dashboardSchema = z.object({
 })
 
 export type Actor = z.infer<typeof actorSchema>
+export type Milestone = z.infer<typeof milestoneSchema>
 export type CiStatus = z.infer<typeof ciStatusSchema>
 export type ReviewDecision = z.infer<typeof reviewDecisionSchema>
 export type Mergeable = z.infer<typeof mergeableSchema>

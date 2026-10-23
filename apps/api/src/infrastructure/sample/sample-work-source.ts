@@ -39,6 +39,7 @@ export class SampleWorkSource implements WorkSource {
       mergeable: 'mergeable',
       approvals: 0,
       comments: 0,
+      milestone: null,
       ...data,
     })
 
@@ -52,8 +53,21 @@ export class SampleWorkSource implements WorkSource {
       updatedAt: ago(1 * DAY),
       labels: [],
       comments: 0,
+      milestone: null,
       ...data,
     })
+
+    const dateIn = (days: number) => new Date(now + days * DAY).toISOString().slice(0, 10)
+    const sprint = {
+      title: 'Sprint 42',
+      dueOn: dateIn(4),
+      url: 'https://github.com/acme/web-app/milestone/42',
+    }
+    const release = {
+      title: 'Checkout v2',
+      dueOn: dateIn(11),
+      url: 'https://github.com/acme/checkout-api/milestone/7',
+    }
 
     const reviewRequested = [
       pr({
@@ -88,6 +102,7 @@ export class SampleWorkSource implements WorkSource {
         repository: 'acme/web-app',
         number: 1290,
         title: 'Migra a tabela de pedidos para paginação por cursor',
+        milestone: sprint,
         reviewDecision: 'approved',
         approvals: 2,
         comments: 6,
@@ -97,6 +112,7 @@ export class SampleWorkSource implements WorkSource {
         repository: 'acme/checkout-api',
         number: 476,
         title: 'Remove o endpoint legado de cupons',
+        milestone: release,
         ciStatus: 'failure',
         updatedAt: ago(40 * 60 * 1000),
         comments: 2,
@@ -161,6 +177,7 @@ export class SampleWorkSource implements WorkSource {
         repository: 'acme/web-app',
         number: 1305,
         title: 'Filtro de data some ao voltar da página de detalhes',
+        milestone: sprint,
         labels: [{ name: 'bug', color: 'd73a4a' }],
         comments: 3,
         updatedAt: ago(6 * HOUR),
@@ -169,6 +186,7 @@ export class SampleWorkSource implements WorkSource {
         repository: 'acme/checkout-api',
         number: 479,
         title: 'Documentar os códigos de erro do PIX',
+        milestone: release,
         labels: [{ name: 'documentação', color: '0075ca' }],
         author: people.rafael!,
       }),

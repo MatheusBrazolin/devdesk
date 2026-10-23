@@ -3,6 +3,8 @@ import { CompleteGitHubLogin } from './application/use-cases/complete-github-log
 import { CreateSession } from './application/use-cases/create-session.js'
 import { GetDashboard } from './application/use-cases/get-dashboard.js'
 import { GetCurrentUser } from './application/use-cases/get-current-user.js'
+import { Calendar } from './application/use-cases/calendar.js'
+import { Notes } from './application/use-cases/notes.js'
 import { Logout } from './application/use-cases/logout.js'
 import { StartPersonalSession } from './application/use-cases/start-personal-session.js'
 import { StartDemoSession } from './application/use-cases/start-demo-session.js'
@@ -15,6 +17,8 @@ import { InMemorySnapshotCache } from './infrastructure/cache/in-memory-snapshot
 import { GitHubProfileClient } from './infrastructure/github/github-profile-client.js'
 import { GitHubOAuthClient } from './infrastructure/github/github-oauth-client.js'
 import { GitHubWorkSource } from './infrastructure/github/github-work-source.js'
+import { DrizzleEventRepository } from './infrastructure/repositories/drizzle-event-repository.js'
+import { DrizzleNoteRepository } from './infrastructure/repositories/drizzle-note-repository.js'
 import { DrizzleSessionRepository } from './infrastructure/repositories/drizzle-session-repository.js'
 import { DrizzleUserRepository } from './infrastructure/repositories/drizzle-user-repository.js'
 import { SampleWorkSource } from './infrastructure/sample/sample-work-source.js'
@@ -38,6 +42,12 @@ export function createContainer(env: Env, db: Database): AppDependencies {
         })
       : null
   const githubTokens = new GitHubTokenProvider(users, oauth, cipher, systemClock)
+  // Painel e calendário usam a mesma instância: o calendário aproveita o cache do painel.
+  const getDashboard = new GetDashboard(
+    { github: new GitHubWorkSource(systemClock), sample: new SampleWorkSource(systemClock) },
+    githubTokens,
+    new InMemorySnapshotCache(systemClock),
+  )
 
   return {
     config: {
@@ -63,11 +73,9 @@ export function createContainer(env: Env, db: Database): AppDependencies {
       startDemoSession: new StartDemoSession(env.DEMO_ENABLED, users, createSession),
       getCurrentUser: new GetCurrentUser(sessions, users, tokens, systemClock),
       logout: new Logout(sessions, tokens),
-      getDashboard: new GetDashboard(
-        { github: new GitHubWorkSource(systemClock), sample: new SampleWorkSource(systemClock) },
-        githubTokens,
-        new InMemorySnapshotCache(systemClock),
-      ),
+      getDashboard,
+      notes: new Notes(new DrizzleNoteRepository(db), systemClock),
+      calendar: new Calendar(new DrizzleEventRepository(db), getDashboard, systemClock),
     },
   }
 }
