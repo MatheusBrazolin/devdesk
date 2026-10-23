@@ -3,6 +3,8 @@ import { motion } from 'motion/react'
 import { useReminderToasts } from '@/features/calendar/use-reminder-toasts'
 import { CommandPaletteProvider } from '@/features/commands/command-palette'
 import { useGoToShortcuts } from '@/features/commands/use-go-to-shortcuts'
+import { useFocusAlarm } from '@/features/focus/focus-timer'
+import { useWorkNotifications } from '@/features/work/use-work-notifications'
 import { cn } from '@/lib/cn'
 import { Sidebar } from './sidebar'
 import { Topbar } from './topbar'
@@ -11,11 +13,15 @@ export function AppShell() {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   useGoToShortcuts()
   useReminderToasts()
+  useWorkNotifications()
+  useFocusAlarm()
+  // No foco, a barra lateral sai da frente: a saída é o botão da própria página.
+  const focus = pathname === '/foco'
 
   return (
     <CommandPaletteProvider>
       <div className="flex min-h-dvh">
-        <Sidebar />
+        {!focus && <Sidebar />}
         <div className="flex min-w-0 flex-1 flex-col">
           <Topbar />
           <motion.main

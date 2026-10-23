@@ -6,6 +6,7 @@ import {
   CircleAlert,
   CircleCheck,
   CircleDot,
+  Crosshair,
   Eye,
   GitMerge,
   GitPullRequest,
@@ -87,6 +88,9 @@ export function HomePage() {
             <SyncStatus />
             <Link to="/standup" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
               <MessageSquareText /> Standup
+            </Link>
+            <Link to="/foco" className={buttonVariants({ size: 'sm' })}>
+              <Crosshair /> Foco
             </Link>
           </div>
         </motion.header>

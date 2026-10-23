@@ -8,6 +8,7 @@ import {
 } from '@tanstack/react-router'
 import { NotFound, RouteError } from '@/app/route-states'
 import { AppShell } from '@/components/layout/app-shell'
+import { FocusPage } from '@/features/focus/focus-page'
 import { LoginPage } from '@/features/auth/login-page'
 import { meQuery } from '@/features/auth/queries'
 import { CalendarPage } from '@/features/calendar/calendar-page'
@@ -58,6 +59,11 @@ const appRoute = createRoute({
 })
 
 const homeRoute = createRoute({ getParentRoute: () => appRoute, path: '/', component: HomePage })
+const focusRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/foco',
+  component: FocusPage,
+})
 
 const PR_TABS: PullRequestTab[] = ['review', 'meus', 'mergeados']
 
@@ -123,6 +129,7 @@ const routeTree = rootRoute.addChildren([
   loginRoute,
   appRoute.addChildren([
     homeRoute,
+    focusRoute,
     pullRequestsRoute,
     issuesRoute,
     notesRoute,

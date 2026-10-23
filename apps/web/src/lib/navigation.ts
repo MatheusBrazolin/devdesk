@@ -1,6 +1,7 @@
 import {
   CalendarDays,
   CircleDot,
+  Crosshair,
   GitPullRequest,
   type LucideIcon,
   MessageSquareText,
@@ -10,18 +11,28 @@ import {
 import type { Tone } from './tones'
 
 export interface NavItem {
-  to: '/' | '/pull-requests' | '/issues' | '/notas' | '/calendario' | '/standup'
+  to: '/' | '/foco' | '/pull-requests' | '/issues' | '/notas' | '/calendario' | '/standup'
   label: string
   icon: LucideIcon
   /** Atalho "g + tecla", no estilo do GitHub e do Linear. */
   shortcut: string
   /** Cor da seção: ícone na barra lateral e no cabeçalho da página. */
   tone: Tone
+  /** Fora da barra lateral: entra pelo menu do usuário, pelo ⌘K e pelo atalho. */
+  hiddenFromSidebar?: true
 }
 
 /** Fonte única da navegação: a sidebar e a paleta de comandos leem daqui. */
 export const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Hoje', icon: Sun, shortcut: 'h', tone: 'accent' },
+  {
+    to: '/foco',
+    label: 'Foco',
+    icon: Crosshair,
+    shortcut: 'f',
+    tone: 'success',
+    hiddenFromSidebar: true,
+  },
   {
     to: '/pull-requests',
     label: 'Pull requests',

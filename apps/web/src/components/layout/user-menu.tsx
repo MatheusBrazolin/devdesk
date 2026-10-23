@@ -1,5 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { ChevronsUpDown, LogOut, Monitor, Moon, Sun } from 'lucide-react'
+import { useNavigate } from '@tanstack/react-router'
+import { Bell, BellOff, ChevronsUpDown, Crosshair, LogOut, Monitor, Moon, Sun } from 'lucide-react'
+import { toast } from 'sonner'
 import { Avatar } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -12,12 +14,32 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { meQuery, useLogout } from '@/features/auth/queries'
+import {
+  disableNotifications,
+  enableNotifications,
+  useNotificationsSetting,
+} from '@/lib/notifications'
 import { type ThemePreference, useTheme } from '@/lib/theme'
 
 export function UserMenu() {
   const { user } = useSuspenseQuery(meQuery).data
   const { preference, setPreference } = useTheme()
   const logout = useLogout()
+  const notifications = useNotificationsSetting()
+  const navigate = useNavigate()
+
+  const toggleNotifications = async () => {
+    if (notifications.enabled) return disableNotifications()
+    if (notifications.permission === 'unsupported') {
+      return toast.error('Este navegador não mostra notificações.')
+    }
+    if (notifications.permission === 'denied') {
+      return toast.error('O navegador bloqueou as notificações deste site', {
+        description: 'Libere nas configurações do site e tente de novo.',
+      })
+    }
+    if (await enableNotifications()) toast.success('Notificações ligadas')
+  }
 
   return (
     <DropdownMenu>
@@ -50,6 +72,14 @@ export function UserMenu() {
             <Monitor /> Sistema
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => void navigate({ to: '/foco' })}>
+          <Crosshair /> Modo foco
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => void toggleNotifications()}>
+          {notifications.enabled ? <BellOff /> : <Bell />}
+          {notifications.enabled ? 'Desligar notificações' : 'Ligar notificações'}
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => logout.mutate()}>
           <LogOut /> Sair
