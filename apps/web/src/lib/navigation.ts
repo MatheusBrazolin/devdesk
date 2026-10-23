@@ -7,11 +7,12 @@ import {
   MessageSquareText,
   NotebookPen,
   Sun,
+  Tv,
 } from 'lucide-react'
 import type { Tone } from './tones'
 
 export interface NavItem {
-  to: '/' | '/foco' | '/pull-requests' | '/issues' | '/notas' | '/calendario' | '/standup'
+  to: '/' | '/foco' | '/tv' | '/pull-requests' | '/issues' | '/notas' | '/calendario' | '/standup'
   label: string
   icon: LucideIcon
   /** Atalho "g + tecla", no estilo do GitHub e do Linear. */
@@ -43,5 +44,13 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/issues', label: 'Issues', icon: CircleDot, shortcut: 'i', tone: 'info' },
   { to: '/notas', label: 'Notas', icon: NotebookPen, shortcut: 'n', tone: 'merged' },
   { to: '/calendario', label: 'Calendário', icon: CalendarDays, shortcut: 'c', tone: 'info' },
-  { to: '/standup', label: 'Standup', icon: MessageSquareText, shortcut: 's', tone: 'accent' },
+  {
+    to: '/standup',
+    label: 'Standup',
+    icon: MessageSquareText,
+    shortcut: 's',
+    tone: 'accent',
+    hiddenFromSidebar: true,
+  },
+  { to: '/tv', label: 'Modo TV', icon: Tv, shortcut: 't', tone: 'info', hiddenFromSidebar: true },
 ]

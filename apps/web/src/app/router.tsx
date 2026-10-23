@@ -9,6 +9,8 @@ import {
 import { NotFound, RouteError } from '@/app/route-states'
 import { AppShell } from '@/components/layout/app-shell'
 import { FocusPage } from '@/features/focus/focus-page'
+import { TvPage } from '@/features/tv/tv-page'
+import { isTvLayoutChoice, type TvLayoutChoice } from '@/features/tv/tv-scale'
 import { LoginPage } from '@/features/auth/login-page'
 import { meQuery } from '@/features/auth/queries'
 import { CalendarPage } from '@/features/calendar/calendar-page'
@@ -59,6 +61,14 @@ const appRoute = createRoute({
 })
 
 const homeRoute = createRoute({ getParentRoute: () => appRoute, path: '/', component: HomePage })
+const tvRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/tv',
+  // ?layout=coluna fixa o arranjo; sem ele, segue o formato da janela.
+  validateSearch: (search: Record<string, unknown>): { layout?: TvLayoutChoice } =>
+    isTvLayoutChoice(search.layout) && search.layout !== 'auto' ? { layout: search.layout } : {},
+  component: TvPage,
+})
 const focusRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/foco',
@@ -130,6 +140,7 @@ const routeTree = rootRoute.addChildren([
   appRoute.addChildren([
     homeRoute,
     focusRoute,
+    tvRoute,
     pullRequestsRoute,
     issuesRoute,
     notesRoute,

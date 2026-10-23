@@ -1,6 +1,17 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
-import { Bell, BellOff, ChevronsUpDown, Crosshair, LogOut, Monitor, Moon, Sun } from 'lucide-react'
+import {
+  Bell,
+  BellOff,
+  ChevronsUpDown,
+  Crosshair,
+  LogOut,
+  MessageSquareText,
+  Monitor,
+  Moon,
+  Sun,
+  Tv,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { Avatar } from '@/components/ui/avatar'
 import {
@@ -75,6 +86,12 @@ export function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => void navigate({ to: '/foco' })}>
           <Crosshair /> Modo foco
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => void navigate({ to: '/standup' })}>
+          <MessageSquareText /> Standup
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => void navigate({ to: '/tv' })}>
+          <Tv /> Modo TV
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => void toggleNotifications()}>
           {notifications.enabled ? <BellOff /> : <Bell />}
