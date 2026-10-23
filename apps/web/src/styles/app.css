@@ -1,0 +1,122 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/ibm-plex-sans';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Tokens semânticos. Os componentes nunca usam cor crua, só estes nomes.
+ * Paleta neutra e quente; o acento (âmbar) aparece só em estado ativo e foco.
+ */
+:root {
+  --bg: #fafaf9;
+  --surface: #ffffff;
+  --elevated: #f4f4f2;
+  --border: #e7e6e3;
+  --border-strong: #d6d4d0;
+  --fg: #1c1b19;
+  --fg-muted: #5b5954;
+  --fg-subtle: #8f8c86;
+  --accent: #b8700f;
+  --accent-soft: #fbf1e1;
+  --primary: #1c1b19;
+  --primary-fg: #fafaf9;
+  --success: #1a7f4b;
+  --danger: #c4352b;
+  --ring: #b8700f;
+}
+
+.dark {
+  --bg: #121211;
+  --surface: #181817;
+  --elevated: #20201e;
+  --border: #2a2927;
+  --border-strong: #3a3936;
+  --fg: #ecebe8;
+  --fg-muted: #a6a39d;
+  --fg-subtle: #75726c;
+  --accent: #e8a13a;
+  --accent-soft: #2b2216;
+  --primary: #ecebe8;
+  --primary-fg: #121211;
+  --success: #4cb782;
+  --danger: #ef6a5f;
+  --ring: #e8a13a;
+}
+
+@theme inline {
+  --font-sans: 'IBM Plex Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-elevated: var(--elevated);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-ring: var(--ring);
+
+  /* Sombra só para o que flutua (menus, diálogos). Painéis usam borda. */
+  --shadow-pop: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px -6px rgb(0 0 0 / 0.18);
+
+  --animate-overlay-in: overlay-in 140ms ease-out;
+  --animate-pop-in: pop-in 160ms cubic-bezier(0.2, 0.9, 0.3, 1);
+  --animate-drawer-in: drawer-in 220ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-bg text-fg font-sans;
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 1px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
