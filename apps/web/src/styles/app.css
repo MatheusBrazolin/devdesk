@@ -29,6 +29,15 @@
   --success: #1a7f4b;
   --danger: #c4352b;
   --ring: #b8700f;
+  /*
+   * Cores dos gráficos, validadas com o script do skill de dataviz:
+   * destaque x contexto ΔE 26,6 (visão normal) e 25,4 (deuteranopia).
+   * O cinza de contexto tem pouco contraste de propósito: toda barra leva o
+   * valor escrito e cada gráfico tem uma tabela equivalente.
+   */
+  --chart-accent: #b8700f;
+  --chart-muted: #cfccc6;
+  --chart-ink: #5b5954;
 }
 
 .dark {
@@ -48,6 +57,10 @@
   --success: #4cb782;
   --danger: #ef6a5f;
   --ring: #e8a13a;
+  /* Destaque x contexto ΔE 22,5 (normal) e 19,1 (protanopia), validado. */
+  --chart-accent: #c07f24;
+  --chart-muted: #5a5752;
+  --chart-ink: #a6a39d;
 }
 
 @theme inline {
@@ -69,6 +82,9 @@
   --color-success: var(--success);
   --color-danger: var(--danger);
   --color-ring: var(--ring);
+  --color-chart-accent: var(--chart-accent);
+  --color-chart-muted: var(--chart-muted);
+  --color-chart-ink: var(--chart-ink);
 
   /* Sombra só para o que flutua (menus, diálogos). Painéis usam borda. */
   --shadow-pop: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px -6px rgb(0 0 0 / 0.18);
