@@ -15,9 +15,14 @@ export interface BarRow {
 interface BarListProps {
   rows: BarRow[]
   unit: (value: number) => string
-  /** Cor das barras sem ênfase: tinta (série única) ou cinza (contexto da ênfase). */
-  tone?: 'ink' | 'muted'
+  /**
+   * Cor das barras sem ênfase: tinta ou azul-petróleo (série única) ou cinza
+   * (contexto da ênfase).
+   */
+  tone?: 'ink' | 'muted' | 'info'
 }
+
+const TONE = { ink: 'bg-chart-ink', muted: 'bg-chart-muted', info: 'bg-info' }
 
 /**
  * Barras horizontais com o valor escrito na ponta de cada uma. Escrever todos
@@ -28,8 +33,8 @@ export function BarList({ rows, unit, tone = 'ink' }: BarListProps) {
   const max = Math.max(1, ...rows.map((r) => r.value))
   return (
     <figure>
-      <ul className="space-y-2">
-        {rows.map((row) => (
+      <ul className="space-y-1">
+        {rows.map((row, index) => (
           <li key={row.key} className="grid grid-cols-[7.5rem_minmax(0,1fr)] items-center gap-3">
             {/* O rótulo visível se repete no aria-label do botão: leitor de tela ouve uma vez só. */}
             <span
@@ -46,16 +51,15 @@ export function BarList({ rows, unit, tone = 'ink' }: BarListProps) {
               >
                 <span
                   className={cn(
-                    'h-3 rounded-r-[4px] transition-opacity group-hover:opacity-80',
-                    row.emphasis
-                      ? 'bg-chart-accent'
-                      : tone === 'muted'
-                        ? 'bg-chart-muted'
-                        : 'bg-chart-ink',
+                    'h-3 origin-left animate-grow-right rounded-r-[4px] transition-opacity group-hover:opacity-80',
+                    row.emphasis ? 'bg-chart-accent' : TONE[tone],
                   )}
-                  style={{ width: row.value === 0 ? 0 : `max(4px, ${(row.value / max) * 85}%)` }}
+                  style={{
+                    width: row.value === 0 ? 0 : `max(4px, ${(row.value / max) * 85}%)`,
+                    animationDelay: `${index * 50}ms`,
+                  }}
                 />
-                <span aria-hidden className="text-[12px] font-medium text-fg">
+                <span aria-hidden className="text-[12px] font-medium text-fg tabular-nums">
                   {row.value}
                 </span>
               </button>

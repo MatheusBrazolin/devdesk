@@ -8,6 +8,7 @@ import {
   fromKey,
   occursOn,
 } from '@/lib/calendar-dates'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/cn'
 
 const dayFormat = new Intl.DateTimeFormat('pt-BR', {
@@ -21,6 +22,8 @@ function dayLabel(day: string, today = dateKey(new Date())): string {
   if (day === addDaysToKey(today, 1)) return 'Amanhã'
   return dayFormat.format(fromKey(day))
 }
+
+const TIME_COLUMN = 'mt-px w-14 shrink-0 font-mono text-[11px] whitespace-nowrap text-fg-subtle'
 
 interface AgendaListProps {
   from: string
@@ -67,6 +70,7 @@ export function AgendaList({
                   rel="noreferrer"
                   className="flex items-start gap-2 rounded-md px-1.5 py-1 hover:bg-elevated/60"
                 >
+                  <span className={TIME_COLUMN}>prazo</span>
                   <Flag className="mt-0.5 size-3.5 shrink-0 text-accent" />
                   <span className="min-w-0">
                     <span className="block truncate text-[13px]">Prazo: {deadline.title}</span>
@@ -88,11 +92,16 @@ export function AgendaList({
                     onSelectEvent && 'hover:bg-elevated/60',
                   )}
                 >
-                  <span className="mt-px w-14 shrink-0 font-mono text-[11px] whitespace-nowrap text-fg-subtle">
+                  <span className={TIME_COLUMN}>
                     {event.allDay ? 'dia todo' : formatTime(event.startsAt)}
                   </span>
-                  {event.kind === 'reminder' && (
+                  {/* Ícone sempre no mesmo lugar: os títulos ficam alinhados. */}
+                  {event.kind === 'reminder' ? (
                     <Bell aria-label="lembrete" className="mt-0.5 size-3.5 shrink-0 text-accent" />
+                  ) : (
+                    <span aria-hidden className="grid size-3.5 shrink-0 place-items-center pt-1">
+                      <span className="size-1.5 rounded-full bg-info" />
+                    </span>
                   )}
                   <span className="min-w-0 truncate text-[13px]">{event.title}</span>
                 </button>
@@ -102,5 +111,22 @@ export function AgendaList({
         </li>
       ))}
     </ol>
+  )
+}
+
+/** Esqueleto com a mesma forma da agenda: rótulo do dia e linhas de evento. */
+export function AgendaSkeleton({ days = 3 }: { days?: number }) {
+  return (
+    <div aria-busy="true" aria-label="Carregando" className="divide-y divide-border">
+      {Array.from({ length: days }, (_, index) => (
+        <div key={index} className="space-y-2 px-4 py-3">
+          <Skeleton className="h-2.5 w-20" />
+          <span className="flex items-center gap-2 px-1.5">
+            <Skeleton className="h-3 w-10" />
+            <Skeleton className="h-3" style={{ width: `${60 - index * 12}%` }} />
+          </span>
+        </div>
+      ))}
+    </div>
   )
 }

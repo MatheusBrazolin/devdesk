@@ -16,52 +16,70 @@ interface ColumnChartProps {
   unit: (value: number) => string
   /** Coluna que ganha o rótulo além do máximo (ex.: hoje). */
   highlightKey?: string
-  height?: number
+  /** Cor da série. Uma série só: a cor diz o que é, como no resto do painel. */
+  tone?: 'ink' | 'merged'
 }
+
+const BAR = { ink: 'bg-chart-ink', merged: 'bg-merged' }
 
 /**
  * Colunas de uma série só: sem legenda (o título do cartão diz o que é),
  * barras finas presas à linha de base, valor escrito só no maior e no
- * destacado, o resto no tooltip. Cada coluna é focável e tem o rótulo
- * completo, para teclado e leitor de tela.
+ * destacado, o resto no tooltip. Ocupa a altura que o cartão der. Cada
+ * coluna é focável e tem o rótulo completo, para teclado e leitor de tela.
  */
-export function ColumnChart({ columns, unit, highlightKey, height = 112 }: ColumnChartProps) {
+export function ColumnChart({ columns, unit, highlightKey, tone = 'ink' }: ColumnChartProps) {
   const max = Math.max(1, ...columns.map((c) => c.value))
   const maxKey = columns.reduce((best, c) => (c.value > best.value ? c : best), columns[0]!).key
 
   return (
-    <figure>
-      <div role="list" className="flex items-end gap-0.5 border-b border-border" style={{ height }}>
-        {columns.map((column) => {
+    <figure className="flex h-full min-h-20 flex-col">
+      <div role="list" className="flex flex-1 items-end gap-1 border-b border-border">
+        {columns.map((column, index) => {
           const labeled = column.value > 0 && (column.key === maxKey || column.key === highlightKey)
-          const barHeight =
-            column.value === 0 ? 0 : Math.max(4, (column.value / max) * (height - 18))
+          const highlighted = column.key === highlightKey
           return (
             <ChartTooltip key={column.key} value={unit(column.value)} label={column.fullLabel}>
               <button
                 type="button"
                 role="listitem"
                 aria-label={`${column.fullLabel}: ${unit(column.value)}`}
-                className="group flex h-full flex-1 flex-col items-center justify-end rounded-sm focus-visible:outline-2 focus-visible:outline-ring"
+                className="group flex h-full flex-1 flex-col items-center justify-end rounded-sm pt-4 focus-visible:outline-2 focus-visible:outline-ring"
               >
-                {labeled && (
-                  <span className="mb-1 text-[11px] font-medium text-fg-muted">{column.value}</span>
-                )}
-                <span
-                  className={cn(
-                    'w-full max-w-6 rounded-t-[4px] bg-chart-ink transition-opacity group-hover:opacity-80',
-                    column.key === highlightKey && 'bg-chart-accent',
+                {/* A barra vive numa caixa de altura cheia: a porcentagem é do espaço útil. */}
+                <span className="relative flex w-full flex-1 flex-col items-center justify-end">
+                  {labeled && (
+                    <span className="mb-1 text-[11px] font-medium text-fg-muted tabular-nums">
+                      {column.value}
+                    </span>
                   )}
-                  style={{ height: barHeight }}
-                />
+                  <span
+                    className={cn(
+                      'w-full max-w-7 origin-bottom animate-grow-up rounded-t-[4px] transition-opacity group-hover:opacity-80',
+                      BAR[tone],
+                      !highlighted && tone !== 'ink' && 'opacity-55',
+                      highlighted && tone === 'ink' && 'bg-chart-accent',
+                    )}
+                    style={{
+                      height: column.value === 0 ? 0 : `max(4px, ${(column.value / max) * 85}%)`,
+                      animationDelay: `${index * 45}ms`,
+                    }}
+                  />
+                </span>
               </button>
             </ChartTooltip>
           )
         })}
       </div>
-      <div className="mt-1.5 flex gap-0.5" aria-hidden>
+      <div className="mt-1.5 flex gap-1" aria-hidden>
         {columns.map((column) => (
-          <span key={column.key} className="flex-1 text-center text-[11px] text-fg-subtle">
+          <span
+            key={column.key}
+            className={cn(
+              'flex-1 text-center text-[11px] text-fg-subtle',
+              column.key === highlightKey && 'font-medium text-fg',
+            )}
+          >
             {column.label}
           </span>
         ))}

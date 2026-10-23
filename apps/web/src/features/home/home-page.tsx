@@ -1,19 +1,30 @@
 import type { Dashboard, PullRequest } from '@devdesk/shared'
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
+import {
+  Building2,
+  CircleAlert,
+  CircleCheck,
+  CircleDot,
+  Eye,
+  GitMerge,
+  GitPullRequest,
+  Hourglass,
+  MessageSquareText,
+  Timer,
+  type LucideIcon,
+} from 'lucide-react'
+import { motion } from 'motion/react'
 import type { ReactNode } from 'react'
 import { BarList } from '@/components/charts/bar-list'
 import { ChartTooltipProvider } from '@/components/charts/chart-tooltip'
 import { ColumnChart } from '@/components/charts/column-chart'
 import { StatTile, statTileClass } from '@/components/charts/stat-tile'
-import { OwnerAvatar } from '@/components/ui/owner-avatar'
-import { dateKey, fromKey } from '@/lib/calendar-dates'
-import { ageBuckets, loadByOwner, mergedPerDay } from './dashboard-metrics'
-import { Link } from '@tanstack/react-router'
-import { CircleCheck, MessageSquareText } from 'lucide-react'
-import { motion } from 'motion/react'
 import { buttonVariants } from '@/components/ui/button-variants'
-import { Card, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
+import { OwnerAvatar } from '@/components/ui/owner-avatar'
+import { Skeleton } from '@/components/ui/skeleton'
 import { meQuery } from '@/features/auth/queries'
 import { WeekAgendaCard } from '@/features/calendar/week-agenda-card'
 import { PinnedNotesCard } from '@/features/notes/pinned-notes-card'
@@ -22,14 +33,11 @@ import { DashboardError, ListSkeleton } from '@/features/work/list-states'
 import { PullRequestRow } from '@/features/work/pull-request-row'
 import { dashboardQuery } from '@/features/work/queries'
 import { SyncStatus } from '@/features/work/sync-status'
+import { dateKey, fromKey } from '@/lib/calendar-dates'
 import { cn } from '@/lib/cn'
 import { firstName, formatLongDate, greetingFor } from '@/lib/greeting'
-
-const fadeUp = (delay: number) => ({
-  initial: { opacity: 0, y: 6 },
-  animate: { opacity: 1, y: 0 },
-  transition: { delay, duration: 0.3, ease: 'easeOut' as const },
-})
+import { fadeUp } from '@/lib/motion'
+import { ageBuckets, loadByOwner, mergedPerDay } from './dashboard-metrics'
 
 const weekday = new Intl.DateTimeFormat('pt-BR', { weekday: 'short' })
 const longDay = new Intl.DateTimeFormat('pt-BR', {
@@ -39,6 +47,14 @@ const longDay = new Intl.DateTimeFormat('pt-BR', {
 })
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
 
+/** Abaixo do xl as listas crescem com a página; aqui elas ganham um teto. */
+const LIST_CAP = 'max-xl:max-h-[26rem]'
+
+/**
+ * O painel Hoje. A partir do xl ele ocupa exatamente a altura da tela
+ * (topo de 3rem + respiro de 3rem): nada para rolar, cada cartão rola por
+ * dentro se precisar. Abaixo disso, empilha e a página rola normalmente.
+ */
 export function HomePage() {
   const { user } = useSuspenseQuery(meQuery).data
   const dashboard = useQuery(dashboardQuery)
@@ -49,12 +65,16 @@ export function HomePage() {
   const merged = data ? mergedPerDay(data.pullRequests.merged, today) : null
   const authored = data?.pullRequests.authored ?? []
   const staleCount = authored.filter((pr) => !pr.isDraft && isStale(pr)).length
+  const owners = data ? loadByOwner(authored, data.issues) : []
 
   return (
     <ChartTooltipProvider>
-      <div className="space-y-5">
-        <motion.header {...fadeUp(0)} className="flex flex-wrap items-end justify-between gap-3">
-          <div>
+      <div className="flex flex-col gap-4 xl:h-[calc(100dvh-6rem)] xl:min-h-[38rem]">
+        <motion.header
+          {...fadeUp(0)}
+          className="flex shrink-0 flex-wrap items-end justify-between gap-3"
+        >
+          <div className="min-w-0">
             <h1 className="text-xl font-semibold">
               {greetingFor(now)}, {firstName(user.name, user.login)}
             </h1>
@@ -71,94 +91,120 @@ export function HomePage() {
           </div>
         </motion.header>
 
-        <motion.section
-          {...fadeUp(0.04)}
+        <section
           aria-label="Indicadores"
-          className="grid grid-cols-2 gap-3 xl:grid-cols-4"
+          className="grid shrink-0 grid-cols-2 gap-4 xl:grid-cols-4"
         >
-          <Link
-            {...({ to: '/pull-requests', search: { aba: 'review' } } as const)}
-            className={statTileClass}
-          >
-            <StatTile
-              label="Reviews pedidas"
-              value={data?.summary.reviewRequested ?? null}
-              hint="aguardando você"
-              tone="attention"
-            />
-          </Link>
-          <Link
-            {...({ to: '/pull-requests', search: { aba: 'meus' } } as const)}
-            className={statTileClass}
-          >
-            <StatTile
-              label="Seus PRs abertos"
-              value={data?.summary.openPullRequests ?? null}
-              hint={
-                data ? (staleCount ? `${staleCount} parados há +7 dias` : 'nenhum parado') : ' '
-              }
-            />
-          </Link>
-          <Link {...({ to: '/issues' } as const)} className={statTileClass}>
-            <StatTile
-              label="Issues atribuídas"
-              value={data?.summary.assignedIssues ?? null}
-              hint="abertas e com você"
-            />
-          </Link>
-          <Link
-            {...({ to: '/pull-requests', search: { aba: 'mergeados' } } as const)}
-            className={statTileClass}
-          >
-            <StatTile
-              label="Mergeados"
-              value={data?.summary.mergedThisWeek ?? null}
-              hint="últimos 7 dias"
-              trend={merged?.map((day) => day.count)}
-            />
-          </Link>
-        </motion.section>
+          <motion.div {...fadeUp(0.03)}>
+            <Link
+              {...({ to: '/pull-requests', search: { aba: 'review' } } as const)}
+              className={statTileClass}
+            >
+              <StatTile
+                label="Reviews pedidas"
+                icon={Eye}
+                tone="accent"
+                alert
+                value={data?.summary.reviewRequested ?? null}
+                hint="aguardando você"
+              />
+            </Link>
+          </motion.div>
+          <motion.div {...fadeUp(0.06)}>
+            <Link
+              {...({ to: '/pull-requests', search: { aba: 'meus' } } as const)}
+              className={statTileClass}
+            >
+              <StatTile
+                label="Seus PRs abertos"
+                icon={GitPullRequest}
+                tone="success"
+                value={data?.summary.openPullRequests ?? null}
+                hint={staleCount ? `${staleCount} parados há +7 dias` : 'nenhum parado'}
+              />
+            </Link>
+          </motion.div>
+          <motion.div {...fadeUp(0.09)}>
+            <Link {...({ to: '/issues' } as const)} className={statTileClass}>
+              <StatTile
+                label="Issues atribuídas"
+                icon={CircleDot}
+                tone="info"
+                value={data?.summary.assignedIssues ?? null}
+                hint="abertas e com você"
+              />
+            </Link>
+          </motion.div>
+          <motion.div {...fadeUp(0.12)}>
+            <Link
+              {...({ to: '/pull-requests', search: { aba: 'mergeados' } } as const)}
+              className={statTileClass}
+            >
+              <StatTile
+                label="Mergeados"
+                icon={GitMerge}
+                tone="merged"
+                value={data?.summary.mergedThisWeek ?? null}
+                hint="últimos 7 dias"
+                trend={merged?.map((day) => day.count)}
+              />
+            </Link>
+          </motion.div>
+        </section>
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_21rem]">
-          <motion.div {...fadeUp(0.08)}>
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12 xl:grid-rows-2">
+          <Panel delay={0.15} className="md:col-span-2 xl:col-span-5 xl:row-start-1">
             <AttentionCard dashboard={dashboard} />
-          </motion.div>
-          <motion.div {...fadeUp(0.1)}>
-            <WeekAgendaCard />
-          </motion.div>
-        </div>
+          </Panel>
 
-        {data && (
+          <Panel delay={0.18} className="xl:col-span-3 xl:col-start-10 xl:row-start-1">
+            <WeekAgendaCard className={cn('h-full', LIST_CAP)} />
+          </Panel>
+
           <motion.section
-            {...fadeUp(0.12)}
+            {...fadeUp(0.21)}
             aria-label="Gráficos"
-            className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
+            className="grid min-h-0 grid-cols-1 gap-4 md:col-span-2 md:grid-cols-3 xl:col-span-4 xl:col-start-6 xl:row-span-2 xl:row-start-1 xl:grid-cols-1 xl:grid-rows-[minmax(0,1fr)_auto_auto]"
           >
             <ChartCard
               title="Mergeados por dia"
-              subtitle={plural(
-                merged!.reduce((sum, d) => sum + d.count, 0),
-                'PR nos últimos 7 dias',
-                'PRs nos últimos 7 dias',
-              )}
+              icon={GitMerge}
+              iconClass="text-merged"
+              meta={
+                merged &&
+                plural(
+                  merged.reduce((sum, d) => sum + d.count, 0),
+                  'PR',
+                  'PRs',
+                )
+              }
             >
-              <ColumnChart
-                columns={merged!.map(({ day, count }) => ({
-                  key: day,
-                  label: day === today ? 'hoje' : weekday.format(fromKey(day)).replace('.', ''),
-                  fullLabel: day === today ? 'hoje' : longDay.format(fromKey(day)),
-                  value: count,
-                }))}
-                highlightKey={today}
-                unit={(n) => plural(n, 'PR mergeado', 'PRs mergeados')}
-              />
+              {merged ? (
+                <ColumnChart
+                  tone="merged"
+                  columns={merged.map(({ day, count }) => ({
+                    key: day,
+                    label: day === today ? 'hoje' : weekday.format(fromKey(day)).replace('.', ''),
+                    fullLabel: day === today ? 'hoje' : longDay.format(fromKey(day)),
+                    value: count,
+                  }))}
+                  highlightKey={today}
+                  unit={(n) => plural(n, 'PR mergeado', 'PRs mergeados')}
+                />
+              ) : (
+                <ChartSkeleton kind="columns" />
+              )}
             </ChartCard>
 
             <ChartCard
-              title="Idade dos seus PRs abertos"
-              subtitle="tempo sem atividade; em destaque, os parados"
+              title="Idade dos seus PRs"
+              icon={Timer}
+              iconClass="text-accent"
+              meta={data && 'em destaque, parados'}
             >
-              {authored.length === 0 ? (
+              {!data ? (
+                <ChartSkeleton kind="bars" />
+              ) : authored.length === 0 ? (
                 <p className="text-[13px] text-fg-subtle">Nenhum PR aberto.</p>
               ) : (
                 <BarList
@@ -177,40 +223,44 @@ export function HomePage() {
 
             <ChartCard
               title="Abertos por organização"
-              subtitle="seus PRs abertos e issues atribuídas"
-              className="md:col-span-2 xl:col-span-1"
+              icon={Building2}
+              iconClass="text-info"
+              meta={data && 'PRs e issues'}
             >
-              {loadByOwner(authored, data.issues).length === 0 ? (
+              {!data ? (
+                <ChartSkeleton kind="bars" />
+              ) : owners.length === 0 ? (
                 <p className="text-[13px] text-fg-subtle">Nada aberto.</p>
               ) : (
                 <BarList
-                  rows={loadByOwner(authored, data.issues)
-                    .slice(0, 6)
-                    .map((load) => ({
-                      key: load.owner,
-                      label: (
-                        <>
-                          <OwnerAvatar owner={load.owner} />
-                          <span className="truncate">{load.owner}</span>
-                        </>
-                      ),
-                      labelText: `${load.owner}: ${plural(load.pullRequests, 'PR', 'PRs')} e ${plural(load.issues, 'issue', 'issues')}`,
-                      value: load.pullRequests + load.issues,
-                    }))}
+                  tone="info"
+                  rows={owners.slice(0, 5).map((load) => ({
+                    key: load.owner,
+                    label: (
+                      <>
+                        <OwnerAvatar owner={load.owner} />
+                        <span className="truncate">{load.owner}</span>
+                      </>
+                    ),
+                    labelText: `${load.owner}: ${plural(load.pullRequests, 'PR', 'PRs')} e ${plural(load.issues, 'issue', 'issues')}`,
+                    value: load.pullRequests + load.issues,
+                  }))}
                   unit={(n) => plural(n, 'item aberto', 'itens abertos')}
                 />
               )}
             </ChartCard>
           </motion.section>
-        )}
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_21rem]">
-          <motion.div {...fadeUp(0.14)}>
-            {data && <StalePanel pullRequests={authored} />}
-          </motion.div>
-          <motion.div {...fadeUp(0.16)}>
-            <PinnedNotesCard />
-          </motion.div>
+          <Panel delay={0.24} className="md:col-span-2 xl:col-span-5 xl:row-start-2">
+            <StalePanel pullRequests={data ? authored : null} />
+          </Panel>
+
+          <Panel
+            delay={0.27}
+            className="md:col-span-2 xl:col-span-3 xl:col-start-10 xl:row-start-2"
+          >
+            <PinnedNotesCard className={cn('h-full', LIST_CAP)} />
+          </Panel>
         </div>
       </div>
     </ChartTooltipProvider>
@@ -226,62 +276,138 @@ function attentionSummary(attention: number, stale: number): string {
   return parts.filter(Boolean).join(' · ')
 }
 
-function ChartCard({
-  title,
-  subtitle,
+/** Célula da grade: entra com a animação e passa a altura ao cartão. */
+function Panel({
+  delay,
   className,
   children,
 }: {
-  title: string
-  subtitle: string
+  delay: number
   className?: string
   children: ReactNode
 }) {
   return (
-    <Card className={cn('flex flex-col', className)}>
-      <CardHeader className="h-auto flex-col items-start gap-0.5 border-b-0 pt-4 pb-0">
-        <CardTitle>{title}</CardTitle>
-        <p className="text-[12px] text-fg-subtle">{subtitle}</p>
+    <motion.div {...fadeUp(delay)} className={cn('min-h-0', className)}>
+      {children}
+    </motion.div>
+  )
+}
+
+/** Título de cartão com ícone na cor do assunto: o mesmo em todo o painel. */
+function PanelTitle({
+  icon: Icon,
+  iconClass,
+  children,
+}: {
+  icon: LucideIcon
+  iconClass: string
+  children: ReactNode
+}) {
+  return (
+    <CardTitle className="flex min-w-0 items-center gap-2">
+      <Icon className={cn('size-3.5 shrink-0', iconClass)} strokeWidth={2} />
+      <span className="truncate">{children}</span>
+    </CardTitle>
+  )
+}
+
+const Meta = ({ children }: { children: ReactNode }) => (
+  <span className="shrink-0 font-mono text-[11px] text-fg-subtle">{children}</span>
+)
+
+function ChartCard({
+  title,
+  icon,
+  iconClass,
+  meta,
+  children,
+}: {
+  title: string
+  icon: LucideIcon
+  iconClass: string
+  meta?: ReactNode
+  children: ReactNode
+}) {
+  return (
+    <Card className="flex min-h-48 flex-col overflow-hidden xl:min-h-0">
+      <CardHeader>
+        <PanelTitle icon={icon} iconClass={iconClass}>
+          {title}
+        </PanelTitle>
+        {meta && <Meta>{meta}</Meta>}
       </CardHeader>
-      <div className="flex-1 px-4 pt-4 pb-4">{children}</div>
+      {/* Os gráficos se ajustam ao espaço: nunca rolam. */}
+      <CardBody className="flex flex-col overflow-hidden px-4 py-2.5">
+        <div className="flex-1">{children}</div>
+      </CardBody>
     </Card>
+  )
+}
+
+/** Esqueleto com a forma do gráfico que vem: colunas ou barras. */
+function ChartSkeleton({ kind }: { kind: 'columns' | 'bars' }) {
+  if (kind === 'columns') {
+    return (
+      <div
+        aria-busy="true"
+        aria-label="Carregando"
+        className="flex h-full min-h-20 items-end gap-1"
+      >
+        {[30, 55, 20, 80, 45, 65, 50].map((height, index) => (
+          <Skeleton
+            key={index}
+            className="flex-1 rounded-b-none"
+            style={{ height: `${height}%` }}
+          />
+        ))}
+      </div>
+    )
+  }
+  return (
+    <div aria-busy="true" aria-label="Carregando" className="space-y-2.5">
+      {[70, 45, 85, 30].map((width) => (
+        <span key={width} className="grid grid-cols-[7.5rem_minmax(0,1fr)] items-center gap-3">
+          <Skeleton className="h-2.5 w-16" />
+          <Skeleton className="h-3" style={{ width: `${width}%` }} />
+        </span>
+      ))}
+    </div>
   )
 }
 
 function AttentionCard({ dashboard }: { dashboard: ReturnType<typeof useQuery<Dashboard>> }) {
   return (
-    <Card className="h-full overflow-hidden">
+    <Card className={cn('flex h-full flex-col overflow-hidden', LIST_CAP)}>
       <CardHeader>
-        <CardTitle>Precisa da sua atenção</CardTitle>
-        {dashboard.data && (
-          <span className="font-mono text-[11px] text-fg-subtle">
-            {plural(dashboard.data.attention.length, 'item', 'itens')}
-          </span>
-        )}
+        <PanelTitle icon={CircleAlert} iconClass="text-accent">
+          Precisa da sua atenção
+        </PanelTitle>
+        {dashboard.data && <Meta>{plural(dashboard.data.attention.length, 'item', 'itens')}</Meta>}
       </CardHeader>
-      {dashboard.isPending ? (
-        <ListSkeleton />
-      ) : dashboard.isError ? (
-        <DashboardError error={dashboard.error} onRetry={() => void dashboard.refetch()} />
-      ) : dashboard.data.attention.length === 0 ? (
-        <EmptyState
-          icon={CircleCheck}
-          title="Nada esperando por você"
-          description="Nenhuma review pedida, e seus PRs não têm CI quebrado, conflito ou pedido de mudança."
-          className="py-10"
-        />
-      ) : (
-        <ul className="divide-y divide-border">
-          {dashboard.data.attention.map(({ reason, pullRequest }) => (
-            <PullRequestRow
-              key={pullRequest.id}
-              pullRequest={pullRequest}
-              reason={reason}
-              showAuthor={reason === 'review_requested'}
-            />
-          ))}
-        </ul>
-      )}
+      <CardBody>
+        {dashboard.isPending ? (
+          <ListSkeleton rows={3} />
+        ) : dashboard.isError ? (
+          <DashboardError error={dashboard.error} onRetry={() => void dashboard.refetch()} />
+        ) : dashboard.data.attention.length === 0 ? (
+          <EmptyState
+            icon={CircleCheck}
+            title="Nada esperando por você"
+            description="Nenhuma review pedida, e seus PRs não têm CI quebrado, conflito ou pedido de mudança."
+          />
+        ) : (
+          <ul className="divide-y divide-border">
+            {dashboard.data.attention.map(({ reason, pullRequest }) => (
+              <PullRequestRow
+                key={pullRequest.id}
+                pullRequest={pullRequest}
+                reason={reason}
+                showAuthor={reason === 'review_requested'}
+              />
+            ))}
+          </ul>
+        )}
+      </CardBody>
     </Card>
   )
 }
@@ -289,36 +415,49 @@ function AttentionCard({ dashboard }: { dashboard: ReturnType<typeof useQuery<Da
 /**
  * Seus PRs sem movimento há mais de uma semana, os mais antigos primeiro.
  * Não pedem ação sua no código, mas talvez um lembrete a quem revisa.
+ * Sempre aparece, mesmo vazio: o lugar dele na grade não fica em branco.
  */
-function StalePanel({ pullRequests }: { pullRequests: PullRequest[] }) {
-  const stale = applySort(
-    pullRequests.filter((pr) => !pr.isDraft && isStale(pr)),
-    'antigos',
-  )
-  if (stale.length === 0) return null
+function StalePanel({ pullRequests }: { pullRequests: PullRequest[] | null }) {
+  const stale = pullRequests
+    ? applySort(
+        pullRequests.filter((pr) => !pr.isDraft && isStale(pr)),
+        'antigos',
+      )
+    : null
 
   return (
-    <Card>
+    <Card className={cn('flex h-full flex-col overflow-hidden', LIST_CAP)}>
       <CardHeader>
-        <CardTitle>
+        <PanelTitle icon={Hourglass} iconClass="text-accent">
           Parados há mais de 7 dias
-          <span className="ml-2 font-mono text-[11px] font-normal text-fg-subtle">
-            {stale.length}
-          </span>
-        </CardTitle>
-        <Link
-          to="/pull-requests"
-          search={{ aba: 'meus', ordem: 'antigos' }}
-          className="text-[12px] text-fg-muted hover:text-fg"
-        >
-          Ver todos
-        </Link>
+        </PanelTitle>
+        {stale && stale.length > 0 && (
+          <Link
+            to="/pull-requests"
+            search={{ aba: 'meus', ordem: 'antigos' }}
+            className="shrink-0 text-[12px] text-fg-muted hover:text-fg"
+          >
+            Ver todos ({stale.length})
+          </Link>
+        )}
       </CardHeader>
-      <ul className="divide-y divide-border">
-        {stale.slice(0, 3).map((pr) => (
-          <PullRequestRow key={pr.id} pullRequest={pr} showAuthor={false} />
-        ))}
-      </ul>
+      <CardBody>
+        {!stale ? (
+          <ListSkeleton rows={2} />
+        ) : stale.length === 0 ? (
+          <EmptyState
+            icon={CircleCheck}
+            title="Nenhum PR parado"
+            description="Todos os seus PRs abertos tiveram movimento na última semana."
+          />
+        ) : (
+          <ul className="divide-y divide-border">
+            {stale.map((pr) => (
+              <PullRequestRow key={pr.id} pullRequest={pr} showAuthor={false} />
+            ))}
+          </ul>
+        )}
+      </CardBody>
     </Card>
   )
 }

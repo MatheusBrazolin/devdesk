@@ -1,39 +1,46 @@
+import { CalendarDays } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { Card, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card'
+import { cn } from '@/lib/cn'
 import { addDaysToKey } from '@/lib/calendar-dates'
-import { AgendaList } from './agenda-list'
+import { AgendaList, AgendaSkeleton } from './agenda-list'
 import { calendarQuery, deadlinesQuery } from './queries'
 import { useToday } from '@/lib/use-today'
 
 const DAYS = 7
 
 /** Os próximos sete dias no painel Hoje: eventos, lembretes e prazos. */
-export function WeekAgendaCard() {
+export function WeekAgendaCard({ className }: { className?: string }) {
   const today = useToday()
   const range = { from: today, to: addDaysToKey(today, DAYS - 1) }
   const events = useQuery(calendarQuery(range))
   const deadlines = useQuery(deadlinesQuery(range))
 
   return (
-    <Card className="overflow-hidden">
+    <Card className={cn('flex flex-col overflow-hidden', className)}>
       <CardHeader>
-        <CardTitle>Agenda da semana</CardTitle>
-        <Link to="/calendario" className="text-[12px] text-fg-muted hover:text-fg">
-          Abrir calendário
+        <CardTitle className="flex min-w-0 items-center gap-2 whitespace-nowrap">
+          <CalendarDays className="size-3.5 shrink-0 text-info" strokeWidth={2} />
+          Agenda da semana
+        </CardTitle>
+        <Link to="/calendario" className="shrink-0 text-[12px] text-fg-muted hover:text-fg">
+          Abrir
         </Link>
       </CardHeader>
-      {events.data ? (
-        <AgendaList
-          from={today}
-          days={DAYS}
-          events={events.data.events}
-          deadlines={deadlines.data?.deadlines ?? []}
-          empty="Nada marcado nos próximos 7 dias."
-        />
-      ) : (
-        <p className="px-4 py-6 text-[13px] text-fg-subtle">Carregando…</p>
-      )}
+      <CardBody>
+        {events.data ? (
+          <AgendaList
+            from={today}
+            days={DAYS}
+            events={events.data.events}
+            deadlines={deadlines.data?.deadlines ?? []}
+            empty="Nada marcado nos próximos 7 dias."
+          />
+        ) : (
+          <AgendaSkeleton />
+        )}
+      </CardBody>
     </Card>
   )
 }
