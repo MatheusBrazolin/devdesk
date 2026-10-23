@@ -5,6 +5,7 @@ import { githubReconnect, upstream } from '../../domain/errors.js'
 import type { CiStatus, Issue, Milestone, PullRequest, WorkSnapshot } from '../../domain/work.js'
 import { DASHBOARD_QUERIES, type DashboardList, dashboardSearches } from './dashboard-query.js'
 import { createReadOnlyFetch } from './read-only-fetch.js'
+import { readGitHubJson } from './read-github-json.js'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -121,6 +122,7 @@ function toPullRequest(node: z.infer<typeof pullRequestNodeSchema>): PullRequest
       : null,
     mergeable: node.mergeable.toLowerCase() as PullRequest['mergeable'],
     approvals: reviews.filter((review) => review?.state === 'APPROVED').length,
+    changesRequested: reviews.filter((review) => review?.state === 'CHANGES_REQUESTED').length,
     comments: node.comments.totalCount,
     milestone: toMilestone(node.milestone),
   }
@@ -197,7 +199,7 @@ export class GitHubWorkSource implements WorkSource {
     if (response.status === 401) throw githubReconnect()
     if (!response.ok) throw upstream(`GitHub respondeu ${response.status} ao montar o painel.`)
 
-    const body = responseSchema.parse(await response.json())
+    const body = await readGitHubJson(response, responseSchema, 'montar o painel')
     if (!body.data) {
       throw upstream(`GitHub recusou a consulta: ${body.errors?.[0]?.message ?? 'sem detalhes'}`)
     }

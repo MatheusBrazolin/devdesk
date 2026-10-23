@@ -4,6 +4,7 @@ import type { Activity, ReviewVerdict, WorkRef } from '../../domain/activity.js'
 import { githubReconnect, upstream } from '../../domain/errors.js'
 import { ACTIVITY_QUERIES, type ActivityList, activitySearches } from './activity-query.js'
 import { createReadOnlyFetch } from './read-only-fetch.js'
+import { readGitHubJson } from './read-github-json.js'
 
 const refSchema = z.object({
   title: z.string(),
@@ -91,7 +92,7 @@ export class GitHubActivitySource implements ActivitySource {
     if (response.status === 401) throw githubReconnect()
     if (!response.ok) throw upstream(`GitHub respondeu ${response.status} ao montar o standup.`)
 
-    const body = responseSchema.parse(await response.json())
+    const body = await readGitHubJson(response, responseSchema, 'montar o standup')
     if (!body.data)
       throw upstream(`GitHub recusou a consulta: ${body.errors?.[0]?.message ?? 'sem detalhes'}`)
     return body.data.search.nodes

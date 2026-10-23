@@ -136,7 +136,8 @@ function PullRequestStatus({ pr }: { pr: PullRequest }) {
       <CiIndicator status={pr.ciStatus} />
       {pr.mergeable === 'conflicting' ? (
         <Badge tone="danger">conflito</Badge>
-      ) : pr.reviewDecision === 'changes_requested' ? (
+      ) : pr.reviewDecision === 'changes_requested' ||
+        (pr.reviewDecision === null && pr.changesRequested > 0) ? (
         <Badge tone="danger">mudanças pedidas</Badge>
       ) : pr.approvals > 0 ? (
         <Badge tone="success">

@@ -32,7 +32,7 @@ describe('GitHubActivitySource', () => {
     expect(requests.map((r) => r.q)).toEqual([
       'is:pr author:@me merged:2026-10-22T03:00:00Z..2026-10-23T03:00:00Z',
       'is:pr author:@me created:2026-10-22T03:00:00Z..2026-10-23T03:00:00Z',
-      'is:pr reviewed-by:@me -author:@me updated:>=2026-10-22T03:00:00Z',
+      'is:pr reviewed-by:@me -author:@me updated:>=2026-10-22T03:00:00Z sort:updated-desc',
       'is:issue assignee:@me closed:2026-10-22T03:00:00Z..2026-10-23T03:00:00Z',
     ])
     expect(requests[2]?.login).toBe('eu')

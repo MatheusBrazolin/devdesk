@@ -39,7 +39,10 @@ export class GetStandup {
   private async activity(user: User, from: Date, to: Date): Promise<Activity> {
     if (user.isDemo) return this.sources.sample.fetchActivity('', user.login, from, to)
 
-    const key = `${user.id}:${from.toISOString()}:${to.toISOString()}`
+    // Arredonda ao minuto: períodos inventados com milissegundos diferentes não
+    // viram buscas novas no GitHub (cada uma gasta 4 da cota de busca).
+    const minute = (date: Date) => Math.floor(date.getTime() / 60_000)
+    const key = `${user.id}:${minute(from)}:${minute(to)}`
     const now = this.clock.now().getTime()
     const cached = this.cache.get(key)
     if (cached && now - cached.at < CACHE_MS) return cached.activity

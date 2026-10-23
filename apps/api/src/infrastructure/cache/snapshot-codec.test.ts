@@ -24,6 +24,8 @@ const snapshot: WorkSnapshot = {
       reviewDecision: null,
       mergeable: 'mergeable',
       approvals: 1,
+
+      changesRequested: 0,
       comments: 0,
       milestone: null,
     },
@@ -89,6 +91,22 @@ describe('LayeredSnapshotCache', () => {
     await new LayeredSnapshotCache(memory, persistent).set('u', 'tok', snapshot)
     await expect(memory.get('u', 'tok')).resolves.toBeDefined()
     await expect(persistent.get('u', 'tok')).resolves.toBeDefined()
+  })
+
+  it('Postgres fora do ar não derruba: lê nada e grava só na memória', async () => {
+    const memory = new InMemorySnapshotCache()
+    const broken = {
+      get: async () => {
+        throw new Error('conexão recusada')
+      },
+      set: async () => {
+        throw new Error('conexão recusada')
+      },
+    }
+    const layered = new LayeredSnapshotCache(memory, broken)
+    await expect(layered.get('u', 'tok')).resolves.toBeUndefined()
+    await expect(layered.set('u', 'tok', snapshot)).resolves.toBeUndefined()
+    await expect(layered.get('u', 'tok')).resolves.toEqual(snapshot)
   })
 
   it('outra credencial não recebe o retrato', async () => {

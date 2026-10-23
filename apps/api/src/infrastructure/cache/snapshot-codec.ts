@@ -5,7 +5,8 @@ import type { Issue, PullRequest, WorkSnapshot } from '../../domain/work.js'
  * retrato muda: um retrato salvo num formato antigo é ignorado (vira uma
  * busca nova), em vez de chegar quebrado ao painel.
  */
-export const SNAPSHOT_VERSION = 1
+/** 2: PRs ganharam changesRequested. */
+export const SNAPSHOT_VERSION = 2
 
 interface Stored {
   version: number

@@ -135,13 +135,19 @@ export const DASHBOARD_QUERIES: Record<DashboardList, string> = {
 }
 
 const ARCHIVED = 'archived:false'
+/**
+ * Cada lista vem cortada (30, ou 20 nos mergeados). Ordenar pelos mais
+ * recentes faz o corte ficar com os mais relevantes, em vez da ordem de
+ * "melhor correspondência" da busca, que não tem nada a ver com o painel.
+ */
+const RECENT = 'sort:updated-desc'
 
 export function dashboardSearches(mergedSince: Date): Record<DashboardList, string> {
   const since = mergedSince.toISOString().slice(0, 10)
   return {
-    reviewRequested: `is:pr is:open review-requested:@me ${ARCHIVED}`,
-    authored: `is:pr is:open author:@me ${ARCHIVED}`,
-    issues: `is:issue is:open assignee:@me ${ARCHIVED}`,
-    merged: `is:pr is:merged author:@me merged:>=${since}`,
+    reviewRequested: `is:pr is:open review-requested:@me ${ARCHIVED} ${RECENT}`,
+    authored: `is:pr is:open author:@me ${ARCHIVED} ${RECENT}`,
+    issues: `is:issue is:open assignee:@me ${ARCHIVED} ${RECENT}`,
+    merged: `is:pr is:merged author:@me merged:>=${since} ${RECENT}`,
   }
 }

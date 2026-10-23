@@ -182,7 +182,9 @@ describe('GitHubWorkSource', () => {
       expect(request.url).toBe('https://api.github.com/graphql')
       expect(new Headers(request.init.headers).get('authorization')).toBe('Bearer gho_x')
     }
-    expect(requests.map((r) => r.q)).toContain('is:pr is:merged author:@me merged:>=2026-10-16')
+    expect(requests.map((r) => r.q)).toContain(
+      'is:pr is:merged author:@me merged:>=2026-10-16 sort:updated-desc',
+    )
     expect(requests.some((r) => r.q.includes('review-requested:@me'))).toBe(true)
   })
 
@@ -218,6 +220,23 @@ describe('GitHubWorkSource', () => {
     })
     const snapshot = await new GitHubWorkSource(clock, impl).fetchSnapshot('gho_x')
     expect(snapshot.merged[0]).toMatchObject({ ciStatus: null, approvals: 0 })
+  })
+
+  it('search nulo com erro do GitHub vira falha do GitHub (502), não requisição inválida', async () => {
+    const impl = (async () =>
+      new Response(
+        JSON.stringify({ data: { search: null }, errors: [{ message: 'timeout' }] }),
+      )) as unknown as typeof fetch
+    await expect(new GitHubWorkSource(clock, impl).fetchSnapshot('gho_x')).rejects.toMatchObject({
+      code: 'UPSTREAM',
+    })
+  })
+
+  it('corpo que não é JSON (página de erro) também vira falha do GitHub', async () => {
+    const impl = (async () => new Response('<html>erro</html>')) as unknown as typeof fetch
+    await expect(new GitHubWorkSource(clock, impl).fetchSnapshot('gho_x')).rejects.toMatchObject({
+      code: 'UPSTREAM',
+    })
   })
 
   it('token recusado pede reconexão', async () => {

@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import type { SnapshotCache } from '../../application/ports/work-source.js'
 import type { WorkSnapshot } from '../../domain/work.js'
 import type { Database } from '../db/client.js'
@@ -34,11 +34,20 @@ export class PostgresSnapshotCache implements SnapshotCache {
     await this.db
       .insert(dashboardSnapshots)
       .values(values)
-      .onConflictDoUpdate({ target: dashboardSnapshots.userId, set: values })
+      .onConflictDoUpdate({
+        target: dashboardSnapshots.userId,
+        set: values,
+        // Uma busca antiga que termina depois de uma nova não apaga o retrato mais recente.
+        setWhere: sql`excluded.fetched_at > ${dashboardSnapshots.fetchedAt}`,
+      })
   }
 }
 
-/** Memória na frente, Postgres atrás: lê da primeira que tiver, grava nas duas. */
+/**
+ * Memória na frente, Postgres atrás: lê da primeira que tiver, grava nas duas.
+ * O Postgres aqui é só um atalho: se ele falhar, o painel segue com a memória
+ * e o GitHub, em vez de cair.
+ */
 export class LayeredSnapshotCache implements SnapshotCache {
   constructor(
     private readonly memory: SnapshotCache,
@@ -48,15 +57,13 @@ export class LayeredSnapshotCache implements SnapshotCache {
   async get(userId: string, credential: string): Promise<WorkSnapshot | undefined> {
     const fromMemory = await this.memory.get(userId, credential)
     if (fromMemory) return fromMemory
-    const stored = await this.persistent.get(userId, credential)
+    const stored = await this.persistent.get(userId, credential).catch(() => undefined)
     if (stored) await this.memory.set(userId, credential, stored)
     return stored
   }
 
   async set(userId: string, credential: string, snapshot: WorkSnapshot): Promise<void> {
-    await Promise.all([
-      this.memory.set(userId, credential, snapshot),
-      this.persistent.set(userId, credential, snapshot),
-    ])
+    await this.memory.set(userId, credential, snapshot)
+    await this.persistent.set(userId, credential, snapshot).catch(() => undefined)
   }
 }

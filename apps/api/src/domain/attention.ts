@@ -18,11 +18,17 @@ const PRIORITY: Record<AttentionReason, number> = {
 }
 
 /**
- * Sem review obrigatória no repositório o GitHub não calcula a decisão
- * (vem nula); aí uma aprovação basta.
+ * Sem review obrigatória no repositório o GitHub não calcula a decisão (vem
+ * nula). Aí valem as reviews em si: um pedido de mudança pesa mais que
+ * qualquer aprovação, e só sem pedido de mudança uma aprovação basta.
  */
+export const hasChangesRequested = (pr: PullRequest) =>
+  pr.reviewDecision === 'changes_requested' ||
+  (pr.reviewDecision === null && pr.changesRequested > 0)
+
 export const isApproved = (pr: PullRequest) =>
-  pr.reviewDecision === 'approved' || (pr.reviewDecision === null && pr.approvals > 0)
+  pr.reviewDecision === 'approved' ||
+  (pr.reviewDecision === null && pr.approvals > 0 && pr.changesRequested === 0)
 
 /**
  * O motivo mais urgente para um PR seu pedir atenção, ou nulo se ele está
@@ -30,7 +36,7 @@ export const isApproved = (pr: PullRequest) =>
  */
 export function reasonForAuthoredPullRequest(pr: PullRequest): AttentionReason | null {
   if (pr.isDraft) return null
-  if (pr.reviewDecision === 'changes_requested') return 'changes_requested'
+  if (hasChangesRequested(pr)) return 'changes_requested'
   if (pr.ciStatus === 'failure') return 'ci_failed'
   if (pr.mergeable === 'conflicting') return 'conflict'
   if (

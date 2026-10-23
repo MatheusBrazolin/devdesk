@@ -11,7 +11,7 @@ const search = (
   variables = '$q: String!',
 ) => /* GraphQL */ `
   query StandupActivity(${variables}) {
-    search(type: ISSUE, query: $q, first: 30) {
+    search(type: ISSUE, query: $q, first: 50) {
       nodes { ... on ${type} { __typename ${REF_FIELDS} ${extra} } }
     }
   }
@@ -23,7 +23,7 @@ export const ACTIVITY_QUERIES = {
   // As reviews da própria pessoa, para saber quando e o que ela respondeu.
   reviewed: search(
     'PullRequest',
-    'reviews(author: $login, last: 10) { nodes { state submittedAt } }',
+    'reviews(author: $login, last: 30) { nodes { state submittedAt } }',
     '$q: String!, $login: String!',
   ),
   closedIssues: search('Issue'),
@@ -41,7 +41,9 @@ export function activitySearches(from: Date, to: Date): Record<ActivityList, str
     opened: `is:pr author:@me created:${range}`,
     // reviewed-by não filtra pela data da review: busca os PRs mexidos desde o
     // início do período e as datas das reviews decidem.
-    reviewed: `is:pr reviewed-by:@me -author:@me updated:>=${stamp(from)}`,
+    // Limite conhecido: com mais de 50 PRs mexidos desde o início do período, os
+    // mais antigos ficam de fora. A ordem recente prioriza os do período.
+    reviewed: `is:pr reviewed-by:@me -author:@me updated:>=${stamp(from)} sort:updated-desc`,
     closedIssues: `is:issue assignee:@me closed:${range}`,
   }
 }

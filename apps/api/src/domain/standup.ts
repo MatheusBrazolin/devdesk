@@ -39,7 +39,9 @@ function waitingDays(pr: PullRequest, now: Date): number {
 /**
  * Monta o standup. "Feito" vem da atividade do período; "hoje" é a lista do
  * que precisa da sua atenção; "bloqueios" são seus PRs parados esperando
- * review. Um item aparece numa seção só.
+ * review. O mesmo PR pode estar em "feito" e em "hoje", porque são ações
+ * diferentes ("abri o PR" ontem, "corrigir o CI" hoje). Entre "hoje" e
+ * "bloqueios" ele nunca se repete.
  */
 export function buildStandup(activity: Activity, snapshot: WorkSnapshot, now: Date): StandupParts {
   const done = [

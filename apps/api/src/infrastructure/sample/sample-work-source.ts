@@ -38,6 +38,8 @@ export class SampleWorkSource implements WorkSource {
       reviewDecision: 'review_required',
       mergeable: 'mergeable',
       approvals: 0,
+
+      changesRequested: 0,
       comments: 0,
       milestone: null,
       ...data,

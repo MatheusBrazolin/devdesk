@@ -23,6 +23,8 @@ const pr = (n: number, overrides: Partial<PullRequest> = {}): PullRequest => ({
   reviewDecision: null,
   mergeable: 'mergeable',
   approvals: 0,
+
+  changesRequested: 0,
   comments: 0,
   milestone: null,
   ...overrides,
@@ -105,6 +107,17 @@ describe('buildStandup', () => {
     const { today, blockers } = buildStandup(noActivity, snapshot({ authored: [conflict] }), now)
     expect(today.map((i) => i.number)).toEqual([30])
     expect(blockers).toEqual([])
+  })
+
+  it('o mesmo PR pode estar em feito e em hoje: são ações diferentes', () => {
+    const broken = pr(50, { ciStatus: 'failure' })
+    const { done, today } = buildStandup(
+      { ...noActivity, opened: [ref(50)] },
+      snapshot({ authored: [broken] }),
+      now,
+    )
+    expect(done.map((i) => [i.kind, i.number])).toEqual([['opened', 50]])
+    expect(today.map((i) => [i.kind, i.number])).toEqual([['ci_failed', 50]])
   })
 
   it('rascunho parado não é bloqueio', () => {

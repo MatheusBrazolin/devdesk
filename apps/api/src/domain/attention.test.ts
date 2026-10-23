@@ -20,6 +20,8 @@ function pr(overrides: Partial<PullRequest> = {}): PullRequest {
     reviewDecision: 'review_required',
     mergeable: 'mergeable',
     approvals: 0,
+
+    changesRequested: 0,
     comments: 0,
     milestone: null,
     ...overrides,
@@ -71,6 +73,18 @@ describe('reasonForAuthoredPullRequest', () => {
   it('repositório sem review obrigatória: uma aprovação basta', () => {
     expect(reasonForAuthoredPullRequest(pr({ reviewDecision: null, approvals: 1 }))).toBe(
       'ready_to_merge',
+    )
+  })
+
+  it('sem review obrigatória: pedido de mudança pesa mais que aprovação', () => {
+    expect(
+      reasonForAuthoredPullRequest(pr({ reviewDecision: null, approvals: 1, changesRequested: 1 })),
+    ).toBe('changes_requested')
+  })
+
+  it('sem review obrigatória: só pedido de mudança também pede atenção', () => {
+    expect(reasonForAuthoredPullRequest(pr({ reviewDecision: null, changesRequested: 1 }))).toBe(
+      'changes_requested',
     )
   })
 

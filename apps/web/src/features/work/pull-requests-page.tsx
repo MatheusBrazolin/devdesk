@@ -126,7 +126,8 @@ export function PullRequestsPage() {
 function Summary({ items }: { items: PullRequest[] }) {
   if (items.length === 0) return null
   const approved = items.filter(
-    (pr) => pr.approvals > 0 && pr.reviewDecision !== 'changes_requested',
+    (pr) =>
+      pr.approvals > 0 && pr.changesRequested === 0 && pr.reviewDecision !== 'changes_requested',
   ).length
   const stale = items.filter((pr) => isStale(pr)).length
   const failing = items.filter((pr) => pr.ciStatus === 'failure').length

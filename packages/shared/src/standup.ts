@@ -1,8 +1,9 @@
 import { z } from 'zod'
+import { instantSchema } from './calendar.js'
 
 /** Período do "ontem": instantes, porque o dia útil anterior depende do fuso de quem pede. */
 export const standupQuerySchema = z
-  .object({ from: z.iso.datetime(), to: z.iso.datetime() })
+  .object({ from: instantSchema, to: instantSchema })
   .refine(({ from, to }) => Date.parse(from) < Date.parse(to), 'from depois de to')
   .refine(
     ({ from, to }) => Date.parse(to) - Date.parse(from) <= 4 * 86_400_000,

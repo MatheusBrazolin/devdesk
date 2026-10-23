@@ -29,6 +29,8 @@ export interface PullRequest {
   reviewDecision: ReviewDecision
   mergeable: Mergeable
   approvals: number
+  /** Reviews mais recentes que pedem mudança (uma por revisor). */
+  changesRequested: number
   comments: number
   milestone: Milestone | null
 }

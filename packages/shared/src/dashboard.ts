@@ -44,6 +44,7 @@ export const pullRequestSchema = z.object({
   reviewDecision: reviewDecisionSchema,
   mergeable: mergeableSchema,
   approvals: z.number().int().nonnegative(),
+  changesRequested: z.number().int().nonnegative(),
   comments: z.number().int().nonnegative(),
   milestone: milestoneSchema.nullable(),
 })
