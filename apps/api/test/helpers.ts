@@ -106,11 +106,14 @@ export class FakeGitHubProfiles implements GitHubProfiles {
 export class FakeWorkSource implements WorkSource {
   readonly calls: string[] = []
   error: Error | null = null
+  /** Atraso artificial, para testar buscas simultâneas. */
+  delayMs = 0
 
   constructor(private readonly clock: FakeClock) {}
 
   async fetchSnapshot(accessToken: string): Promise<WorkSnapshot> {
     this.calls.push(accessToken)
+    if (this.delayMs) await new Promise((resolve) => setTimeout(resolve, this.delayMs))
     if (this.error) throw this.error
     return {
       fetchedAt: this.clock.now(),
@@ -144,10 +147,12 @@ export function createTestContext(
   const profiles = new FakeGitHubProfiles()
   const notes = new InMemoryNoteRepository()
   const events = new InMemoryEventRepository()
+  const snapshotCache = new InMemorySnapshotCache()
   const getDashboard = new GetDashboard(
     { github: githubWork, sample: new SampleWorkSource(clock) },
     githubTokens,
-    new InMemorySnapshotCache(clock),
+    snapshotCache,
+    clock,
   )
 
   const deps: AppDependencies = {
@@ -196,6 +201,7 @@ export function createTestContext(
     profiles,
     notes,
     events,
+    snapshotCache,
   }
 }
 

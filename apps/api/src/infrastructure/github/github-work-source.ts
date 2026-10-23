@@ -3,7 +3,7 @@ import type { Clock } from '../../application/ports/security.js'
 import type { WorkSource } from '../../application/ports/work-source.js'
 import { githubReconnect, upstream } from '../../domain/errors.js'
 import type { CiStatus, Issue, Milestone, PullRequest, WorkSnapshot } from '../../domain/work.js'
-import { DASHBOARD_QUERY, dashboardVariables } from './dashboard-query.js'
+import { DASHBOARD_QUERIES, type DashboardList, dashboardSearches } from './dashboard-query.js'
 import { createReadOnlyFetch } from './read-only-fetch.js'
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -41,19 +41,22 @@ const pullRequestNodeSchema = z.object({
   comments: z.object({ totalCount: z.number() }),
   latestOpinionatedReviews: z
     .object({ nodes: z.array(z.object({ state: z.string() }).nullable()) })
-    .nullable(),
+    .nullable()
+    .optional(),
   milestone: milestoneSchema,
-  commits: z.object({
-    nodes: z.array(
-      z
-        .object({
-          commit: z.object({
-            statusCheckRollup: z.object({ state: z.string() }).nullable(),
-          }),
-        })
-        .nullable(),
-    ),
-  }),
+  commits: z
+    .object({
+      nodes: z.array(
+        z
+          .object({
+            commit: z.object({
+              statusCheckRollup: z.object({ state: z.string() }).nullable(),
+            }),
+          })
+          .nullable(),
+      ),
+    })
+    .optional(),
 })
 
 const issueNodeSchema = z.object({
@@ -80,15 +83,7 @@ const searchSchema = z.object({
 })
 
 const responseSchema = z.object({
-  data: z
-    .object({
-      reviewRequested: searchSchema,
-      authored: searchSchema,
-      merged: searchSchema,
-      issues: searchSchema,
-    })
-    .nullable()
-    .optional(),
+  data: z.object({ search: searchSchema }).nullable().optional(),
   errors: z.array(z.object({ message: z.string() })).optional(),
 })
 
@@ -120,7 +115,7 @@ function toPullRequest(node: z.infer<typeof pullRequestNodeSchema>): PullRequest
     createdAt: new Date(node.createdAt),
     updatedAt: new Date(node.updatedAt),
     mergedAt: node.mergedAt ? new Date(node.mergedAt) : null,
-    ciStatus: toCiStatus(node.commits.nodes[0]?.commit.statusCheckRollup?.state),
+    ciStatus: toCiStatus(node.commits?.nodes[0]?.commit.statusCheckRollup?.state),
     reviewDecision: node.reviewDecision
       ? (node.reviewDecision.toLowerCase() as PullRequest['reviewDecision'])
       : null,
@@ -166,6 +161,29 @@ export class GitHubWorkSource implements WorkSource {
 
   async fetchSnapshot(accessToken: string): Promise<WorkSnapshot> {
     const now = this.clock.now()
+    const searches = dashboardSearches(new Date(now.getTime() - 7 * DAY_MS))
+    const lists = ['reviewRequested', 'authored', 'merged', 'issues'] as const
+    const [reviewRequested, authored, merged, issues] = await Promise.all(
+      lists.map((list) => this.search(accessToken, list, searches[list])),
+    )
+
+    return {
+      fetchedAt: now,
+      isSample: false,
+      reviewRequested: parseNodes(reviewRequested!.nodes, pullRequestNodeSchema, toPullRequest),
+      authored: parseNodes(authored!.nodes, pullRequestNodeSchema, toPullRequest),
+      merged: parseNodes(merged!.nodes, pullRequestNodeSchema, toPullRequest),
+      issues: parseNodes(issues!.nodes, issueNodeSchema, toIssue),
+      totals: {
+        reviewRequested: reviewRequested!.issueCount,
+        authored: authored!.issueCount,
+        merged: merged!.issueCount,
+        issues: issues!.issueCount,
+      },
+    }
+  }
+
+  private async search(accessToken: string, list: DashboardList, q: string) {
     const response = await this.fetchImpl('https://api.github.com/graphql', {
       method: 'POST',
       headers: {
@@ -173,10 +191,7 @@ export class GitHubWorkSource implements WorkSource {
         'content-type': 'application/json',
         'user-agent': 'devdesk',
       },
-      body: JSON.stringify({
-        query: DASHBOARD_QUERY,
-        variables: dashboardVariables(new Date(now.getTime() - 7 * DAY_MS)),
-      }),
+      body: JSON.stringify({ query: DASHBOARD_QUERIES[list], variables: { q } }),
     })
 
     if (response.status === 401) throw githubReconnect()
@@ -186,21 +201,6 @@ export class GitHubWorkSource implements WorkSource {
     if (!body.data) {
       throw upstream(`GitHub recusou a consulta: ${body.errors?.[0]?.message ?? 'sem detalhes'}`)
     }
-
-    const { reviewRequested, authored, merged, issues } = body.data
-    return {
-      fetchedAt: now,
-      isSample: false,
-      reviewRequested: parseNodes(reviewRequested.nodes, pullRequestNodeSchema, toPullRequest),
-      authored: parseNodes(authored.nodes, pullRequestNodeSchema, toPullRequest),
-      merged: parseNodes(merged.nodes, pullRequestNodeSchema, toPullRequest),
-      issues: parseNodes(issues.nodes, issueNodeSchema, toIssue),
-      totals: {
-        reviewRequested: reviewRequested.issueCount,
-        authored: authored.issueCount,
-        merged: merged.issueCount,
-        issues: issues.issueCount,
-      },
-    }
+    return body.data.search
   }
 }

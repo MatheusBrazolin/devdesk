@@ -72,6 +72,8 @@ export const dashboardSchema = z.object({
   fetchedAt: z.iso.datetime(),
   /** Dados de exemplo do modo demonstração, nunca de uma conta real. */
   isSample: z.boolean(),
+  /** Retrato guardado; um mais novo está sendo buscado. Vale perguntar de novo em instantes. */
+  stale: z.boolean(),
   summary: z.object({
     reviewRequested: z.number().int(),
     openPullRequests: z.number().int(),

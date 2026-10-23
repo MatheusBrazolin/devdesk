@@ -29,6 +29,13 @@
       "when": 1792776045975,
       "tag": "0003_calendar_events",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792778539071,
+      "tag": "0004_dashboard_snapshots",
+      "breakpoints": true
     }
   ]
 }

@@ -6,7 +6,8 @@ export const dashboardQuery = queryOptions({
   queryKey: ['dashboard'],
   queryFn: () => api<Dashboard>('/dashboard'),
   staleTime: 60_000,
-  refetchInterval: 2 * 60_000,
+  // Resposta "stale" é o retrato guardado: o novo chega em ~2 s, então pergunta logo de novo.
+  refetchInterval: (query) => (query.state.data?.stale ? 3_000 : 2 * 60_000),
   retry: false,
 })
 

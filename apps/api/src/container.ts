@@ -14,6 +14,10 @@ import { AesTokenCipher } from './infrastructure/crypto/aes-token-cipher.js'
 import { RandomSessionTokens, systemClock } from './infrastructure/crypto/session-tokens.js'
 import type { Database } from './infrastructure/db/client.js'
 import { InMemorySnapshotCache } from './infrastructure/cache/in-memory-snapshot-cache.js'
+import {
+  LayeredSnapshotCache,
+  PostgresSnapshotCache,
+} from './infrastructure/cache/postgres-snapshot-cache.js'
 import { GitHubProfileClient } from './infrastructure/github/github-profile-client.js'
 import { GitHubOAuthClient } from './infrastructure/github/github-oauth-client.js'
 import { GitHubWorkSource } from './infrastructure/github/github-work-source.js'
@@ -46,7 +50,8 @@ export function createContainer(env: Env, db: Database): AppDependencies {
   const getDashboard = new GetDashboard(
     { github: new GitHubWorkSource(systemClock), sample: new SampleWorkSource(systemClock) },
     githubTokens,
-    new InMemorySnapshotCache(systemClock),
+    new LayeredSnapshotCache(new InMemorySnapshotCache(), new PostgresSnapshotCache(db)),
+    systemClock,
   )
 
   return {

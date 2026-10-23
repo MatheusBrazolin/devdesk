@@ -97,3 +97,14 @@ export const calendarEvents = pgTable(
     ),
   ],
 )
+
+/** Último retrato do painel por pessoa, para abrir na hora mesmo depois de reiniciar a API. */
+export const dashboardSnapshots = pgTable('dashboard_snapshots', {
+  userId: uuid('user_id')
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  /** Final do token usado: retrato de outra credencial não é servido. */
+  credential: text('credential').notNull(),
+  data: jsonb('data').notNull(),
+  fetchedAt: timestamp('fetched_at', { withTimezone: true }).notNull(),
+})

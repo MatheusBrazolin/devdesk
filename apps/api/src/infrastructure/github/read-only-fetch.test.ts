@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DASHBOARD_QUERY } from './dashboard-query.js'
+import { DASHBOARD_QUERIES } from './dashboard-query.js'
 import { assertReadOnly, createReadOnlyFetch, GitHubWriteBlockedError } from './read-only-fetch.js'
 
 const graphql = (query: string) => ({ method: 'POST', body: JSON.stringify({ query }) })
@@ -14,10 +14,8 @@ describe('assertReadOnly', () => {
     ).not.toThrow()
   })
 
-  it('libera a consulta do painel', () => {
-    expect(() =>
-      assertReadOnly('https://api.github.com/graphql', graphql(DASHBOARD_QUERY)),
-    ).not.toThrow()
+  it.each(Object.entries(DASHBOARD_QUERIES))('libera a consulta do painel: %s', (_list, query) => {
+    expect(() => assertReadOnly('https://api.github.com/graphql', graphql(query))).not.toThrow()
   })
 
   it('libera a forma curta de query', () => {

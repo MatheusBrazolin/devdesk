@@ -1,30 +1,21 @@
-import type { Clock } from '../../application/ports/security.js'
 import type { SnapshotCache } from '../../application/ports/work-source.js'
 import type { WorkSnapshot } from '../../domain/work.js'
 
-/**
- * Cache por processo, com validade curta: segura o limite de requisições do
- * GitHub sem deixar o painel velho. Basta para uma instância só da API.
- */
+const MAX_ENTRIES = 200
+
+/** Primeira camada: memória do processo. Some quando a API reinicia. */
 export class InMemorySnapshotCache implements SnapshotCache {
   private readonly entries = new Map<string, WorkSnapshot>()
 
-  constructor(
-    private readonly clock: Clock,
-    private readonly ttlMs = 60_000,
-  ) {}
-
-  get(key: string): WorkSnapshot | undefined {
-    const entry = this.entries.get(key)
-    if (!entry) return undefined
-    if (this.clock.now().getTime() - entry.fetchedAt.getTime() >= this.ttlMs) {
-      this.entries.delete(key)
-      return undefined
-    }
-    return entry
+  async get(userId: string, credential: string): Promise<WorkSnapshot | undefined> {
+    return this.entries.get(`${userId}:${credential}`)
   }
 
-  set(key: string, snapshot: WorkSnapshot): void {
+  async set(userId: string, credential: string, snapshot: WorkSnapshot): Promise<void> {
+    const key = `${userId}:${credential}`
+    this.entries.delete(key)
     this.entries.set(key, snapshot)
+    // Map guarda a ordem de inserção: o primeiro é o mais antigo.
+    if (this.entries.size > MAX_ENTRIES) this.entries.delete(this.entries.keys().next().value!)
   }
 }

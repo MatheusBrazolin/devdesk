@@ -36,9 +36,10 @@ const presentIssue = (issue: Issue): IssueDto => ({
   updatedAt: iso(issue.updatedAt),
 })
 
-export const presentDashboard = ({ snapshot, attention }: DashboardResult): Dashboard => ({
+export const presentDashboard = ({ snapshot, attention, stale }: DashboardResult): Dashboard => ({
   fetchedAt: iso(snapshot.fetchedAt),
   isSample: snapshot.isSample,
+  stale,
   summary: {
     reviewRequested: snapshot.totals.reviewRequested,
     openPullRequests: snapshot.totals.authored,

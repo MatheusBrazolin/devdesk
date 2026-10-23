@@ -40,11 +40,28 @@ const issueNode = {
 
 const search = (nodes: unknown[], issueCount = nodes.length) => ({ issueCount, nodes })
 
-function fakeFetch(status: number, body: unknown) {
-  const requests: { url: string; init: RequestInit }[] = []
+/** Qual das quatro listas uma busca pede, pelo texto da consulta. */
+function listOf(q: string): string {
+  if (q.includes('review-requested')) return 'reviewRequested'
+  if (q.includes('is:merged')) return 'merged'
+  if (q.includes('is:issue')) return 'issues'
+  return 'authored'
+}
+
+/**
+ * GitHub falso: o corpo descreve as quatro listas de uma vez, e cada busca
+ * recebe só a sua, como na API de verdade.
+ */
+function fakeFetch(
+  status: number,
+  body: { data?: Record<string, unknown> | null; errors?: unknown; message?: string },
+) {
+  const requests: { url: string; init: RequestInit; q: string }[] = []
   const impl = (async (url: string, init: RequestInit) => {
-    requests.push({ url, init })
-    return new Response(JSON.stringify(body), { status })
+    const q = JSON.parse(String(init.body)).variables.q as string
+    requests.push({ url, init, q })
+    const data = body.data === undefined ? undefined : body.data && { search: body.data[listOf(q)] }
+    return new Response(JSON.stringify({ ...body, data }), { status })
   }) as unknown as typeof fetch
   return { impl, requests }
 }
@@ -160,12 +177,47 @@ describe('GitHubWorkSource', () => {
     })
     await new GitHubWorkSource(clock, impl).fetchSnapshot('gho_x')
 
-    const [request] = requests
-    expect(request?.url).toBe('https://api.github.com/graphql')
-    expect(new Headers(request?.init.headers).get('authorization')).toBe('Bearer gho_x')
-    const body = JSON.parse(String(request?.init.body))
-    expect(body.variables.mergedQuery).toBe('is:pr is:merged author:@me merged:>=2026-10-16')
-    expect(body.variables.reviewQuery).toContain('review-requested:@me')
+    expect(requests).toHaveLength(4)
+    for (const request of requests) {
+      expect(request.url).toBe('https://api.github.com/graphql')
+      expect(new Headers(request.init.headers).get('authorization')).toBe('Bearer gho_x')
+    }
+    expect(requests.map((r) => r.q)).toContain('is:pr is:merged author:@me merged:>=2026-10-16')
+    expect(requests.some((r) => r.q.includes('review-requested:@me'))).toBe(true)
+  })
+
+  it('mergeados vêm do fragmento leve, sem CI nem aprovações', async () => {
+    const { impl, requests } = fakeFetch(200, {
+      data: {
+        reviewRequested: search([]),
+        authored: search([]),
+        merged: search([]),
+        issues: search([]),
+      },
+    })
+    await new GitHubWorkSource(clock, impl).fetchSnapshot('gho_x')
+    const merged = requests.find((r) => r.q.includes('is:merged'))!
+    const query = JSON.parse(String(merged.init.body)).query as string
+    expect(query).not.toContain('statusCheckRollup')
+    expect(query).not.toContain('latestOpinionatedReviews')
+  })
+
+  it('PR mergeado sem campos de CI e reviews é aceito, com valores neutros', async () => {
+    const {
+      commits: _c,
+      latestOpinionatedReviews: _r,
+      ...lightNode
+    } = prNode({ mergedAt: '2026-10-22T10:00:00Z' })
+    const { impl } = fakeFetch(200, {
+      data: {
+        reviewRequested: search([]),
+        authored: search([]),
+        merged: search([lightNode]),
+        issues: search([]),
+      },
+    })
+    const snapshot = await new GitHubWorkSource(clock, impl).fetchSnapshot('gho_x')
+    expect(snapshot.merged[0]).toMatchObject({ ciStatus: null, approvals: 0 })
   })
 
   it('token recusado pede reconexão', async () => {
