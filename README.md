@@ -2,13 +2,16 @@
 
 Painel de trabalho para desenvolvedores: o que pede a sua atenção no GitHub, suas notas e sua agenda, num lugar só.
 
-> **Estado:** fases 1 e 2 concluídas. O painel já lê PRs, reviews e issues de verdade do GitHub; notas e agenda vêm a seguir.
+> **Estado:** fases 1 a 4 concluídas: painel do GitHub, notas e calendário.
 
 ## O que já funciona
 
 - **Hoje**: o que precisa da sua atenção, em ordem de urgência: reviews pedidas a você, seus PRs com mudanças pedidas, CI quebrado ou conflito, e os prontos para merge
 - **Pull requests**: pedidos a você, seus abertos (com CI e aprovações) e os mergeados na semana
 - **Issues** atribuídas a você, agrupadas por repositório e com as labels
+- **Notas** em markdown, com tags, fixadas no painel Hoje e vinculadas a PRs e issues: o botão de notas em cada linha abre ou cria a nota daquele item. Salvam sozinhas enquanto você escreve
+- **Calendário** com eventos e lembretes (dia inteiro ou com horário), os prazos das milestones dos seus PRs e issues, a agenda da semana no painel Hoje, aviso na hora dos lembretes e exportação `.ics` para Google Agenda, Apple Calendar ou Outlook
+- **Só leitura no GitHub:** o DevDesk nunca comenta, aprova, edita nem faz merge; uma trava no código recusa qualquer escrita
 - Login com GitHub (OAuth) e **modo demonstração**, para quem quer conhecer sem conectar uma conta
 - Sessão por cookie `httpOnly`, com o token guardado só como hash; o token do GitHub fica cifrado (AES-256-GCM)
 - Layout com sidebar animada, gaveta no celular, tema claro/escuro/sistema
@@ -20,8 +23,8 @@ Painel de trabalho para desenvolvedores: o que pede a sua atenção no GitHub, s
 | ---- | --------------------------------------------------------------------------------- |
 | 1 ✅ | Fundação: monorepo, CI, login com GitHub, layout, ⌘K                              |
 | 2 ✅ | **Meu dia**: reviews pedidas a você, seus PRs (CI, aprovações), issues, mergeados |
-| 3    | **Notas** em markdown, com tags e vínculo com PRs e issues                        |
-| 4    | **Calendário**: eventos, lembretes e prazos de milestones, com exportação `.ics`  |
+| 3 ✅ | **Notas** em markdown, com tags e vínculo com PRs e issues                        |
+| 4 ✅ | **Calendário**: eventos, lembretes e prazos de milestones, com exportação `.ics`  |
 | 5    | Extras: standup gerado do que você fez ontem, modo foco, notificações             |
 
 ## Stack

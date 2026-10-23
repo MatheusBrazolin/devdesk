@@ -55,12 +55,27 @@ GET /api/dashboard
 - O porquê de cada escolha está no [ADR 0005](adr/0005-leitura-do-github.md).
 - Há dois jeitos de entrar com o GitHub: OAuth App (várias pessoas) e token pessoal (uma pessoa, local). Os dois gravam o token pelo mesmo `GitHubTokenProvider`, então o painel não sabe qual foi usado. Ver [ADR 0006](adr/0006-modo-token-pessoal.md).
 
+## Notas
+
+- As notas ficam no Postgres do DevDesk (`notes`), com tags em `text[]` e vínculos em `jsonb`; índices GIN servem os filtros por tag e por PR vinculado. Ver [ADR 0007](adr/0007-notas.md).
+- Toda consulta leva o dono (`userId`): uma nota de outra pessoa responde 404, nunca 403, para não revelar que ela existe.
+- As regras ficam no domínio (`domain/note.ts`): tags normalizadas ("Bug", "#bug" e "bug" são a mesma), título vindo da primeira linha quando vazio e vínculos sem repetição.
+- O front salva com atraso de 700 ms depois da última tecla e grava na hora ao trocar de nota ou sair da página. A lista lateral acompanha a edição por atualização otimista do cache.
+- O markdown é renderizado sem HTML cru e com links `javascript:` neutralizados, então colar algo malicioso numa nota não executa nada.
+
+## Calendário
+
+- **Dia inteiro é data, com horário é instante.** Um evento de dia inteiro guarda `date` (e `end_date`), sem fuso; um com horário guarda `starts_at` (e `ends_at`) em UTC. Uma restrição `CHECK` no banco impede misturar os dois. Ver [ADR 0008](adr/0008-calendario.md).
+- O front sempre trabalha com a data local de quem olha (`lib/calendar-dates.ts`). A API devolve os eventos com horário com um dia de folga de cada lado, e o front recorta no fuso dele.
+- **Prazos** são as milestones com data dos seus PRs e issues, tiradas do mesmo retrato do GitHub que o painel usa (sem consulta extra). Têm rota própria, `/calendar/deadlines`, para que um GitHub lento ou fora do ar não segure os eventos.
+- **`.ics`** é gerado por uma função pura (`http/ics.ts`), com escape, dobra de linhas em 75 bytes e CRLF conforme a RFC 5545. Lembretes ganham um alarme.
+
 ## Web: organizada por feature
 
 ```
 src/
   app/           roteador e rotas protegidas
-  features/      auth, home, work, commands… cada uma com suas páginas e queries
+  features/      auth, home, work, notes, calendar, commands… cada uma com suas páginas e queries
   components/
     ui/          design system (Button, Card, DropdownMenu…)
     layout/      shell, sidebar, topbar
