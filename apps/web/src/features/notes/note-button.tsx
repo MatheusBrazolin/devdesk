@@ -40,7 +40,8 @@ export function NoteButton({ item }: { item: NoteLink }) {
     <button
       type="button"
       onClick={open}
-      disabled={create.isPending}
+      // Antes de carregar as notas não dá para saber se já existe uma: não cria duplicada.
+      disabled={create.isPending || !notes.isSuccess}
       aria-label={label}
       title={label}
       className={cn(

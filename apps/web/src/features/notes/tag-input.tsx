@@ -1,3 +1,4 @@
+import { NOTE_LIMITS } from '@devdesk/shared'
 import { X } from 'lucide-react'
 import { useState } from 'react'
 
@@ -66,6 +67,7 @@ export function TagInput({ value, onChange, max = 10 }: TagInputProps) {
           }}
           placeholder={value.length ? '' : 'Adicionar tag'}
           aria-label="Adicionar tag"
+          maxLength={NOTE_LIMITS.tag}
           className="h-6 min-w-24 flex-1 bg-transparent font-mono text-[11px] placeholder:text-fg-subtle focus:outline-none"
         />
       )}

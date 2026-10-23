@@ -16,7 +16,7 @@ export function SyncStatus() {
   return (
     <div className="flex items-center gap-2 text-[12px] text-fg-subtle">
       {data && (
-        <span aria-live="polite">
+        <span>
           {data.isSample ? 'Dados de exemplo' : 'Do GitHub'} · atualizado{' '}
           {formatRelative(new Date(data.fetchedAt), now)}
         </span>

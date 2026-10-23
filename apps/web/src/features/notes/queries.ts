@@ -1,5 +1,5 @@
 import type { CreateNoteInput, Note, NotesQuery, UpdateNoteInput } from '@devdesk/shared'
-import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query'
+import { type QueryClient, queryOptions, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 
 const json = { 'content-type': 'application/json' }
@@ -47,29 +47,36 @@ export function useCreateNote() {
 }
 
 /**
- * Salva parte de uma nota. Atualiza na hora o detalhe e as listas em cache
- * (atualização otimista), para a lista lateral acompanhar o que se digita.
+ * Põe a versão salva de uma nota no cache: no detalhe e em todas as listas
+ * carregadas. Se a tag ou o fixar mudaram, as contagens de tags e as listas
+ * filtradas precisam ser recalculadas pela API.
  */
-export function useUpdateNote() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: ({ id, changes }: { id: string; changes: UpdateNoteInput }) =>
-      api<{ note: Note }>(`/notes/${id}`, {
-        method: 'PATCH',
-        headers: json,
-        body: JSON.stringify(changes),
-      }).then((r) => r.note),
-    onSuccess: (note) => {
-      queryClient.setQueryData(noteQuery(note.id).queryKey, note)
-      queryClient.setQueriesData<Note[]>({ queryKey: ['notes', 'list'] }, (list) =>
-        list?.map((item) => (item.id === note.id ? note : item)),
-      )
-      if (note.tags.length > 0 || note.pinned) {
-        void queryClient.invalidateQueries({ queryKey: ['notes', 'tags'] })
-      }
-    },
-  })
+export function applySavedNote(
+  queryClient: QueryClient,
+  note: Note,
+  changed: UpdateNoteInput,
+): void {
+  queryClient.setQueryData(noteQuery(note.id).queryKey, note)
+  queryClient.setQueriesData<Note[]>({ queryKey: ['notes', 'list'] }, (list) =>
+    list?.map((item) => (item.id === note.id ? note : item)),
+  )
+  if (changed.tags !== undefined || changed.pinned !== undefined) {
+    void queryClient.invalidateQueries({ queryKey: ['notes', 'tags'] })
+    void queryClient.invalidateQueries({ queryKey: ['notes', 'list'] })
+  }
 }
+
+export const saveNote = (
+  id: string,
+  changes: UpdateNoteInput,
+  options: { keepalive?: boolean } = {},
+) =>
+  api<{ note: Note }>(`/notes/${id}`, {
+    method: 'PATCH',
+    headers: json,
+    body: JSON.stringify(changes),
+    keepalive: options.keepalive,
+  }).then((r) => r.note)
 
 export function useDeleteNote() {
   const queryClient = useQueryClient()

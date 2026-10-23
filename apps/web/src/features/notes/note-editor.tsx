@@ -1,4 +1,4 @@
-import type { Note, NoteLink } from '@devdesk/shared'
+import { NOTE_LIMITS, type Note, type NoteLink } from '@devdesk/shared'
 import * as Dialog from '@radix-ui/react-dialog'
 import {
   ArrowLeft,
@@ -12,7 +12,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/cn'
 import { formatRelative } from '@/lib/time'
@@ -38,7 +38,18 @@ export function NoteEditor({ note, onBack, onDeleted }: NoteEditorProps) {
   const [links, setLinks] = useState(note.links)
   const [pinned, setPinned] = useState(note.pinned)
   const [mode, setMode] = useState<Mode>(note.body ? 'visualizar' : 'escrever')
-  const { schedule, flush, state } = useAutosave(note.id)
+  const { schedule, flush, state, error } = useAutosave(note.id)
+  const bodyRef = useRef<HTMLTextAreaElement>(null)
+
+  /** Vai para o corpo, no fim do texto; troca para "escrever" se precisar. */
+  const focusBody = () => {
+    setMode('escrever')
+    requestAnimationFrame(() => {
+      const field = bodyRef.current
+      field?.focus()
+      field?.setSelectionRange(field.value.length, field.value.length)
+    })
+  }
 
   return (
     <article className="flex h-full min-h-0 flex-col">
@@ -53,7 +64,7 @@ export function NoteEditor({ note, onBack, onDeleted }: NoteEditorProps) {
           <ArrowLeft />
         </Button>
         <ModeSwitch mode={mode} onChange={setMode} />
-        <SaveIndicator state={state} onRetry={flush} updatedAt={note.updatedAt} />
+        <SaveIndicator state={state} error={error} onRetry={flush} updatedAt={note.updatedAt} />
         <div className="ml-auto flex shrink-0 items-center gap-1">
           <Button
             variant="ghost"
@@ -90,7 +101,7 @@ export function NoteEditor({ note, onBack, onDeleted }: NoteEditorProps) {
               // Enter no título vai para o corpo, em vez de quebrar a linha.
               if (event.key === 'Enter') {
                 event.preventDefault()
-                setMode('escrever')
+                focusBody()
               }
             }}
             className="w-full resize-none bg-transparent text-xl leading-snug font-semibold [field-sizing:content] placeholder:text-fg-subtle focus:outline-none"
@@ -117,6 +128,8 @@ export function NoteEditor({ note, onBack, onDeleted }: NoteEditorProps) {
 
           {mode === 'escrever' ? (
             <textarea
+              ref={bodyRef}
+              maxLength={NOTE_LIMITS.body}
               value={body}
               onChange={(event) => {
                 setBody(event.target.value)
@@ -129,18 +142,28 @@ export function NoteEditor({ note, onBack, onDeleted }: NoteEditorProps) {
               className="min-h-[50vh] w-full resize-none bg-transparent font-mono text-[13px] leading-relaxed [field-sizing:content] placeholder:text-fg-subtle focus:outline-none"
             />
           ) : body.trim() ? (
-            <button
-              type="button"
-              onDoubleClick={() => setMode('escrever')}
-              className="block w-full cursor-text text-left"
-              title="Clique duas vezes para editar"
-            >
-              <Markdown>{body}</Markdown>
-            </button>
+            // Não é um <button>: links e caixas de tarefa dentro de um botão são HTML inválido.
+            <div className="group relative">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={focusBody}
+                className="absolute -top-1 right-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+              >
+                Editar
+              </Button>
+              <div
+                onDoubleClick={focusBody}
+                title="Clique duas vezes para editar"
+                className="cursor-text"
+              >
+                <Markdown>{body}</Markdown>
+              </div>
+            </div>
           ) : (
             <p className="text-[13px] text-fg-subtle">
               Nota vazia.{' '}
-              <button type="button" className="underline" onClick={() => setMode('escrever')}>
+              <button type="button" className="underline" onClick={focusBody}>
                 Começar a escrever
               </button>
             </p>
@@ -175,10 +198,12 @@ function ModeSwitch({ mode, onChange }: { mode: Mode; onChange: (mode: Mode) => 
 
 function SaveIndicator({
   state,
+  error,
   onRetry,
   updatedAt,
 }: {
   state: SaveState
+  error: string | null
   onRetry: () => void
   updatedAt: string
 }) {
@@ -189,7 +214,8 @@ function SaveIndicator({
         onClick={onRetry}
         className="flex items-center gap-1 text-[12px] text-danger"
       >
-        <CloudAlert className="size-3.5" /> Não salvou. Tentar de novo
+        <CloudAlert className="size-3.5 shrink-0" />
+        <span className="truncate">{error ?? 'Não salvou. Tentar de novo'}</span>
       </button>
     )
   }
