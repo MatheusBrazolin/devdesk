@@ -17,12 +17,16 @@ Painel de trabalho para desenvolvedores: o que pede a sua atenção no GitHub, s
   </tr>
 </table>
 
+![Modo TV numa tela Full HD](docs/screenshots/modo-tv.jpg)
+
 <sub>Capturas do modo demonstração, com dados de exemplo.</sub>
 
 ## O que já funciona
 
 - **Hoje**, um dashboard que cabe numa tela: indicadores (reviews pedidas, PRs abertos, issues, mergeados), o que precisa da sua atenção em ordem de urgência, gráficos de mergeados por dia, idade dos seus PRs e carga por organização, PRs parados, agenda da semana e notas fixadas
 - **Modo foco**: o item mais urgente em destaque, a fila logo abaixo, um cronômetro de 25 ou 50 minutos e o próximo compromisso, sem barra lateral
+- **Modo TV**: o painel para deixar aberto numa TV ou numa janela ao lado do trabalho. Quatro arranjos que seguem o formato da janela (ou que você escolhe): **grade** para tela cheia, **coluna** para uma janela estreita ao lado, **faixa** para uma tira larga em cima ou embaixo e **mini** para um canto. "Abrir em janela" já abre no lugar certo da tela (coluna à direita ou à esquerda, faixa embaixo, canto). Nada rola: cada arranjo é ampliado para caber, e numa TV 4K tudo sai três vezes maior. Tela cheia com <kbd>F</kbd>, tela sempre acesa e cursor escondido quando parado
+- **Responsivo** de 320 px a 4K: no celular as páginas empilham; a partir de 1280 px o Hoje cabe numa tela só
 - **Notificações** (opcionais, ligadas no menu do usuário): review nova pedida a você, CI quebrado, mudanças pedidas, conflito, PR pronto para merge, lembretes e fim do bloco de foco. Cada item avisa uma vez só
 - **Pull requests**: pedidos a você, seus abertos (com CI e aprovações) e os mergeados na semana
 - **Issues** atribuídas a você, agrupadas por repositório e com as labels

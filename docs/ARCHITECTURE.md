@@ -87,6 +87,15 @@ GET /api/dashboard
 - O modo foco (`/foco`) é só uma leitura do painel: o primeiro item de atenção em destaque, o resto abaixo. O cronômetro guarda o horário de término (não quanto falta), então trocar de página ou recarregar não o atrasa; o aviso de fim mora no layout, não na página.
 - As notificações são opcionais e ligadas pela pessoa. O aviso sempre aparece dentro da página; com a aba em segundo plano, vai também para o sistema. Para a atenção, compara-se o que chegou com o que já foi visto (guardado no navegador): na primeira leitura só anota, e cada item avisa uma vez.
 
+## Modo TV
+
+- `/tv` fica dentro da rota protegida, mas o layout some: sem barra lateral nem topo. É uma leitura dos mesmos dados do painel e da agenda.
+- Quatro arranjos (grade, coluna, faixa, mini), cada um desenhado num quadro de referência (`LAYOUT_BASE` em `tv-scale.ts`) e ampliado com `zoom` pelo menor fator entre largura e altura. A sobra vira espaço útil. No automático, o arranjo sai da proporção da janela; a grade só entra se couber em pelo menos 0,75×, senão o mini. A escolha fica no endereço (`?layout=`).
+- Listas cortam por linhas inteiras: a fila de atenção mede quantas linhas cabem e mostra "e mais N".
+- Nada de painel em branco: fila vazia dá lugar aos seus PRs abertos (com CI e se está parado); sem nada aberto, ou com a agenda vazia, o painel vira uma tira de uma linha (`data-calm`), e o bloco em volta encolhe com `:has()` para o resto ganhar o espaço.
+- "Abrir em janela" usa `window.open` com posição e tamanho calculados da área útil da tela; uma janela só, pelo nome, que é movida ao escolher outra posição.
+- Mantém a tela acesa (Screen Wake Lock, quando existe), esconde cursor e botões com o mouse parado e entra em tela cheia com <kbd>F</kbd>. Sempre no tema escuro.
+
 ## Produção
 
 Uma imagem só: a API serve o front compilado, na mesma origem. A demonstração pública cria um usuário descartável por visita. Detalhes em [ADR 0010](adr/0010-demonstracao-publica.md) e em [DEPLOY.md](DEPLOY.md).
