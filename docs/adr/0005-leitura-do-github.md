@@ -1,6 +1,6 @@
 # 0005. Leitura do GitHub: uma consulta GraphQL e cache curto
 
-- **Status:** aceito
+- **Status:** substituído em parte pelo [ADR 0009](0009-abrir-na-hora.md) (consultas em paralelo e retrato guardado)
 - **Data:** 2026-10-23
 
 ## Contexto

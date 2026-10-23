@@ -44,15 +44,18 @@ O ganho prático aparece nos testes: os casos de uso e as rotas HTTP rodam com r
 GET /api/dashboard
   └─ GetDashboard (caso de uso)
        ├─ usuário demo?  → SampleWorkSource (dados de exemplo, isSample: true)
-       ├─ cache válido?  → InMemorySnapshotCache (60 s)
-       └─ senão          → GitHubWorkSource (1 consulta GraphQL com 4 buscas)
+       ├─ retrato < 1 min    → serve o guardado
+       ├─ retrato < 24 h     → serve o guardado e atualiza por trás (stale: true)
+       └─ sem retrato/velho  → GitHubWorkSource (4 consultas GraphQL em paralelo)
+  retratos: memória (InMemorySnapshotCache) na frente, Postgres atrás
   └─ buildAttentionList (domínio): decide o que pede atenção e em que ordem
 ```
 
 - A regra de "o que precisa da sua atenção" mora em `domain/attention.ts`, sem dependência de nada: é a parte mais importante do produto e a mais testada.
 - O adaptador do GitHub valida a resposta com Zod e descarta nós que não batem (por exemplo, repositórios de organização protegidos por SAML), sem perder o resto do painel.
 - Token recusado pelo GitHub vira o erro `GITHUB_RECONNECT`, que não derruba a sessão: o front oferece reconectar em vez de jogar a pessoa no login.
-- O porquê de cada escolha está no [ADR 0005](adr/0005-leitura-do-github.md).
+- O porquê de cada escolha está nos ADRs [0005](adr/0005-leitura-do-github.md) e [0009](adr/0009-abrir-na-hora.md).
+- Se a atualização por trás descobrir um token recusado, a próxima requisição pede reconexão em vez de seguir mostrando dado velho.
 - Há dois jeitos de entrar com o GitHub: OAuth App (várias pessoas) e token pessoal (uma pessoa, local). Os dois gravam o token pelo mesmo `GitHubTokenProvider`, então o painel não sabe qual foi usado. Ver [ADR 0006](adr/0006-modo-token-pessoal.md).
 
 ## Notas
@@ -70,12 +73,18 @@ GET /api/dashboard
 - **Prazos** são as milestones com data dos seus PRs e issues, tiradas do mesmo retrato do GitHub que o painel usa (sem consulta extra). Têm rota própria, `/calendar/deadlines`, para que um GitHub lento ou fora do ar não segure os eventos.
 - **`.ics`** é gerado por uma função pura (`http/ics.ts`), com escape, dobra de linhas em 75 bytes e CRLF conforme a RFC 5545. Lembretes ganham um alarme.
 
+## Standup
+
+- O front define o período (o dia útil anterior no fuso de quem pede; na segunda, desde sexta) e pede `GET /api/standup?from&to`.
+- A API junta a atividade do período (`ActivitySource`: quatro buscas de leitura — mergeados, abertos, revisados e issues fechadas, com as reviews filtradas pela data de envio) ao retrato do painel, e o domínio (`domain/standup.ts`) monta "feito", "hoje" e "bloqueios" sem repetir um item em duas seções.
+- O texto (Slack, Markdown ou simples) é montado no front, que também acrescenta os eventos de hoje da agenda.
+
 ## Web: organizada por feature
 
 ```
 src/
   app/           roteador e rotas protegidas
-  features/      auth, home, work, notes, calendar, commands… cada uma com suas páginas e queries
+  features/      auth, home, work, notes, calendar, standup, commands… cada uma com suas páginas e queries
   components/
     ui/          design system (Button, Card, DropdownMenu…)
     layout/      shell, sidebar, topbar
