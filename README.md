@@ -2,11 +2,28 @@
 
 Painel de trabalho para desenvolvedores: o que pede a sua atenção no GitHub, suas notas e sua agenda, num lugar só.
 
-> **Estado:** fases 1 a 4 concluídas, e a 5 começou pelo standup automático.
+> **Estado:** as cinco fases do roteiro concluídas. Pronto para publicar como demonstração (veja [docs/DEPLOY.md](docs/DEPLOY.md)).
+
+![Painel Hoje: indicadores, o que pede atenção, gráficos, agenda e notas, numa tela só](docs/screenshots/hoje.png)
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/foco-escuro.png" alt="Modo foco no tema escuro: o item mais urgente, a fila e o cronômetro" /></td>
+    <td><img src="docs/screenshots/standup.png" alt="Standup montado do GitHub e da agenda, pronto para colar" /></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/pull-requests.png" alt="Lista de pull requests com CI, aprovações e filtros" /></td>
+    <td><img src="docs/screenshots/calendario.png" alt="Calendário do mês com eventos, lembretes e prazos" /></td>
+  </tr>
+</table>
+
+<sub>Capturas do modo demonstração, com dados de exemplo.</sub>
 
 ## O que já funciona
 
-- **Hoje**: o que precisa da sua atenção, em ordem de urgência: reviews pedidas a você, seus PRs com mudanças pedidas, CI quebrado ou conflito, e os prontos para merge
+- **Hoje**, um dashboard que cabe numa tela: indicadores (reviews pedidas, PRs abertos, issues, mergeados), o que precisa da sua atenção em ordem de urgência, gráficos de mergeados por dia, idade dos seus PRs e carga por organização, PRs parados, agenda da semana e notas fixadas
+- **Modo foco**: o item mais urgente em destaque, a fila logo abaixo, um cronômetro de 25 ou 50 minutos e o próximo compromisso, sem barra lateral
+- **Notificações** (opcionais, ligadas no menu do usuário): review nova pedida a você, CI quebrado, mudanças pedidas, conflito, PR pronto para merge, lembretes e fim do bloco de foco. Cada item avisa uma vez só
 - **Pull requests**: pedidos a você, seus abertos (com CI e aprovações) e os mergeados na semana
 - **Issues** atribuídas a você, agrupadas por repositório e com as labels
 - **Notas** em markdown, com tags, fixadas no painel Hoje e vinculadas a PRs e issues: o botão de notas em cada linha abre ou cria a nota daquele item. Salvam sozinhas enquanto você escreve
@@ -27,7 +44,7 @@ Painel de trabalho para desenvolvedores: o que pede a sua atenção no GitHub, s
 | 2 ✅ | **Meu dia**: reviews pedidas a você, seus PRs (CI, aprovações), issues, mergeados |
 | 3 ✅ | **Notas** em markdown, com tags e vínculo com PRs e issues                        |
 | 4 ✅ | **Calendário**: eventos, lembretes e prazos de milestones, com exportação `.ics`  |
-| 5    | Extras: standup gerado do que você fez ontem, modo foco, notificações             |
+| 5 ✅ | Extras: standup gerado do que você fez ontem, modo foco, notificações             |
 
 ## Stack
 
@@ -67,6 +84,10 @@ Rode `npm run setup:github` e escolha um dos dois modos. O comando confere tudo 
 Gere um Client Secret e informe os dois no setup. O escopo pedido é `read:user read:org repo`: OAuth Apps não têm permissão só de leitura para repositórios privados, então o GitHub mostra acesso de escrita na autorização, embora o DevDesk só faça leituras. Organizações que restringem OAuth Apps precisam liberar o app para os repositórios delas aparecerem.
 
 Depois de qualquer um dos dois, reinicie a API.
+
+### Publicando
+
+Uma imagem Docker só (a API serve também o front), com o modo demonstração e um usuário descartável por visita. O passo a passo, com um blueprint pronto para o Render, está em [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Estrutura
 

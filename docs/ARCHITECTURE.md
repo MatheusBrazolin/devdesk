@@ -79,15 +79,24 @@ GET /api/dashboard
 
 - O front define o período (o dia útil anterior no fuso de quem pede; na segunda, desde sexta) e pede `GET /api/standup?from&to`.
 - A API junta a atividade do período (`ActivitySource`: quatro buscas de leitura — mergeados, abertos, revisados e issues fechadas, com as reviews filtradas pela data de envio) ao retrato do painel, e o domínio (`domain/standup.ts`) monta "feito", "hoje" e "bloqueios". O mesmo PR pode estar em "feito" e em "hoje", porque são ações diferentes ("abri" ontem, "corrigir o CI" hoje); entre "hoje" e "bloqueios" ele nunca se repete.
-- Limite conhecido: as revisões vêm dos até 50 PRs mexidos desde o início do período, os mais recentes primeiro. Quem revisa muito mais que isso por dia pode ver revisões faltando.
+- As revisões vêm de duas fontes somadas: a busca `reviewed-by` (até 50 PRs mexidos desde o início do período) e as contribuições do perfil (`contributionsCollection`), que filtram pela data da review. Juntas pelo endereço do PR, vale a review mais recente. Se o perfil falhar, o standup segue só com a busca.
 - O texto (Slack, Markdown ou simples) é montado no front, que também acrescenta os eventos de hoje da agenda.
+
+## Modo foco e notificações
+
+- O modo foco (`/foco`) é só uma leitura do painel: o primeiro item de atenção em destaque, o resto abaixo. O cronômetro guarda o horário de término (não quanto falta), então trocar de página ou recarregar não o atrasa; o aviso de fim mora no layout, não na página.
+- As notificações são opcionais e ligadas pela pessoa. O aviso sempre aparece dentro da página; com a aba em segundo plano, vai também para o sistema. Para a atenção, compara-se o que chegou com o que já foi visto (guardado no navegador): na primeira leitura só anota, e cada item avisa uma vez.
+
+## Produção
+
+Uma imagem só: a API serve o front compilado, na mesma origem. A demonstração pública cria um usuário descartável por visita. Detalhes em [ADR 0010](adr/0010-demonstracao-publica.md) e em [DEPLOY.md](DEPLOY.md).
 
 ## Web: organizada por feature
 
 ```
 src/
   app/           roteador e rotas protegidas
-  features/      auth, home, work, notes, calendar, standup, commands… cada uma com suas páginas e queries
+  features/      auth, home, focus, work, notes, calendar, standup, commands… cada uma com suas páginas e queries
   components/
     ui/          design system (Button, Card, DropdownMenu…)
     layout/      shell, sidebar, topbar
