@@ -20,7 +20,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:up": "docker compose up -d db",
-    "db:down": "docker compose down"
+    "db:down": "docker compose down",
+    "setup:github": "node scripts/setup-github.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
