@@ -9,6 +9,8 @@ const badgeVariants = cva(
       tone: {
         neutral: 'border border-border text-fg-muted',
         accent: 'bg-accent-soft text-accent',
+        success: 'bg-success/10 text-success',
+        danger: 'bg-danger/10 text-danger',
       },
     },
     defaultVariants: { tone: 'neutral' },

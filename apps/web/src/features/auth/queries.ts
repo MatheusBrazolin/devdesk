@@ -31,6 +31,24 @@ export function useDemoLogin() {
   })
 }
 
+/** Modo pessoal: entra como o dono do token configurado na API. */
+export function usePersonalLogin() {
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  return useMutation({
+    mutationFn: () =>
+      api<MeResponse>('/auth/personal', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: '{}',
+      }),
+    onSuccess: async (me) => {
+      queryClient.setQueryData(meQuery.queryKey, me)
+      await navigate({ to: '/' })
+    },
+  })
+}
+
 export function useLogout() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()

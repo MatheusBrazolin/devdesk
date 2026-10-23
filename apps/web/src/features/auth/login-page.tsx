@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { GitHubIcon } from '@/components/ui/github-icon'
 import { Logo } from '@/components/ui/logo'
 import { ProductPreview } from './product-preview'
-import { GITHUB_LOGIN_URL, configQuery, useDemoLogin } from './queries'
+import { GITHUB_LOGIN_URL, configQuery, useDemoLogin, usePersonalLogin } from './queries'
 
 const route = getRouteApi('/login')
 
@@ -20,8 +20,11 @@ export function LoginPage() {
   const { erro } = route.useSearch()
   const config = useQuery(configQuery)
   const demo = useDemoLogin()
+  const personal = usePersonalLogin()
   const errorMessage = erro ? (ERROR_MESSAGES[erro] ?? 'Não foi possível entrar.') : null
   const githubEnabled = config.data?.githubLoginEnabled ?? false
+  const personalLogin = config.data?.personalLogin ?? null
+  const personalRejected = config.data?.personalTokenEnabled === true && personalLogin === null
 
   return (
     <main className="grid min-h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
@@ -48,15 +51,35 @@ export function LoginPage() {
             </p>
           )}
 
-          <div className="mt-8 flex flex-col gap-2">
-            <Button
-              size="lg"
-              disabled={!githubEnabled}
-              onClick={() => window.location.assign(GITHUB_LOGIN_URL)}
+          {personalRejected && (
+            <p
+              role="alert"
+              className="mt-6 rounded-md border border-danger/30 bg-danger/8 px-3 py-2 text-[13px] text-danger"
             >
-              <GitHubIcon />
-              Continuar com GitHub
-            </Button>
+              O GitHub recusou o token pessoal (revogado ou vencido). Gere outro e rode{' '}
+              <code className="font-mono">npm run setup:github</code>.
+            </p>
+          )}
+
+          <div className="mt-8 flex flex-col gap-2">
+            {personalLogin && (
+              <Button size="lg" disabled={personal.isPending} onClick={() => personal.mutate()}>
+                {personal.isPending ? <Loader2 className="animate-spin" /> : <GitHubIcon />}
+                Entrar como {personalLogin}
+              </Button>
+            )}
+
+            {(githubEnabled || !personalLogin) && (
+              <Button
+                size="lg"
+                variant={personalLogin ? 'outline' : 'primary'}
+                disabled={!githubEnabled}
+                onClick={() => window.location.assign(GITHUB_LOGIN_URL)}
+              >
+                <GitHubIcon />
+                Continuar com GitHub
+              </Button>
+            )}
 
             {config.data?.demoEnabled && (
               <Button
@@ -72,6 +95,11 @@ export function LoginPage() {
             )}
           </div>
 
+          {personal.isError && (
+            <p role="alert" className="mt-3 text-[13px] text-danger">
+              {personal.error.message}
+            </p>
+          )}
           {demo.isError && (
             <p role="alert" className="mt-3 text-[13px] text-danger">
               {demo.error.message}
@@ -79,7 +107,9 @@ export function LoginPage() {
           )}
 
           <p className="mt-6 text-[12px] leading-relaxed text-fg-subtle">
-            {config.isSuccess && !githubEnabled ? (
+            {personalLogin ? (
+              'Modo pessoal: esta instalação usa o seu token do GitHub e só aceita acesso desta máquina.'
+            ) : config.isSuccess && !githubEnabled ? (
               <>
                 Login com GitHub desligado: defina{' '}
                 <code className="font-mono text-fg-muted">GITHUB_CLIENT_ID</code> e{' '}
@@ -87,7 +117,7 @@ export function LoginPage() {
                 <code className="font-mono text-fg-muted">.env</code>.
               </>
             ) : (
-              'Pedimos acesso de leitura aos seus repositórios para listar PRs e issues. Nada é publicado em seu nome.'
+              'O GitHub vai pedir acesso aos seus repositórios, porque OAuth Apps não têm uma permissão só de leitura. O DevDesk apenas lê: não comenta, não aprova e não faz merge.'
             )}
           </p>
         </motion.div>

@@ -6,19 +6,27 @@ import {
   Outlet,
   redirect,
 } from '@tanstack/react-router'
-import { CalendarDays, CircleDot, GitPullRequest, NotebookPen } from 'lucide-react'
+import { CalendarDays, NotebookPen } from 'lucide-react'
+import { NotFound, RouteError } from '@/app/route-states'
 import { AppShell } from '@/components/layout/app-shell'
 import { LoginPage } from '@/features/auth/login-page'
 import { meQuery } from '@/features/auth/queries'
 import { ComingSoonPage } from '@/features/home/coming-soon-page'
 import { HomePage } from '@/features/home/home-page'
+import { IssuesPage } from '@/features/work/issues-page'
+import { type ListSearch, parseListSearch } from '@/features/work/list-search'
+import { type PullRequestTab, PullRequestsPage } from '@/features/work/pull-requests-page'
 import { isUnauthenticated } from '@/lib/api'
 
 interface RouterContext {
   queryClient: QueryClient
 }
 
-const rootRoute = createRootRouteWithContext<RouterContext>()({ component: Outlet })
+const rootRoute = createRootRouteWithContext<RouterContext>()({
+  component: Outlet,
+  errorComponent: RouteError,
+  notFoundComponent: NotFound,
+})
 
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -49,6 +57,28 @@ const appRoute = createRoute({
 
 const homeRoute = createRoute({ getParentRoute: () => appRoute, path: '/', component: HomePage })
 
+const PR_TABS: PullRequestTab[] = ['review', 'meus', 'mergeados']
+
+const pullRequestsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/pull-requests',
+  validateSearch: (search: Record<string, unknown>): ListSearch & { aba: PullRequestTab } => ({
+    aba: PR_TABS.find((tab) => tab === search.aba) ?? 'review',
+    ...parseListSearch(search),
+  }),
+  component: PullRequestsPage,
+})
+
+const issuesRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/issues',
+  validateSearch: (search: Record<string, unknown>): Omit<ListSearch, 'ordem'> => {
+    const { q, org } = parseListSearch(search)
+    return { q, org }
+  },
+  component: IssuesPage,
+})
+
 const comingSoon = <TPath extends string>(
   path: TPath,
   props: Parameters<typeof ComingSoonPage>[0],
@@ -63,19 +93,8 @@ const routeTree = rootRoute.addChildren([
   loginRoute,
   appRoute.addChildren([
     homeRoute,
-    comingSoon('/pull-requests', {
-      title: 'Pull requests',
-      icon: GitPullRequest,
-      stage: 'Fase 2',
-      description:
-        'Seus PRs e os que pedem a sua review, com status do CI, aprovações e conflitos.',
-    }),
-    comingSoon('/issues', {
-      title: 'Issues',
-      icon: CircleDot,
-      stage: 'Fase 2',
-      description: 'As issues atribuídas a você, agrupadas por repositório e prioridade.',
-    }),
+    pullRequestsRoute,
+    issuesRoute,
     comingSoon('/notas', {
       title: 'Notas',
       icon: NotebookPen,

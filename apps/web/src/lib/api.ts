@@ -34,6 +34,10 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     if (parsed.success) {
       throw new ApiRequestError(response.status, parsed.data.error.code, parsed.data.error.message)
     }
+    // Sem corpo no formato da API: quem respondeu foi o proxy, não ela.
+    if (response.status >= 502 && response.status <= 504) {
+      throw new ApiRequestError(response.status, 'UPSTREAM', 'A API não está respondendo agora.')
+    }
     throw new ApiRequestError(response.status, 'INTERNAL', `Erro inesperado (${response.status}).`)
   }
   return body as T
