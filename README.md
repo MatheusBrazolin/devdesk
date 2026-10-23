@@ -2,10 +2,13 @@
 
 Painel de trabalho para desenvolvedores: o que pede a sua atenção no GitHub, suas notas e sua agenda, num lugar só.
 
-> **Estado:** fase 1 (fundação) concluída. Login, layout e arquitetura prontos; os dados do GitHub chegam na fase 2.
+> **Estado:** fases 1 e 2 concluídas. O painel já lê PRs, reviews e issues de verdade do GitHub; notas e agenda vêm a seguir.
 
 ## O que já funciona
 
+- **Hoje**: o que precisa da sua atenção, em ordem de urgência: reviews pedidas a você, seus PRs com mudanças pedidas, CI quebrado ou conflito, e os prontos para merge
+- **Pull requests**: pedidos a você, seus abertos (com CI e aprovações) e os mergeados na semana
+- **Issues** atribuídas a você, agrupadas por repositório e com as labels
 - Login com GitHub (OAuth) e **modo demonstração**, para quem quer conhecer sem conectar uma conta
 - Sessão por cookie `httpOnly`, com o token guardado só como hash; o token do GitHub fica cifrado (AES-256-GCM)
 - Layout com sidebar animada, gaveta no celular, tema claro/escuro/sistema
@@ -16,7 +19,7 @@ Painel de trabalho para desenvolvedores: o que pede a sua atenção no GitHub, s
 | Fase | Entrega                                                                           |
 | ---- | --------------------------------------------------------------------------------- |
 | 1 ✅ | Fundação: monorepo, CI, login com GitHub, layout, ⌘K                              |
-| 2    | **Meu dia**: reviews pedidas a você, seus PRs (CI, aprovações), issues, mergeados |
+| 2 ✅ | **Meu dia**: reviews pedidas a você, seus PRs (CI, aprovações), issues, mergeados |
 | 3    | **Notas** em markdown, com tags e vínculo com PRs e issues                        |
 | 4    | **Calendário**: eventos, lembretes e prazos de milestones, com exportação `.ics`  |
 | 5    | Extras: standup gerado do que você fez ontem, modo foco, notificações             |
@@ -45,13 +48,20 @@ npm run dev                     # API em :3333 e front em http://localhost:5173
 
 As migrações rodam sozinhas quando a API sobe. Sem `GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET`, só o modo demonstração aparece no login.
 
-### Ligando o login com GitHub
+### Conectando o GitHub
 
-1. Em [github.com/settings/developers](https://github.com/settings/developers), crie um **OAuth App**:
-   - Homepage URL: `http://localhost:5173`
-   - Authorization callback URL: `http://localhost:5173/api/auth/github/callback`
-2. Copie o Client ID e gere um Client Secret para o `.env`.
-3. Reinicie a API.
+Rode `npm run setup:github` e escolha um dos dois modos. O comando confere tudo com o GitHub antes de gravar no `.env` e nunca mostra segredos na tela.
+
+**1. Token pessoal (recomendado para uso só seu).** Crie um token _classic_ em [github.com/settings/tokens/new](<https://github.com/settings/tokens/new?scopes=repo,read:org&description=DevDesk%20(local)>) com os escopos `repo` e `read:org`. Ele age como você, então o painel enxerga os repositórios das suas organizações mesmo quando elas bloqueiam apps de terceiros, sem pedir nada a elas. O login vira um botão "Entrar como <você>". Só funciona fora de produção e só aceita acesso da própria máquina.
+
+**2. OAuth App (para várias pessoas).** Em [github.com/settings/developers](https://github.com/settings/developers), crie um OAuth App com:
+
+- Homepage URL: `http://localhost:5173`
+- Authorization callback URL: `http://localhost:5173/api/auth/github/callback`
+
+Gere um Client Secret e informe os dois no setup. O escopo pedido é `read:user read:org repo`: OAuth Apps não têm permissão só de leitura para repositórios privados, então o GitHub mostra acesso de escrita na autorização, embora o DevDesk só faça leituras. Organizações que restringem OAuth Apps precisam liberar o app para os repositórios delas aparecerem.
+
+Depois de qualquer um dos dois, reinicie a API.
 
 ## Estrutura
 
