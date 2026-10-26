@@ -16,6 +16,8 @@ import { Logout } from '../src/application/use-cases/logout.js'
 import { StartPersonalSession } from '../src/application/use-cases/start-personal-session.js'
 import { GetMetrics } from '../src/application/use-cases/get-metrics.js'
 import { GetTeam } from '../src/application/use-cases/get-team.js'
+import { Account } from '../src/application/use-cases/account.js'
+import { UserSettings } from '../src/application/use-cases/user-settings.js'
 import { PushNotifications } from '../src/application/use-cases/push-notifications.js'
 import type { PushResult, PushSender } from '../src/application/ports/push.js'
 import type { PushNotice, PushSubscription } from '../src/domain/push.js'
@@ -42,6 +44,7 @@ import {
   InMemoryEventRepository,
   InMemoryNoteRepository,
   InMemoryPushRepository,
+  InMemorySettingsRepository,
   InMemorySessionRepository,
   InMemorySubscriptionRepository,
   InMemoryUserRepository,
@@ -227,6 +230,8 @@ export function createTestContext(
     clock,
   )
 
+  const settingsRepository = new InMemorySettingsRepository()
+  const settings = new UserSettings(settingsRepository, clock)
   const calendar = new Calendar(events, getDashboard, clock)
   const externalCalendars = new ExternalCalendars(
     subscriptions,
@@ -246,6 +251,7 @@ export function createTestContext(
         getDashboard,
         calendar,
         externalCalendars,
+        settings,
         'http://web.test',
         clock,
       ),
@@ -300,8 +306,11 @@ export function createTestContext(
         getDashboard,
         { github: new SampleTeamSource(clock), sample: new SampleTeamSource(clock) },
         githubTokens,
+        settings,
         clock,
       ),
+      settings,
+      account: new Account(users, notes, events, externalCalendars, settings, clock),
       getStandup: new GetStandup(
         getDashboard,
         { github: activity, sample: new SampleActivitySource() },
@@ -331,6 +340,7 @@ export function createTestContext(
     icsFetcher,
     pushRepository,
     pushSender,
+    settingsRepository,
   }
 }
 

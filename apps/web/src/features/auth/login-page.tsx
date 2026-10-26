@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getRouteApi } from '@tanstack/react-router'
+import { getRouteApi, Link } from '@tanstack/react-router'
 import { ArrowRight, Loader2 } from 'lucide-react'
 import { motion } from 'motion/react'
 import { Button } from '@/components/ui/button'
@@ -127,6 +127,12 @@ export function LoginPage() {
               'O GitHub vai pedir acesso aos seus repositórios, porque OAuth Apps não têm uma permissão só de leitura. O DevDesk apenas lê: não comenta, não aprova e não faz merge.'
             )}
           </p>
+          <Link
+            to="/privacidade"
+            className="mt-3 inline-block text-[12px] text-fg-subtle underline-offset-2 hover:text-fg-muted hover:underline"
+          >
+            Privacidade: o que fica guardado e como apagar
+          </Link>
         </motion.div>
       </section>
 

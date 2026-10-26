@@ -11,6 +11,7 @@ import type {
 } from '../../application/ports/note-repository.js'
 import type { PushRepository } from '../../application/ports/push.js'
 import type { SessionRepository } from '../../application/ports/session-repository.js'
+import type { SettingsRepository } from '../../application/ports/settings-repository.js'
 import type {
   NewSubscription,
   SubscriptionRepository,
@@ -59,6 +60,11 @@ export class InMemoryUserRepository implements UserRepository {
     const old = [...this.items.values()].filter((u) => u.isDemo && u.createdAt < date)
     old.forEach((u) => this.items.delete(u.id))
     return old.length
+  }
+
+  async delete(id: string): Promise<void> {
+    this.items.delete(id)
+    this.tokens.delete(id)
   }
 
   async createDemo(now: Date): Promise<User> {
@@ -258,6 +264,18 @@ export class InMemoryPushRepository implements PushRepository {
 
   async saveSeen(userId: string, keys: string[]): Promise<void> {
     this.seenKeys.set(userId, keys)
+  }
+}
+
+export class InMemorySettingsRepository implements SettingsRepository {
+  readonly items = new Map<string, unknown>()
+
+  async get(userId: string): Promise<unknown> {
+    return this.items.get(userId) ?? null
+  }
+
+  async save(userId: string, data: unknown): Promise<void> {
+    this.items.set(userId, data)
   }
 }
 

@@ -7,6 +7,7 @@ import {
   type LucideIcon,
   MessageSquareText,
   NotebookPen,
+  Settings,
   Sun,
   Tv,
   Users,
@@ -25,6 +26,7 @@ export interface NavItem {
     | '/notas'
     | '/calendario'
     | '/standup'
+    | '/configuracoes'
   label: string
   icon: LucideIcon
   /** Atalho "g + tecla", no estilo do GitHub e do Linear. */
@@ -67,4 +69,12 @@ export const NAV_ITEMS: NavItem[] = [
     hiddenFromSidebar: true,
   },
   { to: '/tv', label: 'Modo TV', icon: Tv, shortcut: 't', tone: 'info', hiddenFromSidebar: true },
+  {
+    to: '/configuracoes',
+    label: 'Configurações',
+    icon: Settings,
+    shortcut: 'o',
+    tone: 'accent',
+    hiddenFromSidebar: true,
+  },
 ]

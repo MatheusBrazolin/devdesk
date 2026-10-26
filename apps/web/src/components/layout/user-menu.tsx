@@ -10,6 +10,7 @@ import {
   LogOut,
   MessageSquareText,
   Monitor,
+  Settings,
   Moon,
   Sun,
   Tv,
@@ -106,6 +107,9 @@ export function UserMenu() {
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => void navigate({ to: '/tv' })}>
           <Tv /> Modo TV
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => void navigate({ to: '/configuracoes' })}>
+          <Settings /> Configurações
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={openWelcomeTour}>
           <GraduationCap /> Primeiros passos

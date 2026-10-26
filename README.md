@@ -1,5 +1,10 @@
 # DevDesk
 
+[![CI](https://github.com/MatheusBrazolin/devdesk/actions/workflows/ci.yml/badge.svg)](https://github.com/MatheusBrazolin/devdesk/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/MatheusBrazolin/devdesk/actions/workflows/codeql.yml/badge.svg)](https://github.com/MatheusBrazolin/devdesk/actions/workflows/codeql.yml)
+[![Licença MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-blue.svg)](LICENSE)
+[![Demonstração](https://img.shields.io/badge/demo-online-2ea44f.svg)](https://devdesk-tklq.onrender.com)
+
 Painel de trabalho para desenvolvedores: o que pede a sua atenção no GitHub, suas notas e sua agenda, num lugar só.
 
 **[Ver a demonstração online →](https://devdesk-tklq.onrender.com)** (modo demonstração, com dados de exemplo; a primeira visita pode levar alguns segundos para o servidor acordar)
@@ -42,6 +47,9 @@ Painel de trabalho para desenvolvedores: o que pede a sua atenção no GitHub, s
 - **Calendário** com eventos e lembretes (dia inteiro ou com horário), os prazos das milestones dos seus PRs e issues, a agenda da semana no painel Hoje, aviso na hora dos lembretes e exportação `.ics` para Google Agenda, Apple Calendar ou Outlook. **Agendas conectadas**: assine o seu Google Agenda, Outlook ou iCloud pelo link `.ics` e as reuniões (inclusive as que se repetem) aparecem no calendário, no Hoje, no standup, no modo TV e no foco. Só leitura; o link fica cifrado e o servidor só busca em provedores conhecidos
 - **Standup** pronto para colar: o que você mergeou, abriu, revisou e fechou no dia útil anterior (na segunda, desde sexta), o que pede atenção hoje e os PRs travados. Em Slack, Markdown ou texto, editável, com cópia e salvar como nota
 - **Abre na hora:** o painel mostra o último retrato guardado e atualiza por trás; o retrato fica no Postgres, então nem depois de reiniciar a API é preciso esperar o GitHub
+- **Configurações**: quais avisos receber (review pedida, CI, conflito, reuniões…) e quais repositórios formam o time
+- **Seus dados (LGPD)**: página de [privacidade](https://devdesk-tklq.onrender.com/privacidade) dizendo o que fica guardado e por quanto tempo, "Baixar meus dados" em JSON e "Apagar minha conta", que leva tudo junto
+- **Atalhos**: <kbd>?</kbd> mostra todos
 - **Só leitura no GitHub:** o DevDesk nunca comenta, aprova, edita nem faz merge; uma trava no código recusa qualquer escrita
 - Login com GitHub (OAuth) e **modo demonstração**, para quem quer conhecer sem conectar uma conta
 - Sessão por cookie `httpOnly`, com o token guardado só como hash; o token do GitHub fica cifrado (AES-256-GCM)
@@ -126,6 +134,10 @@ A arquitetura está explicada em [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), e
 | `npm run typecheck` | checagem de tipos em todos os pacotes                                                           |
 | `npm run lint`      | ESLint, incluindo as regras de camadas                                                          |
 | `npm run build`     | build de produção                                                                               |
+
+## Segurança
+
+Achou uma falha? Veja [SECURITY.md](SECURITY.md) para reportar em particular.
 
 ## Licença
 

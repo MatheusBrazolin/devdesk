@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { notificationsEnabled, notify } from '@/lib/notifications'
 import { attentionKey, attentionNotice, newAttention } from './attention-notices'
 import { dashboardQuery } from './queries'
+import { noticeEnabled, settingsQuery } from '@/features/settings/queries'
 import { isOverdue } from './review-queue'
 
 const STORAGE_KEY = 'devdesk:avisados'
@@ -36,6 +37,7 @@ function writeSeen(keys: string[]) {
 export function useWorkNotifications(): void {
   const dashboard = useQuery(dashboardQuery)
   const attention = dashboard.data?.attention
+  const settings = useQuery(settingsQuery).data
 
   useEffect(() => {
     if (!attention) return
@@ -48,7 +50,10 @@ export function useWorkNotifications(): void {
     writeSeen([...attention.map(attentionKey), ...overdue.map(overdueKey)])
     if (!seen || !notificationsEnabled()) return
 
-    for (const item of overdue.filter((entry) => !seen.has(overdueKey(entry)))) {
+    // Tipo desligado nas configurações: fica anotado como visto, mas não avisa.
+    for (const item of overdue.filter(
+      (entry) => noticeEnabled(settings, 'overdue_review') && !seen.has(overdueKey(entry)),
+    )) {
       const pr = item.pullRequest
       notify({
         title: `Review esperando há mais de 24 h: ${pr.repository}#${pr.number}`,
@@ -58,7 +63,9 @@ export function useWorkNotifications(): void {
       })
     }
 
-    const fresh = newAttention(seen, attention)
+    const fresh = newAttention(seen, attention).filter((item) =>
+      noticeEnabled(settings, item.reason),
+    )
     if (fresh.length > MAX_SEPARATE) {
       notify({
         title: `${fresh.length} itens novos pedem sua atenção`,
@@ -68,5 +75,5 @@ export function useWorkNotifications(): void {
       return
     }
     fresh.forEach((item) => notify(attentionNotice(item)))
-  }, [attention])
+  }, [attention, settings])
 }

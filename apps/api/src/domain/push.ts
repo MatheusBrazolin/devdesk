@@ -57,6 +57,16 @@ const REASON_TEXT: Record<AttentionReason, string> = {
 export const attentionKey = (item: AttentionItem) => `${item.reason}:${item.pullRequest.id}`
 export const overdueKey = (item: AttentionItem) => `atrasada:${item.pullRequest.id}`
 
+const ALL_KINDS: ReadonlySet<string> = new Set([
+  'review_requested',
+  'changes_requested',
+  'ci_failed',
+  'conflict',
+  'ready_to_merge',
+  'overdue_review',
+  'agenda',
+])
+
 export const OVERDUE_AFTER_HOURS = 24
 /** Mais que isso de uma vez vira um aviso só, em vez de uma pilha. */
 export const MAX_SEPARATE = 3
@@ -98,6 +108,8 @@ export function pushRound(
   events: UpcomingEvent[],
   now: Date,
   webOrigin: string,
+  /** Tipos de aviso ligados nas configurações. Os desligados entram nas chaves, mas não avisam. */
+  enabled: ReadonlySet<string> = ALL_KINDS,
 ): PushRound {
   const overdue = attention.filter((item) => isOverdue(item, now))
   const soon = events.filter((event) => {
@@ -109,7 +121,8 @@ export function pushRound(
   if (!seen) return { keys, notices: [] }
 
   const notices: PushNotice[] = []
-  for (const event of soon.filter((e) => !seen.has(eventKey(e)))) {
+  const on = (kind: string) => enabled.has(kind)
+  for (const event of soon.filter((e) => on('agenda') && !seen.has(eventKey(e)))) {
     notices.push({
       title: `Às ${timeFormat.format(event.startsAt)}: ${event.title}`,
       body: event.calendar ? `Na agenda ${event.calendar}` : 'No seu calendário do DevDesk',
@@ -117,7 +130,9 @@ export function pushRound(
       tag: eventKey(event),
     })
   }
-  for (const item of overdue.filter((entry) => !seen.has(overdueKey(entry)))) {
+  for (const item of overdue.filter(
+    (entry) => on('overdue_review') && !seen.has(overdueKey(entry)),
+  )) {
     const pr = item.pullRequest
     notices.push({
       title: `Review esperando há mais de 24 h: ${pr.repository}#${pr.number}`,
@@ -127,7 +142,7 @@ export function pushRound(
     })
   }
 
-  const fresh = attention.filter((item) => !seen.has(attentionKey(item)))
+  const fresh = attention.filter((item) => on(item.reason) && !seen.has(attentionKey(item)))
   if (fresh.length > MAX_SEPARATE) {
     notices.push({
       title: `${fresh.length} itens novos pedem sua atenção`,

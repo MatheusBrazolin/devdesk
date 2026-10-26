@@ -104,6 +104,16 @@ describe('pushRound', () => {
   })
 })
 
+describe('pushRound com tipos desligados', () => {
+  it('não avisa o tipo desligado, mas anota para não avisar depois', () => {
+    const ci = item('ci_failed')
+    const review = item('review_requested')
+    const round = pushRound(new Set(), [ci, review], [], now, ORIGIN, new Set(['review_requested']))
+    expect(round.notices.map((n) => n.tag)).toEqual([`review_requested:${review.pullRequest.id}`])
+    expect(round.keys).toContain(`ci_failed:${ci.pullRequest.id}`)
+  })
+})
+
 describe('isAllowedPushEndpoint', () => {
   it.each([
     'https://fcm.googleapis.com/fcm/send/abc',

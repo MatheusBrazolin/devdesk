@@ -17,6 +17,8 @@ const PAGES = [
   '/standup',
   '/metricas',
   '/time',
+  '/configuracoes',
+  '/privacidade',
   '/tv',
 ]
 

@@ -24,4 +24,6 @@ export interface UserRepository {
   createDemo(now: Date): Promise<User>
   /** Apaga os usuários demo criados antes do instante; notas e eventos vão junto. */
   deleteDemosCreatedBefore(date: Date): Promise<number>
+  /** Apaga a pessoa e, pelas chaves com cascade, tudo o que é dela. */
+  delete(id: string): Promise<void>
 }

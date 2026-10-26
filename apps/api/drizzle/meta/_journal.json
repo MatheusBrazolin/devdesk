@@ -50,6 +50,13 @@
       "when": 1793043218926,
       "tag": "0006_push_notifications",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793045267885,
+      "tag": "0007_user_settings",
+      "breakpoints": true
     }
   ]
 }

@@ -487,3 +487,61 @@ test.describe('painel do time', () => {
     await expect(load.getByRole('listitem').first()).toContainText('rafael-lima')
   })
 })
+
+test.describe('configurações e privacidade', () => {
+  test('a privacidade abre sem entrar e o login aponta para ela', async ({ page }) => {
+    await page.goto('/login')
+    await page.getByRole('link', { name: /Privacidade/ }).click()
+    await expect(page).toHaveURL(/\/privacidade/)
+    await expect(page.getByRole('heading', { name: 'Seus dados no DevDesk' })).toBeVisible()
+  })
+
+  test('desligar um aviso fica salvo', async ({ page }) => {
+    await enterDemo(page)
+    await page.keyboard.press('g')
+    await page.keyboard.press('o')
+    await expect(page).toHaveURL(/\/configuracoes/)
+    const ci = page.getByRole('checkbox', { name: /CI falhou/ })
+    await expect(ci).toBeChecked()
+    await ci.uncheck()
+    await expect(ci).not.toBeChecked()
+    await page.reload()
+    await expect(page.getByRole('checkbox', { name: /CI falhou/ })).not.toBeChecked()
+  })
+
+  test('escolhe os repositórios do time à mão', async ({ page }) => {
+    await enterDemo(page)
+    await page.goto('/configuracoes')
+    await page.getByRole('radio', { name: 'Escolher' }).click()
+    await page.getByLabel('Adicionar repositório').fill('acme/novo-servico')
+    await page.getByRole('button', { name: 'Adicionar' }).click()
+    const list = page.getByRole('list', { name: 'Repositórios' })
+    await expect(list.getByRole('checkbox', { name: 'acme/novo-servico' })).toBeChecked()
+    await page.getByRole('radio', { name: 'Automático' }).click()
+    await expect(page.getByText(/O time sai dos repositórios/)).toBeVisible()
+  })
+
+  test('baixa os dados e apaga a conta com o login digitado', async ({ page }) => {
+    await enterDemo(page)
+    await page.goto('/configuracoes')
+    const download = page.waitForEvent('download')
+    await page.getByRole('link', { name: 'Baixar meus dados' }).click()
+    expect((await download).suggestedFilename()).toMatch(/^devdesk-demo-.*\.json$/)
+
+    await page.getByRole('button', { name: 'Apagar minha conta' }).click()
+    const dialog = page.getByRole('dialog', { name: 'Apagar a conta' })
+    const confirm = dialog.getByRole('button', { name: 'Apagar de vez' })
+    await expect(confirm).toBeDisabled()
+    await dialog.getByRole('textbox').fill('demo')
+    await confirm.click()
+    await expect(page).toHaveURL(/\/login/)
+  })
+
+  test('? mostra os atalhos', async ({ page }) => {
+    await enterDemo(page)
+    await page.keyboard.press('Shift+?')
+    const help = page.getByRole('dialog', { name: 'Atalhos de teclado' })
+    await expect(help).toBeVisible()
+    await expect(help.getByText('Configurações')).toBeVisible()
+  })
+})

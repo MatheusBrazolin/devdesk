@@ -13,6 +13,7 @@ import type { UserRepository } from '../ports/user-repository.js'
 import type { Calendar } from './calendar.js'
 import type { ExternalCalendars } from './external-calendars.js'
 import type { GetDashboard } from './get-dashboard.js'
+import type { UserSettings } from './user-settings.js'
 
 export interface PushRunResult {
   users: number
@@ -32,6 +33,7 @@ export class PushNotifications {
     private readonly dashboard: GetDashboard,
     private readonly calendar: Calendar,
     private readonly externalCalendars: ExternalCalendars,
+    private readonly settings: UserSettings,
     private readonly webOrigin: string,
     private readonly clock: Clock,
   ) {}
@@ -67,13 +69,19 @@ export class PushNotifications {
     if (!user || user.isDemo) return 0
     const now = this.clock.now()
 
-    const [{ attention }, events, seen] = await Promise.all([
+    const [{ attention }, events, seen, settings] = await Promise.all([
       // Sempre do GitHub: o retrato guardado pode ter até um dia, e o aviso precisa ser de agora.
       this.dashboard.execute(user, { refresh: true }),
       this.upcoming(user, now),
       this.repository.seen(userId),
+      this.settings.get(userId),
     ])
-    const { keys, notices } = pushRound(seen, attention, events, now, this.webOrigin)
+    const enabled = new Set(
+      Object.entries(settings.notifications)
+        .filter(([, on]) => on)
+        .map(([kind]) => kind),
+    )
+    const { keys, notices } = pushRound(seen, attention, events, now, this.webOrigin, enabled)
     await this.repository.saveSeen(userId, keys, now)
     if (notices.length === 0) return 0
 

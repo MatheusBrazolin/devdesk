@@ -15,6 +15,7 @@ import { standupRoutes } from './routes/standup.js'
 import { metricsRoutes } from './routes/metrics.js'
 import { teamRoutes } from './routes/team.js'
 import { pushRoutes } from './routes/push.js'
+import { settingsRoutes } from './routes/settings.js'
 import { systemRoutes } from './routes/system.js'
 
 interface BuildOptions extends FastifyServerOptions {
@@ -63,6 +64,7 @@ export async function buildApp(deps: AppDependencies, options: BuildOptions = {}
       await metricsRoutes(api, deps)
       await teamRoutes(api, deps)
       await pushRoutes(api, deps)
+      await settingsRoutes(api, deps)
     },
     { prefix: '/api' },
   )

@@ -140,6 +140,15 @@ export const pushSeen = pgTable('push_seen', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
+/** Configurações da pessoa (avisos, repositórios do time), validadas na leitura. */
+export const userSettings = pgTable('user_settings', {
+  userId: uuid('user_id')
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  data: jsonb('data').notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
 /** Último retrato do painel por pessoa, para abrir na hora mesmo depois de reiniciar a API. */
 export const dashboardSnapshots = pgTable('dashboard_snapshots', {
   userId: uuid('user_id')

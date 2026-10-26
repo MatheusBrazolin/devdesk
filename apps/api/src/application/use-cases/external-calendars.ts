@@ -97,6 +97,12 @@ export class ExternalCalendars {
     this.feeds.delete(id)
   }
 
+  /** Esquece as agendas baixadas da pessoa (a conta vai ser apagada). */
+  async forget(user: User): Promise<void> {
+    for (const subscription of await this.repository.list(user.id))
+      this.feeds.delete(subscription.id)
+  }
+
   /** Ocorrências que tocam as datas [from, to], com um dia de folga de cada lado por causa do fuso. */
   async between(user: User, from: string, to: string): Promise<ExternalEventsInRange> {
     const start = new Date(`${addDays(from, -1)}T00:00:00Z`)

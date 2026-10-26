@@ -81,4 +81,8 @@ export class DrizzleUserRepository implements UserRepository {
       .returning({ id: users.id })
     return removed.length
   }
+
+  async delete(id: string): Promise<void> {
+    await this.db.delete(users).where(eq(users.id, id))
+  }
 }

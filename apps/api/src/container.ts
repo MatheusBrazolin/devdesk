@@ -33,6 +33,9 @@ import { SampleMetricsSource } from './infrastructure/sample/sample-metrics-sour
 import { GitHubMetricsSource } from './infrastructure/github/github-metrics-source.js'
 import { GetMetrics } from './application/use-cases/get-metrics.js'
 import { GetTeam } from './application/use-cases/get-team.js'
+import { Account } from './application/use-cases/account.js'
+import { UserSettings } from './application/use-cases/user-settings.js'
+import { DrizzleSettingsRepository } from './infrastructure/repositories/drizzle-settings-repository.js'
 import { PushNotifications } from './application/use-cases/push-notifications.js'
 import { WebPushSender } from './infrastructure/push/web-push-sender.js'
 import { DrizzlePushRepository } from './infrastructure/repositories/drizzle-push-repository.js'
@@ -71,7 +74,10 @@ export function createContainer(env: Env, db: Database): AppDependencies {
     systemClock,
   )
 
-  const calendar = new Calendar(new DrizzleEventRepository(db), getDashboard, systemClock)
+  const settings = new UserSettings(new DrizzleSettingsRepository(db), systemClock)
+  const events = new DrizzleEventRepository(db)
+  const notes = new DrizzleNoteRepository(db)
+  const calendar = new Calendar(events, getDashboard, systemClock)
   const externalCalendars = new ExternalCalendars(
     new DrizzleSubscriptionRepository(db),
     cipher,
@@ -97,6 +103,7 @@ export function createContainer(env: Env, db: Database): AppDependencies {
             getDashboard,
             calendar,
             externalCalendars,
+            settings,
             env.WEB_ORIGIN,
             systemClock,
           ),
@@ -140,7 +147,7 @@ export function createContainer(env: Env, db: Database): AppDependencies {
       getCurrentUser: new GetCurrentUser(sessions, users, tokens, systemClock),
       logout: new Logout(sessions, tokens),
       getDashboard,
-      notes: new Notes(new DrizzleNoteRepository(db), systemClock),
+      notes: new Notes(notes, systemClock),
       calendar,
       externalCalendars,
       getMetrics: new GetMetrics(
@@ -152,8 +159,11 @@ export function createContainer(env: Env, db: Database): AppDependencies {
         getDashboard,
         { github: new GitHubTeamSource(), sample: new SampleTeamSource(systemClock) },
         githubTokens,
+        settings,
         systemClock,
       ),
+      settings,
+      account: new Account(users, notes, events, externalCalendars, settings, systemClock),
       getStandup: new GetStandup(
         getDashboard,
         { github: new GitHubActivitySource(), sample: new SampleActivitySource() },

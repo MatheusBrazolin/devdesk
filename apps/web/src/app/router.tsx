@@ -36,6 +36,8 @@ const lazy = {
   standup: lazyRouteComponent(() => import('@/features/standup/standup-page'), 'StandupPage'),
   metrics: lazyRouteComponent(() => import('@/features/metrics/metrics-page'), 'MetricsPage'),
   team: lazyRouteComponent(() => import('@/features/team/team-page'), 'TeamPage'),
+  settings: lazyRouteComponent(() => import('@/features/settings/settings-page'), 'SettingsPage'),
+  privacy: lazyRouteComponent(() => import('@/features/privacy/privacy-page'), 'PrivacyPage'),
 }
 
 interface RouterContext {
@@ -58,6 +60,13 @@ const loginRoute = createRoute({
     if (me) throw redirect({ to: '/' })
   },
   component: LoginPage,
+})
+
+/** Pública: dá para ler antes de entrar. */
+const privacyRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/privacidade',
+  component: lazy.privacy,
 })
 
 /** Rota sem caminho que protege tudo abaixo dela. */
@@ -93,6 +102,11 @@ const teamRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/time',
   component: lazy.team,
+})
+const settingsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/configuracoes',
+  component: lazy.settings,
 })
 const focusRoute = createRoute({
   getParentRoute: () => appRoute,
@@ -162,11 +176,13 @@ const issuesRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   loginRoute,
+  privacyRoute,
   appRoute.addChildren([
     homeRoute,
     focusRoute,
     metricsRoute,
     teamRoute,
+    settingsRoute,
     tvRoute,
     pullRequestsRoute,
     issuesRoute,

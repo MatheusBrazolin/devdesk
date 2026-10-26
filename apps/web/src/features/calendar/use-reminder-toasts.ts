@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { addDaysToKey } from '@/lib/calendar-dates'
 import { notify } from '@/lib/notifications'
 import { calendarQuery } from './queries'
+import { noticeEnabled, settingsQuery } from '@/features/settings/queries'
 import { useToday } from '@/lib/use-today'
 
 /** Só agenda avisos para as próximas 24 horas; o resto entra quando a página recarregar. */
@@ -21,7 +22,10 @@ export function useReminderToasts(): void {
     refetchInterval: 60 * 60 * 1000,
   })
 
+  const settings = useQuery(settingsQuery).data
+
   useEffect(() => {
+    if (!noticeEnabled(settings, 'agenda')) return
     const now = Date.now()
     const timers = (events.data?.events ?? []).flatMap((event) => {
       if (event.kind !== 'reminder' || event.allDay) return []
@@ -42,5 +46,5 @@ export function useReminderToasts(): void {
       ]
     })
     return () => timers.forEach(clearTimeout)
-  }, [events.data])
+  }, [events.data, settings])
 }

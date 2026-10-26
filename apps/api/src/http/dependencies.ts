@@ -6,6 +6,8 @@ import type { Calendar } from '../application/use-cases/calendar.js'
 import type { ExternalCalendars } from '../application/use-cases/external-calendars.js'
 import type { GetMetrics } from '../application/use-cases/get-metrics.js'
 import type { PushNotifications } from '../application/use-cases/push-notifications.js'
+import type { Account } from '../application/use-cases/account.js'
+import type { UserSettings } from '../application/use-cases/user-settings.js'
 import type { GetTeam } from '../application/use-cases/get-team.js'
 import type { GetStandup } from '../application/use-cases/get-standup.js'
 import type { Notes } from '../application/use-cases/notes.js'
@@ -44,5 +46,7 @@ export interface AppDependencies {
     getStandup: GetStandup
     getMetrics: GetMetrics
     getTeam: GetTeam
+    settings: UserSettings
+    account: Account
   }
 }
