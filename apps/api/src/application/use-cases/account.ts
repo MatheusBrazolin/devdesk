@@ -38,7 +38,7 @@ export class Account {
     const [settings, notes, events, subscriptions] = await Promise.all([
       this.settings.get(user.id),
       this.notes.list(user.id, {}),
-      this.events.listBetween(user.id, '1970-01-01', '9999-12-30'),
+      this.events.listAll(user.id),
       this.externalCalendars.list(user),
     ])
     return { exportedAt: this.clock.now(), user, settings, notes, events, subscriptions }

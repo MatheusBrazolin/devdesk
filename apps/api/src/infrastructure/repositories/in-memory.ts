@@ -159,6 +159,10 @@ export class InMemoryNoteRepository implements NoteRepository {
 export class InMemoryEventRepository implements EventRepository {
   readonly items = new Map<string, CalendarEvent>()
 
+  async listAll(userId: string): Promise<CalendarEvent[]> {
+    return [...this.items.values()].filter((event) => event.userId === userId)
+  }
+
   async listBetween(userId: string, from: string, to: string): Promise<CalendarEvent[]> {
     const after = Date.parse(`${addDays(from, -1)}T00:00:00Z`)
     const before = Date.parse(`${addDays(to, 2)}T00:00:00Z`)

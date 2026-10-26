@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { expect, type Page, test } from '@playwright/test'
 
 /**
@@ -526,7 +527,11 @@ test.describe('configurações e privacidade', () => {
     await page.goto('/configuracoes')
     const download = page.waitForEvent('download')
     await page.getByRole('link', { name: 'Baixar meus dados' }).click()
-    expect((await download).suggestedFilename()).toMatch(/^devdesk-demo-.*\.json$/)
+    const file = await download
+    expect(file.suggestedFilename()).toMatch(/^devdesk-demo-.*\.json$/)
+    // O conteúdo, não só o nome: um erro do servidor também seria baixado.
+    const content = JSON.parse(readFileSync((await file.path())!, 'utf8'))
+    expect(content).toMatchObject({ format: 'devdesk-export', version: 1 })
 
     await page.getByRole('button', { name: 'Apagar minha conta' }).click()
     const dialog = page.getByRole('dialog', { name: 'Apagar a conta' })

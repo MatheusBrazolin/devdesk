@@ -16,6 +16,8 @@ export interface EventRepository {
    * olha; o front recorta no fuso dele.
    */
   listBetween(userId: string, from: string, to: string): Promise<CalendarEvent[]>
+  /** Todos os eventos da pessoa, para a exportação dos dados. */
+  listAll(userId: string): Promise<CalendarEvent[]>
   findById(userId: string, id: string): Promise<CalendarEvent | null>
   create(event: NewEvent): Promise<CalendarEvent>
   replace(

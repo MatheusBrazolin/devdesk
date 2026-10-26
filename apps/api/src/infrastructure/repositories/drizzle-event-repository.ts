@@ -55,6 +55,15 @@ function toColumns(content: EventContent) {
 export class DrizzleEventRepository implements EventRepository {
   constructor(private readonly db: Database) {}
 
+  async listAll(userId: string): Promise<CalendarEvent[]> {
+    const rows = await this.db
+      .select()
+      .from(calendarEvents)
+      .where(eq(calendarEvents.userId, userId))
+      .orderBy(calendarEvents.createdAt)
+    return rows.map(toDomain)
+  }
+
   async listBetween(userId: string, from: string, to: string): Promise<CalendarEvent[]> {
     // Folga de um dia para os eventos com horário: o dia local depende do fuso.
     const after = new Date(`${addDays(from, -1)}T00:00:00Z`)
