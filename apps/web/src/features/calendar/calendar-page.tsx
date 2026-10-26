@@ -2,7 +2,16 @@ import * as Dialog from '@radix-ui/react-dialog'
 import type { CalendarEvent, Deadline } from '@devdesk/shared'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import { Bell, CalendarClock, ChevronLeft, ChevronRight, Download, Flag, Plus } from 'lucide-react'
+import {
+  Bell,
+  CalendarClock,
+  CalendarSync,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Flag,
+  Plus,
+} from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { PageHeader, Reveal } from '@/components/layout/page-header'
@@ -22,7 +31,10 @@ import { cn } from '@/lib/cn'
 import { useMediaQuery } from '@/lib/use-media-query'
 import { AgendaList, AgendaSkeleton } from './agenda-list'
 import { EventDialog } from './event-dialog'
-import { calendarQuery, deadlinesQuery, ICS_URL } from './queries'
+import { ExternalEventDialog } from './external-event-dialog'
+import { deadlinesQuery, ICS_URL } from './queries'
+import { SubscriptionsDialog } from './subscriptions-dialog'
+import { type AgendaEvent, isExternal, useCalendarEvents } from './use-calendar-events'
 import { useToday } from '@/lib/use-today'
 
 const route = getRouteApi('/app/calendario')
@@ -37,13 +49,18 @@ export function CalendarPage() {
   const today = useToday()
   const { year, month } = parseMonth(mes)
   const range = gridRange(year, month)
-  const calendar = useQuery(calendarQuery(range))
+  const calendar = useCalendarEvents(range)
   const deadlines = useQuery(deadlinesQuery(range))
   const agendaRange = { from: today, to: addDaysToKey(today, AGENDA_DAYS - 1) }
-  const agenda = useQuery(calendarQuery(agendaRange))
+  const agenda = useCalendarEvents(agendaRange)
   const agendaDeadlines = useQuery(deadlinesQuery(agendaRange))
 
   const [dialog, setDialog] = useState<{ event: CalendarEvent | null; day: string } | null>(null)
+  const [external, setExternal] = useState<AgendaEvent | null>(null)
+  const [connecting, setConnecting] = useState(false)
+  // Evento de agenda assinada só abre os detalhes; os do DevDesk abrem para editar.
+  const select = (event: AgendaEvent, day: string) =>
+    isExternal(event) ? setExternal(event) : setDialog({ event, day })
   // Celular: a grade só tem pontos, então tocar num dia com algo abre a lista dele.
   const [daySheet, setDaySheet] = useState<string | null>(null)
   const eventsOn = (day: string) =>
@@ -64,6 +81,9 @@ export function CalendarPage() {
         subtitle="Eventos, lembretes e prazos das milestones do GitHub."
         actions={
           <>
+            <Button variant="outline" onClick={() => setConnecting(true)}>
+              <CalendarSync /> Conectar agenda
+            </Button>
             <a
               href={ICS_URL}
               download
@@ -117,6 +137,15 @@ export function CalendarPage() {
         </p>
       )}
 
+      {calendar.unavailable.length > 0 && (
+        <p
+          role="status"
+          className="rounded-md border border-border bg-elevated/50 px-3 py-2 text-[13px] text-fg-muted"
+        >
+          {calendar.unavailable.join(', ')} não respondeu agora. Os outros eventos estão todos aqui.
+        </p>
+      )}
+
       <Reveal delay={0.08} className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
         <Card className="overflow-hidden">
           <div className="grid grid-cols-7 border-b border-border">
@@ -150,7 +179,7 @@ export function CalendarPage() {
                   }
                   compact={small}
                   onCreate={() => openDay(day)}
-                  onSelect={(event) => setDialog({ event, day })}
+                  onSelect={(event) => select(event, day)}
                 />
               ))}
           </div>
@@ -169,7 +198,7 @@ export function CalendarPage() {
               days={AGENDA_DAYS}
               events={agenda.data.events}
               deadlines={agendaDeadlines.data?.deadlines ?? []}
-              onSelectEvent={(event) => setDialog({ event, day: today })}
+              onSelectEvent={(event) => select(event, today)}
               empty="Nada nos próximos dias. Clique num dia do calendário para marcar algo."
             />
           ) : (
@@ -185,13 +214,16 @@ export function CalendarPage() {
         onClose={() => setDaySheet(null)}
         onSelect={(event) => {
           setDaySheet(null)
-          setDialog({ event, day: daySheet! })
+          select(event, daySheet!)
         }}
         onCreate={() => {
           setDaySheet(null)
           setDialog({ event: null, day: daySheet! })
         }}
       />
+
+      <ExternalEventDialog event={external} onClose={() => setExternal(null)} />
+      <SubscriptionsDialog open={connecting} onOpenChange={setConnecting} />
 
       <EventDialog
         open={dialog !== null}
@@ -209,12 +241,12 @@ interface DayCellProps {
   isToday: boolean
   lastColumn: boolean
   lastRow: boolean
-  events: CalendarEvent[]
+  events: AgendaEvent[]
   deadlines: Deadline[]
   /** Celular: a grade só tem pontos e tocar num dia com algo abre a lista. */
   compact: boolean
   onCreate: () => void
-  onSelect: (event: CalendarEvent) => void
+  onSelect: (event: AgendaEvent) => void
 }
 
 function DayCell({
@@ -293,6 +325,7 @@ function DayCell({
             <button
               type="button"
               onClick={() => onSelect(event)}
+              title={event.external && `${event.title} · ${event.external.calendar}`}
               className={cn(
                 'flex w-full items-center gap-1 truncate rounded px-1 py-0.5 text-left text-[11px] hover:bg-elevated',
                 event.allDay ? 'bg-elevated text-fg' : 'text-fg-muted',
@@ -323,10 +356,10 @@ function DaySheet({
   onCreate,
 }: {
   day: string | null
-  events: CalendarEvent[]
+  events: AgendaEvent[]
   deadlines: Deadline[]
   onClose: () => void
-  onSelect: (event: CalendarEvent) => void
+  onSelect: (event: AgendaEvent) => void
   onCreate: () => void
 }) {
   return (

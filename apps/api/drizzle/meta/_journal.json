@@ -36,6 +36,20 @@
       "when": 1792778539071,
       "tag": "0004_dashboard_snapshots",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793042157682,
+      "tag": "0005_calendar_subscriptions",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793043218926,
+      "tag": "0006_push_notifications",
+      "breakpoints": true
     }
   ]
 }

@@ -69,3 +69,21 @@ Sem estas variáveis, o site mostra só a demonstração.
 
 Na primeira autorização, o GitHub lista as suas organizações com "Request" ou
 "Grant". Não é preciso clicar: os dados delas chegam pelo token pessoal.
+
+## Avisos com o app fechado (opcional)
+
+Sem isto, as notificações funcionam só com o DevDesk aberto. Com isto, o
+servidor avisa também com ele fechado (Web Push), tudo de graça:
+
+1. Gere as chaves VAPID no seu computador: `npx web-push generate-vapid-keys`.
+2. Gere o segredo do agendador: `openssl rand -base64 32`.
+3. No Render, em Environment, cole `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` e
+   `PUSH_CRON_SECRET`.
+4. No GitHub, em Settings → Secrets and variables → Actions, crie o segredo
+   `PUSH_CRON_SECRET` com o mesmo valor.
+5. O workflow `avisos` chama `POST /api/push/run` a cada 10 minutos. Isso
+   também acorda o servidor, que dorme no plano grátis. O GitHub pausa
+   agendamentos de repositórios sem commits há 60 dias; um commit reativa.
+
+Depois, no site, ligue as notificações no menu do usuário com o app
+instalado. O aviso de confirmação diz se elas chegam também com ele fechado.

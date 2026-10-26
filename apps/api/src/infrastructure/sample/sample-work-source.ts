@@ -42,6 +42,9 @@ export class SampleWorkSource implements WorkSource {
       changesRequested: 0,
       comments: 0,
       milestone: null,
+      size: { additions: 120, deletions: 40, changedFiles: 6 },
+      reviewRequestedAt: null,
+      pendingReviewers: [],
       ...data,
     })
 
@@ -80,6 +83,9 @@ export class SampleWorkSource implements WorkSource {
         createdAt: ago(2 * DAY),
         updatedAt: ago(26 * HOUR),
         comments: 4,
+        // Esperando há mais de um dia: aparece atrasada na fila.
+        reviewRequestedAt: ago(30 * HOUR),
+        size: { additions: 210, deletions: 35, changedFiles: 7 },
       }),
       pr({
         repository: 'acme/web-app',
@@ -88,6 +94,9 @@ export class SampleWorkSource implements WorkSource {
         author: people.rafael!,
         updatedAt: ago(3 * HOUR),
         comments: 1,
+        // Pequena e recente: a fila a sobe por destravar alguém rápido.
+        reviewRequestedAt: ago(3 * HOUR),
+        size: { additions: 64, deletions: 18, changedFiles: 3 },
       }),
       pr({
         repository: 'acme/design-system',
@@ -100,6 +109,17 @@ export class SampleWorkSource implements WorkSource {
     ]
 
     const authored = [
+      pr({
+        repository: 'acme/infra',
+        number: 84,
+        title: 'Alerta de fila parada no worker de e-mails',
+        // Parado há 9 dias com review pendente: o lembrete pronto aparece aqui.
+        createdAt: ago(12 * DAY),
+        updatedAt: ago(9 * DAY),
+        reviewRequestedAt: ago(9 * DAY),
+        pendingReviewers: ['rafael-lima', 'time-infra'],
+        size: { additions: 48, deletions: 12, changedFiles: 2 },
+      }),
       pr({
         repository: 'acme/web-app',
         number: 1290,

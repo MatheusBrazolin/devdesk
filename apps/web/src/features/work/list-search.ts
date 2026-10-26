@@ -1,6 +1,6 @@
 import type { SortOrder } from './list-filters'
 
-const SORT_ORDERS: SortOrder[] = ['recentes', 'antigos', 'repositorio']
+const SORT_ORDERS: SortOrder[] = ['prioridade', 'recentes', 'antigos', 'repositorio']
 
 const text = (value: unknown) => (typeof value === 'string' && value.trim() ? value : undefined)
 

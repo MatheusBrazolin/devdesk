@@ -1,0 +1,34 @@
+# Rodada dos avisos com o app fechado (Web Push), a cada 10 minutos.
+# De graça num repositório público. Também acorda o servidor do Render, que
+# dorme depois de 15 minutos sem visitas no plano grátis.
+# Precisa do segredo PUSH_CRON_SECRET (o mesmo configurado no Render); sem ele, não faz nada.
+name: avisos
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: avisos
+  cancel-in-progress: false
+
+jobs:
+  rodada:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dispara a rodada
+        env:
+          SECRET: ${{ secrets.PUSH_CRON_SECRET }}
+          URL: ${{ vars.DEVDESK_URL || 'https://devdesk-tklq.onrender.com' }}
+        run: |
+          if [ -z "$SECRET" ]; then
+            echo "PUSH_CRON_SECRET não configurado: nada a fazer."
+            exit 0
+          fi
+          # O servidor pode estar dormindo: a primeira resposta demora até um minuto.
+          curl --fail-with-body --silent --show-error --max-time 120 --retry 2 --retry-delay 10 \
+            -X POST -H "authorization: Bearer $SECRET" "$URL/api/push/run"

@@ -15,6 +15,8 @@ const PAGES = [
   '/notas',
   '/calendario',
   '/standup',
+  '/metricas',
+  '/time',
   '/tv',
 ]
 
@@ -35,6 +37,7 @@ for (const theme of ['light', 'dark'] as const) {
   }) => {
     test.setTimeout(120_000)
     await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.addInitScript(() => localStorage.setItem('devdesk:boas-vindas', 'visto'))
     await page.goto('/login')
     await page.evaluate((value) => localStorage.setItem('devdesk:theme', value), theme)
     await page.reload()

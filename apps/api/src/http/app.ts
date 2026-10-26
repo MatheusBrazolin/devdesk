@@ -7,10 +7,14 @@ import { registerErrorHandler, sendNotFound } from './plugins/error-handler.js'
 import { registerWebApp } from './plugins/web-app.js'
 import { authRoutes } from './routes/auth.js'
 import { calendarRoutes } from './routes/calendar.js'
+import { externalCalendarRoutes } from './routes/external-calendars.js'
 import { dashboardRoutes } from './routes/dashboard.js'
 import { meRoutes } from './routes/me.js'
 import { notesRoutes } from './routes/notes.js'
 import { standupRoutes } from './routes/standup.js'
+import { metricsRoutes } from './routes/metrics.js'
+import { teamRoutes } from './routes/team.js'
+import { pushRoutes } from './routes/push.js'
 import { systemRoutes } from './routes/system.js'
 
 interface BuildOptions extends FastifyServerOptions {
@@ -54,7 +58,11 @@ export async function buildApp(deps: AppDependencies, options: BuildOptions = {}
       await dashboardRoutes(api, deps)
       await notesRoutes(api, deps)
       await calendarRoutes(api, deps)
+      await externalCalendarRoutes(api, deps)
       await standupRoutes(api, deps)
+      await metricsRoutes(api, deps)
+      await teamRoutes(api, deps)
+      await pushRoutes(api, deps)
     },
     { prefix: '/api' },
   )

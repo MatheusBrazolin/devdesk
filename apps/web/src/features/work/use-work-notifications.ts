@@ -1,8 +1,10 @@
+import type { AttentionItem } from '@devdesk/shared'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { notificationsEnabled, notify } from '@/lib/notifications'
 import { attentionKey, attentionNotice, newAttention } from './attention-notices'
 import { dashboardQuery } from './queries'
+import { isOverdue } from './review-queue'
 
 const STORAGE_KEY = 'devdesk:avisados'
 /** Mais que isso de uma vez vira um aviso só, em vez de uma pilha. */
@@ -38,8 +40,23 @@ export function useWorkNotifications(): void {
   useEffect(() => {
     if (!attention) return
     const seen = readSeen()
-    writeSeen(attention.map(attentionKey))
+    // Reviews que passaram de 24 h esperando: avisam uma vez, com chave própria.
+    const overdue = attention.filter(
+      (item) => item.reason === 'review_requested' && isOverdue(item.pullRequest),
+    )
+    const overdueKey = (item: AttentionItem) => `atrasada:${item.pullRequest.id}`
+    writeSeen([...attention.map(attentionKey), ...overdue.map(overdueKey)])
     if (!seen || !notificationsEnabled()) return
+
+    for (const item of overdue.filter((entry) => !seen.has(overdueKey(entry)))) {
+      const pr = item.pullRequest
+      notify({
+        title: `Review esperando há mais de 24 h: ${pr.repository}#${pr.number}`,
+        body: pr.title,
+        url: pr.url,
+        tag: overdueKey(item),
+      })
+    }
 
     const fresh = newAttention(seen, attention)
     if (fresh.length > MAX_SEPARATE) {

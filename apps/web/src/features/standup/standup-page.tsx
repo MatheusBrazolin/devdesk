@@ -24,7 +24,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { PageHeader, Reveal } from '@/components/layout/page-header'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
-import { calendarQuery } from '@/features/calendar/queries'
+import { useCalendarEvents } from '@/features/calendar/use-calendar-events'
 import { useCreateNote } from '@/features/notes/queries'
 import { DashboardError, ListSkeleton } from '@/features/work/list-states'
 import { addDaysToKey, compareEvents, dateKey, fromKey, occursOn } from '@/lib/calendar-dates'
@@ -70,7 +70,7 @@ export function StandupPage() {
       : `${dayFormat.format(fromKey(window.first))} a ${dayFormat.format(fromKey(window.last))}`
 
   const standup = useQuery(standupQuery(window.from, window.to))
-  const calendar = useQuery(calendarQuery({ from: today, to: today }))
+  const calendar = useCalendarEvents({ from: today, to: today })
   const events = (calendar.data?.events ?? [])
     .filter((event) => occursOn(event, today))
     .sort(compareEvents)

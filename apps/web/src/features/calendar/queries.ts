@@ -2,7 +2,11 @@ import type {
   CalendarEvent,
   CalendarResponse,
   CreateEventInput,
+  CreateSubscriptionInput,
   DeadlinesResponse,
+  ExternalEventsResponse,
+  Subscription,
+  SubscriptionsResponse,
 } from '@devdesk/shared'
 import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
@@ -23,6 +27,42 @@ export const deadlinesQuery = (range: { from: string; to: string }) =>
     queryFn: () => api<DeadlinesResponse>(`/calendar/deadlines?from=${range.from}&to=${range.to}`),
     staleTime: 60_000,
   })
+
+/** Agendas assinadas (Google, Outlook, iCloud): vêm de fora, então ficam em consulta à parte. */
+export const externalEventsQuery = (range: { from: string; to: string }) =>
+  queryOptions({
+    queryKey: ['calendar', 'external', range],
+    queryFn: () =>
+      api<ExternalEventsResponse>(`/calendar/external?from=${range.from}&to=${range.to}`),
+    staleTime: 5 * 60_000,
+  })
+
+export const subscriptionsQuery = queryOptions({
+  queryKey: ['calendar', 'subscriptions'],
+  queryFn: () => api<SubscriptionsResponse>('/calendar/subscriptions'),
+  staleTime: 5 * 60_000,
+})
+
+export function useAddSubscription() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: CreateSubscriptionInput) =>
+      api<{ subscription: Subscription }>('/calendar/subscriptions', {
+        method: 'POST',
+        headers: json,
+        body: JSON.stringify(input),
+      }).then((r) => r.subscription),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['calendar'] }),
+  })
+}
+
+export function useRemoveSubscription() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => api<void>(`/calendar/subscriptions/${id}`, { method: 'DELETE' }),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['calendar'] }),
+  })
+}
 
 /** O .ics é um download de página: o cookie de sessão vai junto. */
 export const ICS_URL = '/api/calendar.ics'

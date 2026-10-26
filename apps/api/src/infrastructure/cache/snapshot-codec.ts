@@ -5,8 +5,8 @@ import type { Issue, PullRequest, WorkSnapshot } from '../../domain/work.js'
  * retrato muda: um retrato salvo num formato antigo é ignorado (vira uma
  * busca nova), em vez de chegar quebrado ao painel.
  */
-/** 2: PRs ganharam changesRequested. */
-export const SNAPSHOT_VERSION = 2
+/** 2: PRs ganharam changesRequested. 3: tamanho, pedido de review e revisores pendentes. */
+export const SNAPSHOT_VERSION = 3
 
 interface Stored {
   version: number
@@ -23,13 +23,15 @@ const date = (value: unknown) => {
   return parsed
 }
 
-type Raw<T> = Omit<T, 'createdAt' | 'updatedAt' | 'mergedAt'> & Record<string, unknown>
+type Raw<T> = Omit<T, 'createdAt' | 'updatedAt' | 'mergedAt' | 'reviewRequestedAt'> &
+  Record<string, unknown>
 
 const revivePullRequest = (pr: Raw<PullRequest>): PullRequest => ({
   ...(pr as unknown as PullRequest),
   createdAt: date(pr.createdAt),
   updatedAt: date(pr.updatedAt),
   mergedAt: pr.mergedAt ? date(pr.mergedAt) : null,
+  reviewRequestedAt: pr.reviewRequestedAt ? date(pr.reviewRequestedAt) : null,
 })
 
 const reviveIssue = (issue: Raw<Issue>): Issue => ({

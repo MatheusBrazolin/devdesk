@@ -25,6 +25,9 @@ const pr = (n: number, overrides: Partial<PullRequest> = {}): PullRequest => ({
   approvals: 0,
 
   changesRequested: 0,
+  size: null,
+  reviewRequestedAt: null,
+  pendingReviewers: [],
   comments: 0,
   milestone: null,
   ...overrides,

@@ -16,16 +16,28 @@ interface ListToolbarProps {
   total: number
   /** Esconde a ordenação onde ela não faz sentido. */
   sortable?: boolean
+  /** Ordens oferecidas e a que vale sem escolha (fica fora da URL). */
+  orders?: SortOrder[]
+  defaultOrder?: SortOrder
 }
 
 const SORT_LABELS: Record<SortOrder, string> = {
+  prioridade: 'Prioridade de review',
   recentes: 'Atualizados recentemente',
   antigos: 'Parados há mais tempo',
   repositorio: 'Por repositório',
 }
 
 /** Busca, filtro por organização e ordenação. O estado vive na URL. */
-export function ListToolbar({ value, onChange, owners, total, sortable = true }: ListToolbarProps) {
+export function ListToolbar({
+  value,
+  onChange,
+  owners,
+  total,
+  sortable = true,
+  orders = ['recentes', 'antigos', 'repositorio'],
+  defaultOrder = 'recentes',
+}: ListToolbarProps) {
   const input = useRef<HTMLInputElement>(null)
 
   // "/" foca a busca, como no GitHub.
@@ -78,20 +90,20 @@ export function ListToolbar({ value, onChange, owners, total, sortable = true }:
           <label className="flex h-8 items-center">
             <span className="sr-only">Ordenar</span>
             <select
-              value={value.ordem ?? 'recentes'}
+              value={value.ordem ?? defaultOrder}
               onChange={(event) =>
                 onChange({
                   ordem:
-                    event.target.value === 'recentes'
+                    event.target.value === defaultOrder
                       ? undefined
                       : (event.target.value as SortOrder),
                 })
               }
               className="h-full rounded-md border border-border bg-surface px-2.5 text-[13px] text-fg-muted hover:border-border-strong focus:outline-none"
             >
-              {Object.entries(SORT_LABELS).map(([order, label]) => (
+              {orders.map((order) => (
                 <option key={order} value={order}>
-                  {label}
+                  {SORT_LABELS[order]}
                 </option>
               ))}
             </select>

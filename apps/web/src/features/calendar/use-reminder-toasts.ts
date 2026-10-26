@@ -34,6 +34,8 @@ export function useReminderToasts(): void {
               title: `Lembrete: ${event.title}`,
               body: event.description || undefined,
               tag: `lembrete:${event.id}`,
+              // Compromisso não espera o fim do foco.
+              urgent: true,
             }),
           delay,
         ),

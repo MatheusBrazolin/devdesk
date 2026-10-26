@@ -10,6 +10,7 @@ import { applyFilter, applySort, isStale, ownerCounts } from './list-filters'
 import { DashboardError, ListSkeleton } from './list-states'
 import { ListToolbar, type ToolbarValue } from './list-toolbar'
 import { PullRequestRow } from './pull-request-row'
+import { orderReviewQueue } from './review-queue'
 import { dashboardQuery } from './queries'
 import { SyncStatus } from './sync-status'
 
@@ -47,7 +48,10 @@ export function PullRequestsPage() {
     mergeados: lists?.merged ?? [],
   }
   const all = byTab[aba]
-  const visible = applySort(applyFilter(all, filters), filters.ordem ?? 'recentes')
+  // Na aba de reviews, a ordem padrão é a da fila: o que destrava mais gente primeiro.
+  const order = filters.ordem ?? (aba === 'review' ? 'prioridade' : 'recentes')
+  const filtered = applyFilter(all, filters)
+  const visible = order === 'prioridade' ? orderReviewQueue(filtered) : applySort(filtered, order)
   const empty = EMPTY[aba]
 
   const update = (patch: Partial<ToolbarValue>) =>
@@ -89,6 +93,12 @@ export function PullRequestsPage() {
           onChange={update}
           owners={ownerCounts(all)}
           total={all.length}
+          orders={
+            aba === 'review'
+              ? ['prioridade', 'recentes', 'antigos', 'repositorio']
+              : ['recentes', 'antigos', 'repositorio']
+          }
+          defaultOrder={aba === 'review' ? 'prioridade' : 'recentes'}
         />
       )}
 
@@ -115,7 +125,12 @@ export function PullRequestsPage() {
           ) : (
             <ul className="divide-y divide-border">
               {visible.map((pr) => (
-                <PullRequestRow key={pr.id} pullRequest={pr} showAuthor={aba === 'review'} />
+                <PullRequestRow
+                  key={pr.id}
+                  pullRequest={pr}
+                  showAuthor={aba === 'review'}
+                  review={aba === 'review'}
+                />
               ))}
             </ul>
           )}

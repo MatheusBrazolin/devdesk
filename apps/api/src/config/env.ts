@@ -43,6 +43,16 @@ const envSchema = z
      * rodam em paralelo, todos do mesmo 127.0.0.1.
      */
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(300),
+    /**
+     * Chaves VAPID dos avisos com o app fechado (gere com: npx web-push
+     * generate-vapid-keys). Sem elas, os avisos funcionam só com o app aberto.
+     */
+    VAPID_PUBLIC_KEY: z.string().optional(),
+    VAPID_PRIVATE_KEY: z.string().optional(),
+    /** Contato do dono do servidor, exigido pelos serviços de push (mailto: ou https:). */
+    VAPID_SUBJECT: z.string().optional(),
+    /** Segredo que o agendador (GitHub Actions) manda para disparar a rodada de avisos. */
+    PUSH_CRON_SECRET: z.string().min(32, 'use pelo menos 32 caracteres').optional(),
     /** Pasta do front compilado; com ela, a API serve o app inteiro (produção). */
     WEB_DIST_DIR: z.string().optional(),
   })
@@ -54,6 +64,7 @@ const envSchema = z
       API_PUBLIC_URL:
         env.API_PUBLIC_URL ?? (publicUrl ? `${publicUrl}/api` : 'http://localhost:5173/api'),
       DEMO_ENABLED: env.DEMO_ENABLED ?? env.NODE_ENV !== 'production',
+      pushEnabled: Boolean(env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY),
       githubLoginEnabled: Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET),
       // Quem chega na API entra como o dono do token: nunca num servidor público.
       // Com proxy, o IP vem de um cabeçalho que dá para forjar: o modo pessoal, que

@@ -1,4 +1,5 @@
 import {
+  ChartColumn,
   CalendarDays,
   CircleDot,
   Crosshair,
@@ -8,11 +9,22 @@ import {
   NotebookPen,
   Sun,
   Tv,
+  Users,
 } from 'lucide-react'
 import type { Tone } from './tones'
 
 export interface NavItem {
-  to: '/' | '/foco' | '/tv' | '/pull-requests' | '/issues' | '/notas' | '/calendario' | '/standup'
+  to:
+    | '/'
+    | '/foco'
+    | '/tv'
+    | '/metricas'
+    | '/time'
+    | '/pull-requests'
+    | '/issues'
+    | '/notas'
+    | '/calendario'
+    | '/standup'
   label: string
   icon: LucideIcon
   /** Atalho "g + tecla", no estilo do GitHub e do Linear. */
@@ -44,6 +56,8 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/issues', label: 'Issues', icon: CircleDot, shortcut: 'i', tone: 'info' },
   { to: '/notas', label: 'Notas', icon: NotebookPen, shortcut: 'n', tone: 'merged' },
   { to: '/calendario', label: 'Calendário', icon: CalendarDays, shortcut: 'c', tone: 'info' },
+  { to: '/metricas', label: 'Métricas', icon: ChartColumn, shortcut: 'm', tone: 'merged' },
+  { to: '/time', label: 'Time', icon: Users, shortcut: 'e', tone: 'success' },
   {
     to: '/standup',
     label: 'Standup',

@@ -14,6 +14,20 @@ import { GetStandup } from '../src/application/use-cases/get-standup.js'
 import { Notes } from '../src/application/use-cases/notes.js'
 import { Logout } from '../src/application/use-cases/logout.js'
 import { StartPersonalSession } from '../src/application/use-cases/start-personal-session.js'
+import { GetMetrics } from '../src/application/use-cases/get-metrics.js'
+import { GetTeam } from '../src/application/use-cases/get-team.js'
+import { PushNotifications } from '../src/application/use-cases/push-notifications.js'
+import type { PushResult, PushSender } from '../src/application/ports/push.js'
+import type { PushNotice, PushSubscription } from '../src/domain/push.js'
+import { SampleTeamSource } from '../src/infrastructure/sample/sample-team-source.js'
+import { ExternalCalendars } from '../src/application/use-cases/external-calendars.js'
+import type { IcsFetcher } from '../src/application/ports/ics-fetcher.js'
+import { expandIcs } from '../src/infrastructure/ics/expand-ics.js'
+import {
+  SAMPLE_CALENDAR,
+  SAMPLE_ICS,
+} from '../src/infrastructure/sample/sample-external-calendar.js'
+import { SampleMetricsSource } from '../src/infrastructure/sample/sample-metrics-source.js'
 import { StartDemoSession } from '../src/application/use-cases/start-demo-session.js'
 import { buildApp } from '../src/http/app.js'
 import type { AppDependencies } from '../src/http/dependencies.js'
@@ -27,7 +41,9 @@ import { RandomSessionTokens } from '../src/infrastructure/crypto/session-tokens
 import {
   InMemoryEventRepository,
   InMemoryNoteRepository,
+  InMemoryPushRepository,
   InMemorySessionRepository,
+  InMemorySubscriptionRepository,
   InMemoryUserRepository,
 } from '../src/infrastructure/repositories/in-memory.js'
 import { SampleActivitySource } from '../src/infrastructure/sample/sample-activity-source.js'
@@ -126,6 +142,8 @@ export class FakeWorkSource implements WorkSource {
   error: Error | null = null
   /** Atraso artificial, para testar buscas simultâneas. */
   delayMs = 0
+  /** O que o GitHub falso devolve, além do vazio padrão. */
+  result: Partial<WorkSnapshot> = {}
 
   constructor(private readonly clock: FakeClock) {}
 
@@ -141,9 +159,38 @@ export class FakeWorkSource implements WorkSource {
       merged: [],
       issues: [],
       totals: { reviewRequested: 0, authored: 0, merged: 0, issues: 0 },
+      ...this.result,
     }
   }
 }
+
+/** Provedor de agenda falso: responde o texto cadastrado para cada endereço. */
+export class FakeIcsFetcher implements IcsFetcher {
+  readonly feeds = new Map<string, string>()
+  readonly calls: string[] = []
+
+  async fetch(url: URL): Promise<string> {
+    this.calls.push(url.href)
+    const text = this.feeds.get(url.href)
+    if (text === undefined) throw new Error('agenda fora do ar')
+    return text
+  }
+}
+
+/** Serviço de push falso: guarda o que seria enviado; endpoints em `gone` respondem 410. */
+export class FakePushSender implements PushSender {
+  readonly publicKey = 'chave-publica-de-teste'
+  readonly sent: { endpoint: string; notice: PushNotice }[] = []
+  readonly gone = new Set<string>()
+
+  async send(subscription: PushSubscription, notice: PushNotice): Promise<PushResult> {
+    if (this.gone.has(subscription.endpoint)) return 'gone'
+    this.sent.push({ endpoint: subscription.endpoint, notice })
+    return 'sent'
+  }
+}
+
+export const CRON_SECRET = 'segredo-do-agendador-com-mais-de-32-caracteres'
 
 export function createTestContext(
   options: {
@@ -169,6 +216,10 @@ export function createTestContext(
   const events = new InMemoryEventRepository()
   const snapshotCache = new InMemorySnapshotCache()
   const activity = new FakeActivitySource()
+  const subscriptions = new InMemorySubscriptionRepository()
+  const icsFetcher = new FakeIcsFetcher()
+  const pushRepository = new InMemoryPushRepository()
+  const pushSender = new FakePushSender()
   const getDashboard = new GetDashboard(
     { github: githubWork, sample: new SampleWorkSource(clock) },
     githubTokens,
@@ -176,7 +227,30 @@ export function createTestContext(
     clock,
   )
 
+  const calendar = new Calendar(events, getDashboard, clock)
+  const externalCalendars = new ExternalCalendars(
+    subscriptions,
+    cipher,
+    icsFetcher,
+    expandIcs,
+    { ...SAMPLE_CALENDAR, ics: SAMPLE_ICS },
+    clock,
+  )
+
   const deps: AppDependencies = {
+    push: {
+      notifications: new PushNotifications(
+        pushRepository,
+        pushSender,
+        users,
+        getDashboard,
+        calendar,
+        externalCalendars,
+        'http://web.test',
+        clock,
+      ),
+      cronSecret: CRON_SECRET,
+    },
     config: {
       webOrigin: 'http://web.test',
       secureCookies: false,
@@ -215,7 +289,19 @@ export function createTestContext(
       logout: new Logout(sessions, tokens),
       getDashboard,
       notes: new Notes(notes, clock),
-      calendar: new Calendar(events, getDashboard, clock),
+      calendar,
+      externalCalendars,
+      getMetrics: new GetMetrics(
+        { github: new SampleMetricsSource(clock), sample: new SampleMetricsSource(clock) },
+        githubTokens,
+        clock,
+      ),
+      getTeam: new GetTeam(
+        getDashboard,
+        { github: new SampleTeamSource(clock), sample: new SampleTeamSource(clock) },
+        githubTokens,
+        clock,
+      ),
       getStandup: new GetStandup(
         getDashboard,
         { github: activity, sample: new SampleActivitySource() },
@@ -241,6 +327,10 @@ export function createTestContext(
     events,
     snapshotCache,
     activity,
+    subscriptions,
+    icsFetcher,
+    pushRepository,
+    pushSender,
   }
 }
 

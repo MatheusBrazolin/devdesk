@@ -29,6 +29,7 @@ import { PinnedNotesCard } from '@/features/notes/pinned-notes-card'
 import { applySort, isStale } from '@/features/work/list-filters'
 import { DashboardError, ListSkeleton } from '@/features/work/list-states'
 import { PullRequestRow } from '@/features/work/pull-request-row'
+import { orderAttention } from '@/features/work/review-queue'
 import { dashboardQuery } from '@/features/work/queries'
 import { SyncStatus } from '@/features/work/sync-status'
 import { dateKey, fromKey } from '@/lib/calendar-dates'
@@ -391,7 +392,7 @@ function AttentionCard({ dashboard }: { dashboard: ReturnType<typeof useQuery<Da
           />
         ) : (
           <ul className="divide-y divide-border">
-            {dashboard.data.attention.map(({ reason, pullRequest }) => (
+            {orderAttention(dashboard.data.attention).map(({ reason, pullRequest }) => (
               <PullRequestRow
                 key={pullRequest.id}
                 pullRequest={pullRequest}

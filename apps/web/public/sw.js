@@ -61,6 +61,45 @@ async function networkFirst(request) {
   }
 }
 
+// Avisos com o app fechado: o servidor manda { title, body, url, tag }.
+self.addEventListener('push', (event) => {
+  let notice = {}
+  try {
+    notice = event.data?.json() ?? {}
+  } catch {
+    // Conteúdo inesperado: mostra um aviso genérico em vez de nada.
+  }
+  event.waitUntil(
+    self.registration.showNotification(notice.title ?? 'DevDesk', {
+      body: notice.body ?? 'Tem algo novo no seu painel.',
+      tag: notice.tag,
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      data: { url: notice.url ?? '/' },
+    }),
+  )
+})
+
+// Clicar no aviso: foca uma janela do DevDesk aberta ou abre o link.
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const url = event.notification.data?.url ?? '/'
+  event.waitUntil(
+    (async () => {
+      const target = new URL(url, self.location.origin)
+      if (target.origin === self.location.origin) {
+        const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+        const open = windows.find((client) => new URL(client.url).origin === target.origin)
+        if (open) {
+          await open.focus()
+          return open.navigate(target.href)
+        }
+      }
+      return self.clients.openWindow(target.href)
+    })(),
+  )
+})
+
 /** Cada deploy traz arquivos novos: os mais antigos saem para o cache não crescer. */
 async function trim(cache) {
   const keys = await cache.keys()

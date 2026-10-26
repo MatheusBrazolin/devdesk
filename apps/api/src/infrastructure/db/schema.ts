@@ -98,6 +98,48 @@ export const calendarEvents = pgTable(
   ],
 )
 
+/** Agendas externas assinadas pelo link .ics (Google, Outlook, iCloud). Só leitura. */
+export const calendarSubscriptions = pgTable(
+  'calendar_subscriptions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    host: text('host').notNull(),
+    /** O link dá acesso à agenda inteira: fica cifrado como os tokens. */
+    urlEncrypted: text('url_encrypted').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('calendar_subscriptions_user_idx').on(table.userId)],
+)
+
+/** Navegadores que pediram avisos com o app fechado (Web Push). */
+export const pushSubscriptions = pgTable(
+  'push_subscriptions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    endpoint: text('endpoint').notNull().unique(),
+    p256dh: text('p256dh').notNull(),
+    auth: text('auth').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('push_subscriptions_user_idx').on(table.userId)],
+)
+
+/** O que já foi avisado por push, para a próxima rodada mandar só o que é novo. */
+export const pushSeen = pgTable('push_seen', {
+  userId: uuid('user_id')
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  keys: text('keys').array().notNull().default([]),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
 /** Último retrato do painel por pessoa, para abrir na hora mesmo depois de reiniciar a API. */
 export const dashboardSnapshots = pgTable('dashboard_snapshots', {
   userId: uuid('user_id')

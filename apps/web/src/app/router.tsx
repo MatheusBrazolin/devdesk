@@ -34,6 +34,8 @@ const lazy = {
   notes: lazyRouteComponent(() => import('@/features/notes/notes-page'), 'NotesPage'),
   calendar: lazyRouteComponent(() => import('@/features/calendar/calendar-page'), 'CalendarPage'),
   standup: lazyRouteComponent(() => import('@/features/standup/standup-page'), 'StandupPage'),
+  metrics: lazyRouteComponent(() => import('@/features/metrics/metrics-page'), 'MetricsPage'),
+  team: lazyRouteComponent(() => import('@/features/team/team-page'), 'TeamPage'),
 }
 
 interface RouterContext {
@@ -81,6 +83,16 @@ const tvRoute = createRoute({
   validateSearch: (search: Record<string, unknown>): { layout?: TvLayoutChoice } =>
     isTvLayoutChoice(search.layout) && search.layout !== 'auto' ? { layout: search.layout } : {},
   component: lazy.tv,
+})
+const metricsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/metricas',
+  component: lazy.metrics,
+})
+const teamRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/time',
+  component: lazy.team,
 })
 const focusRoute = createRoute({
   getParentRoute: () => appRoute,
@@ -153,6 +165,8 @@ const routeTree = rootRoute.addChildren([
   appRoute.addChildren([
     homeRoute,
     focusRoute,
+    metricsRoute,
+    teamRoute,
     tvRoute,
     pullRequestsRoute,
     issuesRoute,

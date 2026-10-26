@@ -6,6 +6,7 @@ import {
   ChevronsUpDown,
   Crosshair,
   Download,
+  GraduationCap,
   LogOut,
   MessageSquareText,
   Monitor,
@@ -31,7 +32,9 @@ import {
   enableNotifications,
   useNotificationsSetting,
 } from '@/lib/notifications'
+import { openWelcomeTour } from '@/features/onboarding/welcome-store'
 import { useInstallPrompt } from '@/lib/install'
+import { disablePush, enablePush } from '@/lib/push'
 import { type ThemePreference, useTheme } from '@/lib/theme'
 
 export function UserMenu() {
@@ -43,7 +46,10 @@ export function UserMenu() {
   const installPrompt = useInstallPrompt()
 
   const toggleNotifications = async () => {
-    if (notifications.enabled) return disableNotifications()
+    if (notifications.enabled) {
+      disableNotifications()
+      return void disablePush()
+    }
     if (notifications.permission === 'unsupported') {
       return toast.error('Este navegador não mostra notificações.')
     }
@@ -52,7 +58,12 @@ export function UserMenu() {
         description: 'Libere nas configurações do site e tente de novo.',
       })
     }
-    if (await enableNotifications()) toast.success('Notificações ligadas')
+    if (!(await enableNotifications())) return
+    toast.success('Notificações ligadas', {
+      description: (await enablePush())
+        ? 'Chegam também com o DevDesk fechado.'
+        : 'Chegam enquanto o DevDesk estiver aberto.',
+    })
   }
 
   return (
@@ -95,6 +106,9 @@ export function UserMenu() {
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => void navigate({ to: '/tv' })}>
           <Tv /> Modo TV
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={openWelcomeTour}>
+          <GraduationCap /> Primeiros passos
         </DropdownMenuItem>
         {installPrompt.available && (
           <DropdownMenuItem

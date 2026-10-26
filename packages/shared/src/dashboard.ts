@@ -47,6 +47,17 @@ export const pullRequestSchema = z.object({
   changesRequested: z.number().int().nonnegative(),
   comments: z.number().int().nonnegative(),
   milestone: milestoneSchema.nullable(),
+  size: z
+    .object({
+      additions: z.number().int().nonnegative(),
+      deletions: z.number().int().nonnegative(),
+      changedFiles: z.number().int().nonnegative(),
+    })
+    .nullable(),
+  /** Quando a review foi pedida pela última vez. */
+  reviewRequestedAt: z.iso.datetime().nullable(),
+  /** Quem ainda tem review pendente. */
+  pendingReviewers: z.array(z.string()),
 })
 
 export const issueSchema = z.object({

@@ -6,6 +6,7 @@ import { useGoToShortcuts } from '@/features/commands/use-go-to-shortcuts'
 import { useFocusAlarm } from '@/features/focus/focus-timer'
 import { useDashboardSync } from '@/features/work/dashboard-sync'
 import { useWorkNotifications } from '@/features/work/use-work-notifications'
+import { WelcomeTour } from '@/features/onboarding/welcome-tour'
 import { cn } from '@/lib/cn'
 import { useUpdateCheck } from '@/lib/update-check'
 import { Sidebar } from './sidebar'
@@ -51,6 +52,7 @@ export function AppShell() {
           >
             <Outlet />
           </motion.main>
+          <WelcomeTour />
         </div>
       </div>
     </CommandPaletteProvider>

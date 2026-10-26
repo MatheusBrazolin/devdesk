@@ -15,19 +15,31 @@ import { cn } from '@/lib/cn'
 import { formatRelative } from '@/lib/time'
 import { NoteButton } from '@/features/notes/note-button'
 import { REASON_LABEL } from './labels'
+import { RemindButton } from './remind-button'
 import { daysSince, isStale, ownerOf } from './list-filters'
+import {
+  changedLines,
+  estimateMinutes,
+  formatEstimate,
+  formatWaiting,
+  hoursWaiting,
+  isOverdue,
+} from './review-queue'
 
 interface PullRequestRowProps {
   pullRequest: PullRequest
   reason?: AttentionReason
   /** Esconde o autor quando a lista é toda de PRs seus. */
   showAuthor?: boolean
+  /** Review pedida a você: mostra espera, tamanho e tempo estimado. */
+  review?: boolean
 }
 
 export function PullRequestRow({
   pullRequest: pr,
   reason,
   showAuthor = true,
+  review = reason === 'review_requested',
 }: PullRequestRowProps) {
   const merged = pr.mergedAt !== null
   const Icon = merged ? GitMerge : pr.isDraft ? GitPullRequestDraft : GitPullRequest
@@ -77,14 +89,18 @@ export function PullRequestRow({
             </>
           )}
           <Dot />
-          <span className={cn('shrink-0', stale && 'text-accent')}>
-            {merged
-              ? `mergeado ${formatRelative(new Date(pr.mergedAt!))}`
-              : stale
-                ? `parado há ${daysSince(pr.updatedAt)} dias`
-                : `atualizado ${formatRelative(new Date(pr.updatedAt))}`}
-          </span>
-          {!merged && (
+          {review && !merged ? (
+            <ReviewMeta pr={pr} />
+          ) : (
+            <span className={cn('shrink-0', stale && 'text-accent')}>
+              {merged
+                ? `mergeado ${formatRelative(new Date(pr.mergedAt!))}`
+                : stale
+                  ? `parado há ${daysSince(pr.updatedAt)} dias`
+                  : `atualizado ${formatRelative(new Date(pr.updatedAt))}`}
+            </span>
+          )}
+          {!merged && !review && (
             <span className="hidden shrink-0 lg:inline">
               <Dot /> {openedFor(pr.createdAt)}
             </span>
@@ -93,6 +109,8 @@ export function PullRequestRow({
       </div>
 
       <div className="relative mt-0.5 flex shrink-0 items-center gap-3">
+        {/* PR seu parado: um lembrete pronto para quem revisa. */}
+        {stale && !showAuthor && !reason && <RemindButton pullRequest={pr} />}
         <NoteButton
           item={{
             kind: 'pull_request',
@@ -121,6 +139,26 @@ export function PullRequestRow({
         </span>
       </div>
     </li>
+  )
+}
+
+/** Na review: há quanto tempo espera (âmbar se atrasou), tempo estimado e tamanho. */
+function ReviewMeta({ pr }: { pr: PullRequest }) {
+  const minutes = estimateMinutes(pr)
+  const lines = changedLines(pr)
+  const overdue = isOverdue(pr)
+  return (
+    <>
+      <span className={cn('shrink-0', overdue && 'font-medium text-accent')}>
+        {formatWaiting(hoursWaiting(pr))}
+      </span>
+      {minutes !== null && (
+        <span className="shrink-0" title={`${lines} linhas em ${pr.size?.changedFiles} arquivos`}>
+          <Dot /> {formatEstimate(minutes)}
+          <span className="hidden sm:inline"> · {lines} linhas</span>
+        </span>
+      )}
+    </>
   )
 }
 

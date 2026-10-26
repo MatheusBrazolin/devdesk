@@ -5,7 +5,8 @@ const DAY = 24 * 60 * 60 * 1000
 /** Sem atividade há mais que isto, o item é considerado parado. */
 export const STALE_AFTER_DAYS = 7
 
-export type SortOrder = 'recentes' | 'antigos' | 'repositorio'
+/** "prioridade" só existe na aba de reviews; quem ordena é a fila (review-queue). */
+export type SortOrder = 'prioridade' | 'recentes' | 'antigos' | 'repositorio'
 
 export interface ListFilter {
   /** Texto livre: título, repositório ou número. */
@@ -42,6 +43,7 @@ export function applySort<T extends Item>(items: T[], order: SortOrder): T[] {
   const byUpdated = (a: T, b: T) => b.updatedAt.localeCompare(a.updatedAt)
   const sorted = [...items]
   switch (order) {
+    case 'prioridade':
     case 'recentes':
       return sorted.sort(byUpdated)
     case 'antigos':

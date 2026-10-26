@@ -28,6 +28,31 @@ const PULL_REQUEST_FIELDS = /* GraphQL */ `
     comments {
       totalCount
     }
+    additions
+    deletions
+    changedFiles
+    # Quem ainda precisa revisar (para o lembrete de PR parado).
+    reviewRequests(first: 10) {
+      nodes {
+        requestedReviewer {
+          __typename
+          ... on User {
+            login
+          }
+          ... on Team {
+            name
+          }
+        }
+      }
+    }
+    # O último pedido de review: "esperando desde".
+    timelineItems(itemTypes: [REVIEW_REQUESTED_EVENT], last: 1) {
+      nodes {
+        ... on ReviewRequestedEvent {
+          createdAt
+        }
+      }
+    }
     latestOpinionatedReviews(first: 20) {
       nodes {
         state
@@ -74,6 +99,9 @@ const MERGED_FIELDS = /* GraphQL */ `
     comments {
       totalCount
     }
+    additions
+    deletions
+    changedFiles
     milestone {
       title
       dueOn

@@ -24,4 +24,12 @@ services:
       # O Render tem um proxy na frente: um salto confiável.
       - key: TRUST_PROXY
         value: '1'
+      # Avisos com o app fechado (opcional): chaves VAPID e o segredo do agendador,
+      # colados por você. Ver docs/DEPLOY.md.
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: PUSH_CRON_SECRET
+        sync: false
       # WEB_ORIGIN e API_PUBLIC_URL saem de RENDER_EXTERNAL_URL, que o Render define.

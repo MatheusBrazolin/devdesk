@@ -33,6 +33,18 @@ export interface PullRequest {
   changesRequested: number
   comments: number
   milestone: Milestone | null
+  /** Tamanho do PR; nulo quando o GitHub não informou. */
+  size: PullRequestSize | null
+  /** Quando a review foi pedida pela última vez: o "esperando desde". */
+  reviewRequestedAt: Date | null
+  /** Quem ainda tem review pendente (login de pessoa ou nome de time). */
+  pendingReviewers: string[]
+}
+
+export interface PullRequestSize {
+  additions: number
+  deletions: number
+  changedFiles: number
 }
 
 export interface Issue {

@@ -29,6 +29,20 @@ import { DrizzleSessionRepository } from './infrastructure/repositories/drizzle-
 import { DrizzleUserRepository } from './infrastructure/repositories/drizzle-user-repository.js'
 import { SampleActivitySource } from './infrastructure/sample/sample-activity-source.js'
 import { SampleWorkSource } from './infrastructure/sample/sample-work-source.js'
+import { SampleMetricsSource } from './infrastructure/sample/sample-metrics-source.js'
+import { GitHubMetricsSource } from './infrastructure/github/github-metrics-source.js'
+import { GetMetrics } from './application/use-cases/get-metrics.js'
+import { GetTeam } from './application/use-cases/get-team.js'
+import { PushNotifications } from './application/use-cases/push-notifications.js'
+import { WebPushSender } from './infrastructure/push/web-push-sender.js'
+import { DrizzlePushRepository } from './infrastructure/repositories/drizzle-push-repository.js'
+import { GitHubTeamSource } from './infrastructure/github/github-team-source.js'
+import { SampleTeamSource } from './infrastructure/sample/sample-team-source.js'
+import { ExternalCalendars } from './application/use-cases/external-calendars.js'
+import { expandIcs } from './infrastructure/ics/expand-ics.js'
+import { HttpIcsFetcher } from './infrastructure/ics/http-ics-fetcher.js'
+import { DrizzleSubscriptionRepository } from './infrastructure/repositories/drizzle-subscription-repository.js'
+import { SAMPLE_CALENDAR, SAMPLE_ICS } from './infrastructure/sample/sample-external-calendar.js'
 
 /** Raiz de composição: o único lugar que conhece as implementações concretas. */
 export function createContainer(env: Env, db: Database): AppDependencies {
@@ -57,7 +71,41 @@ export function createContainer(env: Env, db: Database): AppDependencies {
     systemClock,
   )
 
+  const calendar = new Calendar(new DrizzleEventRepository(db), getDashboard, systemClock)
+  const externalCalendars = new ExternalCalendars(
+    new DrizzleSubscriptionRepository(db),
+    cipher,
+    new HttpIcsFetcher(),
+    expandIcs,
+    { ...SAMPLE_CALENDAR, ics: SAMPLE_ICS },
+    systemClock,
+  )
+  const push =
+    env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY
+      ? {
+          notifications: new PushNotifications(
+            new DrizzlePushRepository(db),
+            new WebPushSender(
+              env.VAPID_PUBLIC_KEY,
+              env.VAPID_PRIVATE_KEY,
+              env.VAPID_SUBJECT ??
+                (env.WEB_ORIGIN.startsWith('https://')
+                  ? env.WEB_ORIGIN
+                  : 'https://github.com/MatheusBrazolin/devdesk'),
+            ),
+            users,
+            getDashboard,
+            calendar,
+            externalCalendars,
+            env.WEB_ORIGIN,
+            systemClock,
+          ),
+          cronSecret: env.PUSH_CRON_SECRET ?? null,
+        }
+      : null
+
   return {
+    push,
     config: {
       webOrigin: env.WEB_ORIGIN,
       secureCookies: env.NODE_ENV === 'production',
@@ -93,7 +141,19 @@ export function createContainer(env: Env, db: Database): AppDependencies {
       logout: new Logout(sessions, tokens),
       getDashboard,
       notes: new Notes(new DrizzleNoteRepository(db), systemClock),
-      calendar: new Calendar(new DrizzleEventRepository(db), getDashboard, systemClock),
+      calendar,
+      externalCalendars,
+      getMetrics: new GetMetrics(
+        { github: new GitHubMetricsSource(), sample: new SampleMetricsSource(systemClock) },
+        githubTokens,
+        systemClock,
+      ),
+      getTeam: new GetTeam(
+        getDashboard,
+        { github: new GitHubTeamSource(), sample: new SampleTeamSource(systemClock) },
+        githubTokens,
+        systemClock,
+      ),
       getStandup: new GetStandup(
         getDashboard,
         { github: new GitHubActivitySource(), sample: new SampleActivitySource() },

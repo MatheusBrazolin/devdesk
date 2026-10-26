@@ -5,7 +5,8 @@ import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/cn'
 import { addDaysToKey } from '@/lib/calendar-dates'
 import { AgendaList, AgendaSkeleton } from './agenda-list'
-import { calendarQuery, deadlinesQuery } from './queries'
+import { deadlinesQuery } from './queries'
+import { useCalendarEvents } from './use-calendar-events'
 import { useToday } from '@/lib/use-today'
 
 const DAYS = 7
@@ -14,7 +15,7 @@ const DAYS = 7
 export function WeekAgendaCard({ className }: { className?: string }) {
   const today = useToday()
   const range = { from: today, to: addDaysToKey(today, DAYS - 1) }
-  const events = useQuery(calendarQuery(range))
+  const events = useCalendarEvents(range)
   const deadlines = useQuery(deadlinesQuery(range))
 
   return (

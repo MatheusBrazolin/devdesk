@@ -30,9 +30,11 @@ import { Badge } from '@/components/ui/badge'
 import { LogoMark } from '@/components/ui/logo'
 import { OwnerAvatar } from '@/components/ui/owner-avatar'
 import { Skeleton } from '@/components/ui/skeleton'
-import { calendarQuery, deadlinesQuery } from '@/features/calendar/queries'
+import { deadlinesQuery } from '@/features/calendar/queries'
+import { useCalendarEvents } from '@/features/calendar/use-calendar-events'
 import { ageBuckets, loadByOwner, mergedPerDay } from '@/features/home/dashboard-metrics'
 import { REASON_LABEL } from '@/features/work/labels'
+import { orderAttention } from '@/features/work/review-queue'
 import { applySort, daysSince, isStale, ownerOf } from '@/features/work/list-filters'
 import {
   addDaysToKey,
@@ -393,7 +395,7 @@ export function AttentionPanel({
   max: number
   dense?: boolean
 }) {
-  const items = data?.attention ?? []
+  const items = orderAttention(data?.attention ?? [])
   const [list, setList] = useState<HTMLUListElement | null>(null)
   const fit = useRowsThatFit(list)
   // Só linhas inteiras: se nem todas cabem, uma vaga fica para o "e mais N".
@@ -500,7 +502,7 @@ export function AgendaPanel({
 }) {
   const today = useToday()
   const range = { from: today, to: addDaysToKey(today, AGENDA_DAYS - 1) }
-  const events = useQuery(calendarQuery(range))
+  const events = useCalendarEvents(range)
   const deadlines = useQuery(deadlinesQuery(range))
 
   let budget = maxItems

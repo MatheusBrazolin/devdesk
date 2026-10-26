@@ -1,13 +1,23 @@
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import { Loader2, NotebookPen, Plus, Search, SearchX, X } from 'lucide-react'
+import type { CreateNoteInput } from '@devdesk/shared'
+import { ChevronDown, Loader2, NotebookPen, Plus, Search, SearchX, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
+import { buttonVariants } from '@/components/ui/button-variants'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ListSkeleton } from '@/features/work/list-states'
 import { cn } from '@/lib/cn'
 import { NoteEditor } from './note-editor'
 import { NoteListItem } from './note-list-item'
+import { NOTE_TEMPLATES } from './note-templates'
 import { noteQuery, notesQuery, tagsQuery, useCreateNote } from './queries'
 
 const route = getRouteApi('/app/notas')
@@ -22,10 +32,13 @@ export function NotesPage() {
   const setSearch = (patch: Partial<typeof search>) =>
     void navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true })
 
-  const newNote = () =>
-    create.mutate(search.tag ? { tags: [search.tag] } : {}, {
-      onSuccess: (note) => setSearch({ nota: note.id }),
-    })
+  const newNote = (template: CreateNoteInput = {}) =>
+    create.mutate(
+      search.tag
+        ? { ...template, tags: [...new Set([...(template.tags ?? []), search.tag])] }
+        : template,
+      { onSuccess: (note) => setSearch({ nota: note.id }) },
+    )
 
   const filtered = Boolean(search.q || search.tag)
 
@@ -52,10 +65,40 @@ export function NotesPage() {
                   </span>
                 )}
               </h1>
-              <Button size="sm" onClick={newNote} disabled={create.isPending}>
-                {create.isPending ? <Loader2 className="animate-spin" /> : <Plus />}
-                Nova
-              </Button>
+              <div className="flex">
+                <Button
+                  size="sm"
+                  onClick={() => newNote()}
+                  disabled={create.isPending}
+                  className="rounded-r-none"
+                >
+                  {create.isPending ? <Loader2 className="animate-spin" /> : <Plus />}
+                  Nova
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    aria-label="Nova nota a partir de um modelo"
+                    disabled={create.isPending}
+                    className={buttonVariants({
+                      size: 'sm',
+                      className: 'rounded-l-none border-l border-primary-fg/20 px-1.5',
+                    })}
+                  >
+                    <ChevronDown />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-60">
+                    <DropdownMenuLabel>Começar de um modelo</DropdownMenuLabel>
+                    {NOTE_TEMPLATES.map((template) => (
+                      <DropdownMenuItem key={template.id} onSelect={() => newNote(template.note)}>
+                        <span className="flex flex-col">
+                          <span>{template.label}</span>
+                          <span className="text-[11px] text-fg-subtle">{template.description}</span>
+                        </span>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
 
             <label className="relative flex h-8 items-center">
@@ -145,7 +188,7 @@ export function NotesPage() {
                 title="Escolha uma nota"
                 description="Ou comece uma nova: ela salva sozinha enquanto você escreve."
               >
-                <Button variant="outline" onClick={newNote} disabled={create.isPending}>
+                <Button variant="outline" onClick={() => newNote()} disabled={create.isPending}>
                   <Plus /> Nova nota
                 </Button>
               </EmptyState>

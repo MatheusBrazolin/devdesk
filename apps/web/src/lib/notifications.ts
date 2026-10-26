@@ -79,9 +79,56 @@ interface Notice {
   url?: string
   /** Mesmo tag, mesma notificação: o sistema substitui em vez de empilhar. */
   tag?: string
+  /** Chega mesmo durante o foco (lembrete da agenda, fim do bloco). */
+  urgent?: boolean
 }
 
-export function notify({ title, body, url, tag }: Notice) {
+// Proteção do foco: com um bloco correndo, o que não é urgente espera o fim.
+let holdWhile: () => boolean = () => false
+const held: Notice[] = []
+const heldListeners = new Set<() => void>()
+const emitHeld = () => heldListeners.forEach((listener) => listener())
+
+/** Quem decide quando segurar (o cronômetro do foco). */
+export function holdNonUrgentWhile(predicate: () => boolean) {
+  holdWhile = predicate
+}
+
+/** Entrega o que ficou segurado num aviso só ("enquanto você focava"). */
+export function releaseHeld() {
+  if (held.length === 0) return
+  const notices = held.splice(0)
+  emitHeld()
+  notify({
+    title:
+      notices.length === 1
+        ? 'Enquanto você focava: 1 aviso'
+        : `Enquanto você focava: ${notices.length} avisos`,
+    body: notices.map((notice) => notice.title).join(' · '),
+    tag: 'foco-resumo',
+    urgent: true,
+  })
+}
+
+/** Quantos avisos estão esperando o fim do foco. */
+export function useHeldCount(): number {
+  return useSyncExternalStore(
+    (listener) => {
+      heldListeners.add(listener)
+      return () => heldListeners.delete(listener)
+    },
+    () => held.length,
+    () => 0,
+  )
+}
+
+export function notify(notice: Notice) {
+  if (!notice.urgent && holdWhile()) {
+    held.push(notice)
+    emitHeld()
+    return
+  }
+  const { title, body, url, tag } = notice
   toast(title, {
     description: body,
     duration: 15_000,

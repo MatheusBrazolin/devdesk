@@ -3,6 +3,10 @@ import type { CompleteGitHubLogin } from '../application/use-cases/complete-gith
 import type { GetDashboard } from '../application/use-cases/get-dashboard.js'
 import type { GetCurrentUser } from '../application/use-cases/get-current-user.js'
 import type { Calendar } from '../application/use-cases/calendar.js'
+import type { ExternalCalendars } from '../application/use-cases/external-calendars.js'
+import type { GetMetrics } from '../application/use-cases/get-metrics.js'
+import type { PushNotifications } from '../application/use-cases/push-notifications.js'
+import type { GetTeam } from '../application/use-cases/get-team.js'
 import type { GetStandup } from '../application/use-cases/get-standup.js'
 import type { Notes } from '../application/use-cases/notes.js'
 import type { Logout } from '../application/use-cases/logout.js'
@@ -21,6 +25,12 @@ export interface AppDependencies {
     oauth: GitHubOAuth
     completeLogin: CompleteGitHubLogin
   } | null
+  /** Nulo sem as chaves VAPID: os avisos ficam só com o app aberto. */
+  push: {
+    notifications: PushNotifications
+    /** Segredo do agendador que dispara as rodadas; nulo, a rodada fica fechada. */
+    cronSecret: string | null
+  } | null
   /** Nulo fora do modo pessoal. */
   personal: StartPersonalSession | null
   useCases: {
@@ -30,6 +40,9 @@ export interface AppDependencies {
     getDashboard: GetDashboard
     notes: Notes
     calendar: Calendar
+    externalCalendars: ExternalCalendars
     getStandup: GetStandup
+    getMetrics: GetMetrics
+    getTeam: GetTeam
   }
 }

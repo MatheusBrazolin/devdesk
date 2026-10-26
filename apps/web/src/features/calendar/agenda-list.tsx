@@ -1,4 +1,4 @@
-import type { CalendarEvent, Deadline } from '@devdesk/shared'
+import type { Deadline } from '@devdesk/shared'
 import { Bell, Flag } from 'lucide-react'
 import {
   addDaysToKey,
@@ -10,6 +10,7 @@ import {
 } from '@/lib/calendar-dates'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/cn'
+import type { AgendaEvent } from './use-calendar-events'
 
 const dayFormat = new Intl.DateTimeFormat('pt-BR', {
   weekday: 'short',
@@ -28,9 +29,9 @@ const TIME_COLUMN = 'mt-px w-14 shrink-0 font-mono text-[11px] whitespace-nowrap
 interface AgendaListProps {
   from: string
   days: number
-  events: CalendarEvent[]
+  events: AgendaEvent[]
   deadlines: Deadline[]
-  onSelectEvent?: (event: CalendarEvent) => void
+  onSelectEvent?: (event: AgendaEvent) => void
   /** Texto quando não há nada no período. */
   empty: string
 }
@@ -100,10 +101,21 @@ export function AgendaList({
                     <Bell aria-label="lembrete" className="mt-0.5 size-3.5 shrink-0 text-accent" />
                   ) : (
                     <span aria-hidden className="grid size-3.5 shrink-0 place-items-center pt-1">
-                      <span className="size-1.5 rounded-full bg-info" />
+                      {/* Agenda assinada: anel vazado; evento do DevDesk: ponto cheio. */}
+                      <span
+                        className={cn(
+                          'size-1.5 rounded-full',
+                          event.external ? 'ring-[1.5px] ring-info' : 'bg-info',
+                        )}
+                      />
                     </span>
                   )}
-                  <span className="min-w-0 truncate text-[13px]">{event.title}</span>
+                  <span className="min-w-0 truncate text-[13px]">
+                    {event.title}
+                    {event.external && (
+                      <span className="sr-only">, da agenda {event.external.calendar}</span>
+                    )}
+                  </span>
                 </button>
               </li>
             ))}

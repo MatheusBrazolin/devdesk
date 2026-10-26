@@ -26,6 +26,9 @@ const snapshot: WorkSnapshot = {
       approvals: 1,
 
       changesRequested: 0,
+      size: null,
+      reviewRequestedAt: null,
+      pendingReviewers: [],
       comments: 0,
       milestone: null,
     },

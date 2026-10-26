@@ -6,7 +6,19 @@ import { expect, type Page, test } from '@playwright/test'
  * demo próprio), então nada vaza de um teste para outro.
  */
 
+/** Pula o tour de primeiros passos: ele tem o próprio teste. */
+async function skipWelcome(page: Page) {
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('devdesk:boas-vindas', 'visto')
+    } catch {
+      // Página sem armazenamento: o teste segue.
+    }
+  })
+}
+
 async function enterDemo(page: Page) {
+  await skipWelcome(page)
   await page.goto('/login')
   await page.getByRole('button', { name: 'Ver a demonstração' }).click()
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Visitante')
@@ -342,5 +354,136 @@ test.describe('app instalável', () => {
       () => document.querySelector('script[type="module"]')?.getAttribute('src') ?? '',
     )
     expect(served).toContain(loaded)
+  })
+})
+
+test.describe('fila de review', () => {
+  test('ordena pelo que destrava mais gente e mostra espera e tempo estimado', async ({ page }) => {
+    await enterDemo(page)
+    await page.goto('/pull-requests?aba=review')
+    await expect(page.getByLabel('Ordenar')).toHaveValue('prioridade')
+
+    const rows = page.getByRole('listitem').filter({ has: page.getByRole('link') })
+    // A atrasada (30 h) primeiro, a pequena e recente depois, o rascunho por último.
+    await expect(rows.nth(0)).toContainText('Retentativa com backoff')
+    await expect(rows.nth(0)).toContainText('esperando há 1 d')
+    await expect(rows.nth(0)).toContainText('~55 min')
+    await expect(rows.nth(1)).toContainText('Extrai o formulário')
+    await expect(rows.nth(2)).toContainText('Tokens de cor')
+  })
+})
+
+test.describe('lembrete de PR parado', () => {
+  test('copia uma mensagem pronta citando quem falta revisar', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+    await enterDemo(page)
+    await page
+      .getByRole('button', { name: /Copiar lembrete para quem revisa acme\/infra#84/ })
+      .click()
+    await expect(page.getByText('Lembrete copiado')).toBeVisible()
+    const copied = await page.evaluate(() => navigator.clipboard.readText())
+    expect(copied).toContain('@rafael-lima, @time-infra')
+    expect(copied).toContain('acme/infra#84')
+    expect(copied).toContain('há 9 dias')
+    expect(copied).toContain('https://github.com/acme/infra/pull/84')
+  })
+})
+
+test.describe('primeiros passos', () => {
+  test('o tour aparece na primeira visita, anda até o fim e não volta sozinho', async ({
+    page,
+  }) => {
+    await page.goto('/login')
+    await page.getByRole('button', { name: 'Ver a demonstração' }).click()
+    const tour = page.getByRole('dialog')
+    await expect(tour.getByRole('heading', { name: 'Comece pelo Hoje' })).toBeVisible()
+    for (const title of ['Notas, agenda e standup', 'Deixe à vista', 'Pelo teclado']) {
+      await tour.getByRole('button', { name: 'Próximo' }).click()
+      await expect(tour.getByRole('heading', { name: title })).toBeVisible()
+    }
+    await tour.getByRole('button', { name: 'Começar' }).click()
+    await expect(tour).toBeHidden()
+    await page.reload()
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Visitante')
+    await expect(page.getByRole('dialog')).toHaveCount(0)
+
+    // E volta pelo menu quando a pessoa quiser.
+    await page.getByRole('button', { name: /Visitante/ }).click()
+    await page.getByRole('menuitem', { name: 'Primeiros passos' }).click()
+    await expect(page.getByRole('heading', { name: 'Comece pelo Hoje' })).toBeVisible()
+  })
+
+  test('cria uma nota a partir do modelo de checklist de review', async ({ page }) => {
+    await enterDemo(page)
+    await page.goto('/notas')
+    await page.getByRole('button', { name: 'Nova nota a partir de um modelo' }).click()
+    await page.getByRole('menuitem', { name: /Checklist de review/ }).click()
+    await expect(page.getByLabel('Título')).toHaveValue('Review de PR')
+    // Com conteúdo, a nota abre já formatada (modo de leitura).
+    await expect(page.getByText('Erros tratados (rede, entrada inválida, vazio)')).toBeVisible()
+  })
+})
+
+test.describe('minhas métricas', () => {
+  test('mostra as oito semanas com totais e gráficos', async ({ page }) => {
+    await enterDemo(page)
+    await page.keyboard.press('g')
+    await page.keyboard.press('m')
+    await expect(page).toHaveURL(/\/metricas/)
+    await expect(page.getByRole('heading', { name: 'Métricas' })).toBeVisible()
+    for (const label of ['PRs mergeados', 'Até o merge', 'Até a 1ª review', 'Reviews feitas'])
+      await expect(page.getByText(label, { exact: true })).toBeVisible()
+    await expect(page.getByText('Mergeados por semana')).toBeVisible()
+    // Oito colunas por gráfico, uma por semana.
+    await expect(page.getByRole('button', { name: /semana de .*PRs? mergeados?/ })).toHaveCount(8)
+  })
+})
+
+test.describe('agendas conectadas', () => {
+  test('a agenda de exemplo aparece, abre só para leitura e não pede o link', async ({ page }) => {
+    await enterDemo(page)
+    await page.goto('/calendario')
+    const agenda = page.getByRole('list').filter({ hasText: 'Daily do time' }).first()
+    await expect(agenda).toBeVisible()
+
+    // Evento de agenda assinada abre os detalhes, não o editor.
+    await page
+      .getByRole('button', { name: /Daily do time/ })
+      .first()
+      .click()
+    const details = page.getByRole('dialog')
+    await expect(details.getByText('Agenda de exemplo · só leitura')).toBeVisible()
+    await expect(details.getByRole('textbox')).toHaveCount(0)
+    await page.keyboard.press('Escape')
+
+    await page.getByRole('button', { name: 'Conectar agenda' }).click()
+    const dialog = page.getByRole('dialog', { name: 'Agendas conectadas' })
+    await expect(dialog.getByText('Exemplo do DevDesk')).toBeVisible()
+    await expect(dialog.getByText(/uma agenda de exemplo já vem conectada/)).toBeVisible()
+    await expect(dialog.getByRole('textbox')).toHaveCount(0)
+  })
+
+  test('o modo foco diz quanto tempo livre há até a próxima reunião', async ({ page }) => {
+    await enterDemo(page)
+    await page.goto('/foco')
+    await expect(
+      page.getByText(/Em reunião até|Livre por|Só .* até a próxima|Sem mais reuniões hoje/),
+    ).toBeVisible()
+  })
+})
+
+test.describe('painel do time', () => {
+  test('mostra quem espera review há mais tempo e a carga de cada pessoa', async ({ page }) => {
+    await enterDemo(page)
+    await page.keyboard.press('g')
+    await page.keyboard.press('e')
+    await expect(page).toHaveURL(/\/time/)
+    const queue = page.getByRole('list', { name: 'PRs esperando review' })
+    await expect(queue.getByRole('listitem').first()).toContainText(
+      'Alerta de fila parada no worker de e-mails',
+    )
+    await expect(queue).not.toContainText('Tokens de cor')
+    const load = page.getByRole('list', { name: 'Reviews pendentes por pessoa' })
+    await expect(load.getByRole('listitem').first()).toContainText('rafael-lima')
   })
 })

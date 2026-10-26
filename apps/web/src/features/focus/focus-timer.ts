@@ -1,5 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
-import { notify } from '@/lib/notifications'
+import { holdNonUrgentWhile, notify, releaseHeld } from '@/lib/notifications'
 
 /**
  * Cronômetro do modo foco. O estado guarda quando termina (não quanto
@@ -110,10 +110,14 @@ export function useNow(running: boolean, everyMs = 250): number {
  * Avisa no fim do ciclo, em qualquer página do app. Fica no layout, não na
  * página do foco: sair do foco não cancela o aviso.
  */
+// Com um bloco correndo, avisos que não são urgentes esperam o fim.
+holdNonUrgentWhile(() => getTimer().status === 'running')
+
 export function useFocusAlarm(): void {
   const timer = useTimer()
   useEffect(() => {
-    if (timer.status !== 'running') return
+    // Terminou, pausou ou zerou: o que ficou segurado chega agora, num aviso só.
+    if (timer.status !== 'running') return releaseHeld()
     const id = setTimeout(
       () => {
         setTimer(reset(timer))
@@ -121,6 +125,7 @@ export function useFocusAlarm(): void {
           title: 'Fim do bloco de foco',
           body: `${timer.minutes} minutos concluídos. Hora de uma pausa.`,
           tag: 'foco',
+          urgent: true,
         })
       },
       Math.max(0, timer.endsAt - Date.now()),

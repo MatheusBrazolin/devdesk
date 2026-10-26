@@ -45,6 +45,27 @@ const pullRequestNodeSchema = z.object({
     .nullable()
     .optional(),
   milestone: milestoneSchema,
+  additions: z.number().optional(),
+  deletions: z.number().optional(),
+  changedFiles: z.number().optional(),
+  reviewRequests: z
+    .object({
+      nodes: z.array(
+        z
+          .object({
+            requestedReviewer: z
+              .object({ login: z.string().optional(), name: z.string().optional() })
+              .nullable(),
+          })
+          .nullable(),
+      ),
+    })
+    .nullable()
+    .optional(),
+  timelineItems: z
+    .object({ nodes: z.array(z.object({ createdAt: z.string().optional() }).nullable()) })
+    .nullable()
+    .optional(),
   commits: z
     .object({
       nodes: z.array(
@@ -105,6 +126,7 @@ function toCiStatus(state: string | undefined): CiStatus {
 
 function toPullRequest(node: z.infer<typeof pullRequestNodeSchema>): PullRequest {
   const reviews = node.latestOpinionatedReviews?.nodes ?? []
+  const requestedAt = node.timelineItems?.nodes.at(-1)?.createdAt
   return {
     id: node.id,
     number: node.number,
@@ -125,6 +147,18 @@ function toPullRequest(node: z.infer<typeof pullRequestNodeSchema>): PullRequest
     changesRequested: reviews.filter((review) => review?.state === 'CHANGES_REQUESTED').length,
     comments: node.comments.totalCount,
     milestone: toMilestone(node.milestone),
+    size:
+      node.additions === undefined ||
+      node.deletions === undefined ||
+      node.changedFiles === undefined
+        ? null
+        : { additions: node.additions, deletions: node.deletions, changedFiles: node.changedFiles },
+    reviewRequestedAt: requestedAt ? new Date(requestedAt) : null,
+    pendingReviewers: (node.reviewRequests?.nodes ?? []).flatMap((request) => {
+      const reviewer = request?.requestedReviewer
+      const name = reviewer?.login ?? reviewer?.name
+      return name ? [name] : []
+    }),
   }
 }
 

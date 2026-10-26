@@ -9,14 +9,22 @@ import type {
   NoteFilter,
   NoteRepository,
 } from '../../application/ports/note-repository.js'
+import type { PushRepository } from '../../application/ports/push.js'
 import type { SessionRepository } from '../../application/ports/session-repository.js'
+import type {
+  NewSubscription,
+  SubscriptionRepository,
+  SubscriptionWithUrl,
+} from '../../application/ports/subscription-repository.js'
 import type {
   EncryptedGitHubTokens,
   GitHubProfile,
   UserRepository,
 } from '../../application/ports/user-repository.js'
 import { addDays, type CalendarEvent } from '../../domain/calendar-event.js'
+import type { CalendarSubscription } from '../../domain/external-calendar.js'
 import type { Note } from '../../domain/note.js'
+import type { PushSubscription } from '../../domain/push.js'
 import type { Session } from '../../domain/session.js'
 import type { User } from '../../domain/user.js'
 
@@ -187,6 +195,69 @@ export class InMemoryEventRepository implements EventRepository {
   async delete(userId: string, id: string): Promise<boolean> {
     if (!(await this.findById(userId, id))) return false
     return this.items.delete(id)
+  }
+}
+
+export class InMemorySubscriptionRepository implements SubscriptionRepository {
+  readonly items: SubscriptionWithUrl[] = []
+
+  async list(userId: string): Promise<CalendarSubscription[]> {
+    return (await this.listWithUrls(userId)).map((item) => item.subscription)
+  }
+
+  async listWithUrls(userId: string): Promise<SubscriptionWithUrl[]> {
+    return this.items.filter((item) => item.subscription.userId === userId)
+  }
+
+  async create({ urlEncrypted, ...data }: NewSubscription): Promise<CalendarSubscription> {
+    const subscription = { id: randomUUID(), ...data }
+    this.items.push({ subscription, urlEncrypted })
+    return subscription
+  }
+
+  async delete(userId: string, id: string): Promise<boolean> {
+    const index = this.items.findIndex(
+      (item) => item.subscription.userId === userId && item.subscription.id === id,
+    )
+    if (index < 0) return false
+    this.items.splice(index, 1)
+    return true
+  }
+}
+
+export class InMemoryPushRepository implements PushRepository {
+  readonly subscriptions = new Map<string, { userId: string; subscription: PushSubscription }>()
+  readonly seenKeys = new Map<string, string[]>()
+
+  async save(userId: string, subscription: PushSubscription): Promise<void> {
+    this.subscriptions.set(subscription.endpoint, { userId, subscription })
+  }
+
+  async delete(userId: string, endpoint: string): Promise<void> {
+    if (this.subscriptions.get(endpoint)?.userId === userId) this.subscriptions.delete(endpoint)
+  }
+
+  async deleteEndpoint(endpoint: string): Promise<void> {
+    this.subscriptions.delete(endpoint)
+  }
+
+  async listForUser(userId: string): Promise<PushSubscription[]> {
+    return [...this.subscriptions.values()]
+      .filter((item) => item.userId === userId)
+      .map((item) => item.subscription)
+  }
+
+  async usersWithSubscriptions(): Promise<string[]> {
+    return [...new Set([...this.subscriptions.values()].map((item) => item.userId))]
+  }
+
+  async seen(userId: string): Promise<Set<string> | null> {
+    const keys = this.seenKeys.get(userId)
+    return keys ? new Set(keys) : null
+  }
+
+  async saveSeen(userId: string, keys: string[]): Promise<void> {
+    this.seenKeys.set(userId, keys)
   }
 }
 

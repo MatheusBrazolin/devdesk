@@ -21,19 +21,22 @@ import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
 import { OwnerAvatar } from '@/components/ui/owner-avatar'
 import { Skeleton } from '@/components/ui/skeleton'
-import { calendarQuery } from '@/features/calendar/queries'
+import { useCalendarEvents } from '@/features/calendar/use-calendar-events'
 import { REASON_LABEL } from '@/features/work/labels'
 import { ownerOf } from '@/features/work/list-filters'
 import { DashboardError, ListSkeleton } from '@/features/work/list-states'
 import { PullRequestRow } from '@/features/work/pull-request-row'
+import { orderAttention } from '@/features/work/review-queue'
 import { dashboardQuery } from '@/features/work/queries'
 import { addDaysToKey, compareEvents, formatTime } from '@/lib/calendar-dates'
 import { cn } from '@/lib/cn'
+import { useHeldCount } from '@/lib/notifications'
 import { useToday } from '@/lib/use-today'
 import {
   choose,
   DURATIONS,
   formatClock,
+  getTimer,
   pause,
   progress,
   remainingMs,
@@ -43,6 +46,7 @@ import {
   useNow,
   useTimer,
 } from './focus-timer'
+import { type FocusWindow, focusWindow, formatDuration } from './free-time'
 
 /**
  * Modo foco: uma coisa de cada vez. O item mais urgente em destaque, o resto
@@ -50,7 +54,8 @@ import {
  */
 export function FocusPage() {
   const dashboard = useQuery(dashboardQuery)
-  const [current, ...queue] = dashboard.data?.attention ?? []
+  // A mais urgente primeiro; entre as reviews, a que destrava mais gente.
+  const [current, ...queue] = orderAttention(dashboard.data?.attention ?? [])
 
   return (
     <div className="mx-auto max-w-5xl space-y-5">
@@ -192,6 +197,7 @@ function FocusTimerCard() {
   const timer = useTimer()
   const running = timer.status === 'running'
   const now = useNow(running)
+  const held = useHeldCount()
   const left = remainingMs(timer, now)
   const done = Math.min(1, Math.max(0, progress(timer, now)))
 
@@ -278,9 +284,17 @@ function FocusTimerCard() {
           )}
         </div>
         <p className="text-center text-[12px] text-fg-subtle">
-          Avisa no fim, mesmo em outra página. Com as notificações ligadas, avisa também com a aba
-          no fundo.
+          {running
+            ? 'Avisos de trabalho esperam o fim do bloco; lembretes da agenda chegam na hora.'
+            : 'Avisa no fim, mesmo em outra página. Durante o bloco, os avisos de trabalho esperam.'}
         </p>
+        {held > 0 && (
+          <p role="status" className="text-center text-[12px] font-medium text-accent">
+            {held === 1
+              ? '1 aviso esperando o fim do foco'
+              : `${held} avisos esperando o fim do foco`}
+          </p>
+        )}
       </CardBody>
     </Card>
   )
@@ -289,7 +303,7 @@ function FocusTimerCard() {
 /** O próximo evento com horário de hoje ou amanhã, com quanto falta. */
 function NextEventCard() {
   const today = useToday()
-  const events = useQuery(calendarQuery({ from: today, to: addDaysToKey(today, 1) }))
+  const events = useCalendarEvents({ from: today, to: addDaysToKey(today, 1) })
   // Basta de meio em meio minuto para "em 12 min".
   const now = useNow(true, 30_000)
   const next = (events.data?.events ?? [])
@@ -319,7 +333,41 @@ function NextEventCard() {
           <p className="text-[13px] text-fg-muted">Nada com horário até amanhã.</p>
         )}
       </div>
+      {events.data && <FreeTime window={focusWindow(events.data.events, now)} />}
     </Card>
+  )
+}
+
+/** Quanto tempo livre há até a próxima reunião, e o bloco de foco que cabe nele. */
+function FreeTime({ window }: { window: FocusWindow }) {
+  const timer = useTimer()
+  const idle = timer.status === 'idle'
+
+  let text: string
+  if (window.kind === 'busy') {
+    text = `Em reunião até ${formatTime(new Date(window.endsAt).toISOString())}.`
+  } else if (window.minutes === null) {
+    text = 'Sem mais reuniões hoje: tempo bom para um bloco longo.'
+  } else if (window.suggestion) {
+    text = `Livre por ${formatDuration(window.minutes)}: cabe um bloco de ${window.suggestion} min.`
+  } else {
+    text = `Só ${formatDuration(window.minutes)} até a próxima: bom para uma review curta.`
+  }
+
+  const suggestion = window.kind === 'free' ? window.suggestion : null
+  return (
+    <div className="flex items-center gap-2 border-t border-border px-4 py-2.5">
+      <p className="min-w-0 flex-1 text-[12px] text-fg-muted">{text}</p>
+      {suggestion && idle && (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setTimer(start(choose(getTimer(), suggestion), Date.now()))}
+        >
+          Começar {suggestion} min
+        </Button>
+      )}
+    </div>
   )
 }
 
