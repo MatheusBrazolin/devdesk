@@ -25,6 +25,9 @@ export function LoginPage() {
   const githubEnabled = config.data?.githubLoginEnabled ?? false
   const personalLogin = config.data?.personalLogin ?? null
   const personalRejected = config.data?.personalTokenEnabled === true && personalLogin === null
+  // Sem nenhum jeito de entrar com o GitHub (a demonstração pública), o botão
+  // desativado só confunde: some, e a demonstração vira a entrada principal.
+  const githubAvailable = githubEnabled || personalLogin !== null
 
   return (
     <main className="grid min-h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
@@ -69,11 +72,10 @@ export function LoginPage() {
               </Button>
             )}
 
-            {(githubEnabled || !personalLogin) && (
+            {githubEnabled && (
               <Button
                 size="lg"
                 variant={personalLogin ? 'outline' : 'primary'}
-                disabled={!githubEnabled}
                 onClick={() => window.location.assign(GITHUB_LOGIN_URL)}
               >
                 <GitHubIcon />
@@ -84,7 +86,7 @@ export function LoginPage() {
             {config.data?.demoEnabled && (
               <Button
                 size="lg"
-                variant="outline"
+                variant={githubAvailable ? 'outline' : 'primary'}
                 disabled={demo.isPending}
                 onClick={() => demo.mutate()}
               >
@@ -110,12 +112,17 @@ export function LoginPage() {
             {personalLogin ? (
               'Modo pessoal: esta instalação usa o seu token do GitHub e só aceita acesso desta máquina.'
             ) : config.isSuccess && !githubEnabled ? (
-              <>
-                Login com GitHub desligado: defina{' '}
-                <code className="font-mono text-fg-muted">GITHUB_CLIENT_ID</code> e{' '}
-                <code className="font-mono text-fg-muted">GITHUB_CLIENT_SECRET</code> no{' '}
-                <code className="font-mono text-fg-muted">.env</code>.
-              </>
+              import.meta.env.DEV ? (
+                // Só quem está desenvolvendo vê como ligar; o visitante não.
+                <>
+                  Login com GitHub desligado: defina{' '}
+                  <code className="font-mono text-fg-muted">GITHUB_CLIENT_ID</code> e{' '}
+                  <code className="font-mono text-fg-muted">GITHUB_CLIENT_SECRET</code> no{' '}
+                  <code className="font-mono text-fg-muted">.env</code>.
+                </>
+              ) : (
+                'Esta é uma demonstração pública, com dados de exemplo: nada aqui está ligado a uma conta real. Para ver o seu próprio GitHub, rode o DevDesk na sua máquina.'
+              )
             ) : (
               'O GitHub vai pedir acesso aos seus repositórios, porque OAuth Apps não têm uma permissão só de leitura. O DevDesk apenas lê: não comenta, não aprova e não faz merge.'
             )}
