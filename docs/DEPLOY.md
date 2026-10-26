@@ -52,9 +52,20 @@ O serviço gratuito do Render dorme sem uso: a primeira visita depois de um
 tempo leva alguns segundos para acordar. O banco do Neon também dorme e
 acorda sozinho.
 
-## Login com GitHub na demonstração (opcional)
+## Login com GitHub no site (opcional)
 
-Para deixar o login real ligado também, crie um OAuth App só para a demo
-(github.com/settings/developers) com o callback
-`https://SEU-ENDERECO/api/auth/github/callback` e preencha `GITHUB_CLIENT_ID` e
-`GITHUB_CLIENT_SECRET` no painel. Sem eles, só o modo demonstração aparece.
+Sem estas variáveis, o site mostra só a demonstração.
+
+1. Crie um OAuth App só para o site (github.com/settings/developers → New OAuth
+   App) com o retorno `https://SEU-ENDERECO/api/auth/github/callback`.
+2. No painel do Render, em _Environment_, preencha `GITHUB_CLIENT_ID` (público)
+   e `GITHUB_CLIENT_SECRET` (gerado no OAuth App; só você cola).
+3. Para ver também as organizações que bloqueiam apps de terceiros, cole o seu
+   token pessoal em `GITHUB_PERSONAL_TOKEN`. Ele só é usado quando quem entra
+   pelo OAuth é o dono dele ([ADR 0011](adr/0011-dono-pelo-oauth.md)); qualquer
+   outra conta usa o próprio OAuth. Para copiar sem mostrar na tela:
+   `grep ^GITHUB_PERSONAL_TOKEN= .env | cut -d= -f2- | pbcopy`.
+4. Salve com _Save, rebuild, and deploy_.
+
+Na primeira autorização, o GitHub lista as suas organizações com "Request" ou
+"Grant". Não é preciso clicar: os dados delas chegam pelo token pessoal.

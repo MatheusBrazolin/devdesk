@@ -1,6 +1,6 @@
 # 0006. Modo de token pessoal
 
-- **Status:** aceito
+- **Status:** aceito; em produção, o dono usa o token pelo OAuth ([ADR 0011](0011-dono-pelo-oauth.md))
 - **Data:** 2026-10-23
 
 ## Contexto

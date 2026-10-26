@@ -98,7 +98,7 @@ GET /api/dashboard
 
 ## Produção
 
-Uma imagem só: a API serve o front compilado, na mesma origem. A demonstração pública cria um usuário descartável por visita. Detalhes em [ADR 0010](adr/0010-demonstracao-publica.md) e em [DEPLOY.md](DEPLOY.md).
+Uma imagem só: a API serve o front compilado, na mesma origem. A demonstração pública cria um usuário descartável por visita. No site, o dono entra pelo OAuth e os dados vêm do token pessoal dele ([ADR 0011](adr/0011-dono-pelo-oauth.md)). Detalhes em [ADR 0010](adr/0010-demonstracao-publica.md) e em [DEPLOY.md](DEPLOY.md).
 
 ## Web: organizada por feature
 
