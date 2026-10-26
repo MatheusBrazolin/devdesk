@@ -6,6 +6,7 @@ import { useGoToShortcuts } from '@/features/commands/use-go-to-shortcuts'
 import { useFocusAlarm } from '@/features/focus/focus-timer'
 import { useWorkNotifications } from '@/features/work/use-work-notifications'
 import { cn } from '@/lib/cn'
+import { useUpdateCheck } from '@/lib/update-check'
 import { Sidebar } from './sidebar'
 import { Topbar } from './topbar'
 
@@ -15,6 +16,7 @@ export function AppShell() {
   useReminderToasts()
   useWorkNotifications()
   useFocusAlarm()
+  useUpdateCheck()
   // No foco, a barra lateral sai da frente: a saída é o botão da própria página.
   const focus = pathname === '/foco'
 

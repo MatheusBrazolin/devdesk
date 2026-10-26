@@ -213,3 +213,44 @@ test.describe('tema', () => {
     await expect(page.locator('html')).toHaveClass(wasDark ? /^(?!.*\bdark\b)/ : /\bdark\b/)
   })
 })
+
+test.describe('versão nova', () => {
+  /** Faz o servidor "publicar" um build novo: o index passa a apontar outro script. */
+  async function publishNewBuild(page: Page) {
+    const html = await (await page.request.get('/')).text()
+    const newer = html.replace(/\/assets\/index-[^"]+\.js/, '/assets/index-novaversao.js')
+    await page.route('**/', (route) => route.fulfill({ body: newer, contentType: 'text/html' }), {
+      times: 1,
+    })
+  }
+
+  test('aba aberta avisa que saiu versão nova e recarrega no clique', async ({ page }) => {
+    await enterDemo(page)
+    await publishNewBuild(page)
+    // Voltar para a aba dispara a conferência.
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')))
+    await expect(page.getByText('Nova versão do DevDesk disponível')).toBeVisible()
+
+    const reloaded = page.waitForEvent('load')
+    await page.getByRole('button', { name: 'Recarregar' }).click()
+    await reloaded
+  })
+
+  test('sem versão nova, nada aparece', async ({ page }) => {
+    await enterDemo(page)
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')))
+    await page.waitForTimeout(1_000)
+    await expect(page.getByText('Nova versão do DevDesk disponível')).toHaveCount(0)
+  })
+
+  test('o modo TV, que ninguém está mexendo, recarrega sozinho', async ({ page }) => {
+    await enterDemo(page)
+    await page.goto('/tv')
+    await expect(page.getByRole('region', { name: 'Indicadores' })).toBeVisible()
+    await publishNewBuild(page)
+    const reloaded = page.waitForEvent('load')
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')))
+    await reloaded
+    await expect(page).toHaveURL(/\/tv/)
+  })
+})
