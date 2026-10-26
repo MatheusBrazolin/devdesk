@@ -1,3 +1,4 @@
+import { resolve } from 'node:path'
 import fastifyStatic from '@fastify/static'
 import type { FastifyInstance, FastifyReply } from 'fastify'
 import { sendNotFound } from './error-handler.js'
@@ -12,7 +13,8 @@ import { sendNotFound } from './error-handler.js'
  */
 export async function registerWebApp(app: FastifyInstance, root: string): Promise<void> {
   await app.register(fastifyStatic, {
-    root,
+    // O plugin só aceita caminho absoluto; WEB_DIST_DIR pode vir relativo.
+    root: resolve(root),
     wildcard: false,
     index: false,
     // O cache é decidido abaixo, por tipo de arquivo.

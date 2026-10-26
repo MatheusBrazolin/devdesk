@@ -16,6 +16,8 @@ import { systemRoutes } from './routes/system.js'
 interface BuildOptions extends FastifyServerOptions {
   /** Pasta do front compilado. Sem ela (desenvolvimento), o Vite serve o front. */
   webDistDir?: string
+  /** Requisições por minuto por IP. */
+  rateLimitPerMinute?: number
 }
 
 /**
@@ -36,12 +38,12 @@ const contentSecurityPolicy = {
 }
 
 export async function buildApp(deps: AppDependencies, options: BuildOptions = {}) {
-  const { webDistDir, ...fastifyOptions } = options
+  const { webDistDir, rateLimitPerMinute = 300, ...fastifyOptions } = options
   const app = Fastify(fastifyOptions)
 
   await app.register(helmet, { contentSecurityPolicy })
   await app.register(cookie)
-  await app.register(rateLimit, { max: 300, timeWindow: '1 minute' })
+  await app.register(rateLimit, { max: rateLimitPerMinute, timeWindow: '1 minute' })
   registerErrorHandler(app)
 
   await app.register(

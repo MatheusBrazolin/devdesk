@@ -12,6 +12,7 @@ const app = await buildApp(createContainer(env, db), {
   // Confia nos N primeiros saltos (os proxies na frente da API); sem proxy, em nenhum.
   trustProxy: (_address: string, hop: number) => hop < env.TRUST_PROXY,
   webDistDir: env.WEB_DIST_DIR,
+  rateLimitPerMinute: env.RATE_LIMIT_PER_MINUTE,
   logger: {
     level: env.LOG_LEVEL,
     ...(env.NODE_ENV === 'development' && { transport: { target: 'pino-pretty' } }),

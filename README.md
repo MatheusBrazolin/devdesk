@@ -54,14 +54,14 @@ Painel de trabalho para desenvolvedores: o que pede a sua atenção no GitHub, s
 
 ## Stack
 
-| Camada    | Tecnologia                                                      |
-| --------- | --------------------------------------------------------------- |
-| Front     | React 19, Vite, TanStack Router e Query, Tailwind CSS 4, Motion |
-| UI        | Componentes próprios sobre Radix, cmdk e lucide                 |
-| API       | Node, Fastify 5, arquitetura hexagonal                          |
-| Dados     | PostgreSQL 17, Drizzle ORM com migrações versionadas            |
-| Contratos | Zod, num pacote compartilhado entre front e API                 |
-| Qualidade | TypeScript estrito, Vitest, ESLint, Prettier, GitHub Actions    |
+| Camada    | Tecnologia                                                               |
+| --------- | ------------------------------------------------------------------------ |
+| Front     | React 19, Vite, TanStack Router e Query, Tailwind CSS 4, Motion          |
+| UI        | Componentes próprios sobre Radix, cmdk e lucide                          |
+| API       | Node, Fastify 5, arquitetura hexagonal                                   |
+| Dados     | PostgreSQL 17, Drizzle ORM com migrações versionadas                     |
+| Contratos | Zod, num pacote compartilhado entre front e API                          |
+| Qualidade | TypeScript estrito, Vitest, Playwright, ESLint, Prettier, GitHub Actions |
 
 ## Rodando localmente
 
@@ -80,7 +80,7 @@ As migrações rodam sozinhas quando a API sobe. Sem `GITHUB_CLIENT_ID`/`GITHUB_
 
 Rode `npm run setup:github` e escolha um dos dois modos. O comando confere tudo com o GitHub antes de gravar no `.env` e nunca mostra segredos na tela.
 
-**1. Token pessoal (recomendado para uso só seu).** Crie um token _classic_ em [github.com/settings/tokens/new](<https://github.com/settings/tokens/new?scopes=repo,read:org&description=DevDesk%20(local)>) com os escopos `repo` e `read:org`. Ele age como você, então o painel enxerga os repositórios das suas organizações mesmo quando elas bloqueiam apps de terceiros, sem pedir nada a elas. O login vira um botão "Entrar como <você>". Só funciona fora de produção e só aceita acesso da própria máquina.
+**1. Token pessoal (recomendado para uso só seu).** Crie um token _classic_ em [github.com/settings/tokens/new](<https://github.com/settings/tokens/new?scopes=repo,read:org&description=DevDesk%20(local)>) com os escopos `repo` e `read:org`. Ele age como você, então o painel enxerga os repositórios das suas organizações mesmo quando elas bloqueiam apps de terceiros, sem pedir nada a elas. O login vira um botão "Entrar como <você>". O botão "Entrar como" só existe fora de produção e só aceita acesso da própria máquina. No site publicado, o dono entra por "Continuar com GitHub" e os dados vêm do mesmo token ([ADR 0011](docs/adr/0011-dono-pelo-oauth.md)): as organizações aparecem sem nenhum pedido a elas.
 
 **2. OAuth App (para várias pessoas).** Em [github.com/settings/developers](https://github.com/settings/developers), crie um OAuth App com:
 
@@ -112,13 +112,14 @@ A arquitetura está explicada em [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), e
 
 ## Scripts
 
-| Comando             | O que faz                              |
-| ------------------- | -------------------------------------- |
-| `npm run dev`       | API e front em modo watch              |
-| `npm test`          | todos os testes                        |
-| `npm run typecheck` | checagem de tipos em todos os pacotes  |
-| `npm run lint`      | ESLint, incluindo as regras de camadas |
-| `npm run build`     | build de produção                      |
+| Comando             | O que faz                                                                                       |
+| ------------------- | ----------------------------------------------------------------------------------------------- |
+| `npm run dev`       | API e front em modo watch                                                                       |
+| `npm test`          | todos os testes                                                                                 |
+| `npm run test:e2e`  | ponta a ponta no navegador (Playwright), com o app como em produção; rode `npm run build` antes |
+| `npm run typecheck` | checagem de tipos em todos os pacotes                                                           |
+| `npm run lint`      | ESLint, incluindo as regras de camadas                                                          |
+| `npm run build`     | build de produção                                                                               |
 
 ## Licença
 
