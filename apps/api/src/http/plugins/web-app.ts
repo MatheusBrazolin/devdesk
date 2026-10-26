@@ -17,8 +17,8 @@ export async function registerWebApp(app: FastifyInstance, root: string): Promis
     index: false,
     // O cache é decidido abaixo, por tipo de arquivo.
     cacheControl: false,
-    setHeaders: (res, path) => {
-      res.setHeader(
+    setHeaders: (reply, path) => {
+      reply.header(
         'cache-control',
         path.includes('/assets/') ? 'public, max-age=31536000, immutable' : 'no-cache',
       )
