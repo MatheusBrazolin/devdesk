@@ -67,11 +67,14 @@ export function TvPage() {
         className={frame.layout === 'grade' ? 'p-5' : 'p-3'}
       >
         <ChartTooltipProvider>
-          <TvBoard layout={frame.layout} />
+          <main className="h-full">
+            <TvBoard layout={frame.layout} />
+          </main>
         </ChartTooltipProvider>
       </div>
 
-      <motion.div
+      <motion.nav
+        aria-label="Controles do modo TV"
         animate={{ opacity: hidden ? 0 : 1 }}
         transition={{ duration: 0.3 }}
         className={cn(
@@ -140,7 +143,7 @@ export function TvPage() {
         >
           <X className="size-4" />
         </Link>
-      </motion.div>
+      </motion.nav>
     </div>
   )
 }

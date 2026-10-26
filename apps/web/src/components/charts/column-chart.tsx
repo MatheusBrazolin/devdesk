@@ -39,35 +39,37 @@ export function ColumnChart({ columns, unit, highlightKey, tone = 'ink' }: Colum
           const labeled = column.value > 0 && (column.key === maxKey || column.key === highlightKey)
           const highlighted = column.key === highlightKey
           return (
-            <ChartTooltip key={column.key} value={unit(column.value)} label={column.fullLabel}>
-              <button
-                type="button"
-                role="listitem"
-                aria-label={`${column.fullLabel}: ${unit(column.value)}`}
-                className="group flex h-full flex-1 flex-col items-center justify-end rounded-sm pt-4 focus-visible:outline-2 focus-visible:outline-ring"
-              >
-                {/* A barra vive numa caixa de altura cheia: a porcentagem é do espaço útil. */}
-                <span className="relative flex w-full flex-1 flex-col items-center justify-end">
-                  {labeled && (
-                    <span className="mb-1 text-[11px] font-medium text-fg-muted tabular-nums">
-                      {column.value}
-                    </span>
-                  )}
-                  <span
-                    className={cn(
-                      'w-full max-w-7 origin-bottom 2xl:max-w-12 animate-grow-up rounded-t-[4px] transition-opacity group-hover:opacity-80',
-                      BAR[tone],
-                      !highlighted && tone !== 'ink' && 'opacity-55',
-                      highlighted && tone === 'ink' && 'bg-chart-accent',
+            // O item da lista envolve o botão: um botão não pode ter papel de item.
+            <div key={column.key} role="listitem" className="flex h-full flex-1">
+              <ChartTooltip value={unit(column.value)} label={column.fullLabel}>
+                <button
+                  type="button"
+                  aria-label={`${column.fullLabel}: ${unit(column.value)}`}
+                  className="group flex h-full flex-1 flex-col items-center justify-end rounded-sm pt-4 focus-visible:outline-2 focus-visible:outline-ring"
+                >
+                  {/* A barra vive numa caixa de altura cheia: a porcentagem é do espaço útil. */}
+                  <span className="relative flex w-full flex-1 flex-col items-center justify-end">
+                    {labeled && (
+                      <span className="mb-1 text-[11px] font-medium text-fg-muted tabular-nums">
+                        {column.value}
+                      </span>
                     )}
-                    style={{
-                      height: column.value === 0 ? 0 : `max(4px, ${(column.value / max) * 85}%)`,
-                      animationDelay: `${index * 45}ms`,
-                    }}
-                  />
-                </span>
-              </button>
-            </ChartTooltip>
+                    <span
+                      className={cn(
+                        'w-full max-w-7 origin-bottom 2xl:max-w-12 animate-grow-up rounded-t-[4px] transition-opacity group-hover:opacity-80',
+                        BAR[tone],
+                        !highlighted && tone !== 'ink' && 'opacity-55',
+                        highlighted && tone === 'ink' && 'bg-chart-accent',
+                      )}
+                      style={{
+                        height: column.value === 0 ? 0 : `max(4px, ${(column.value / max) * 85}%)`,
+                        animationDelay: `${index * 45}ms`,
+                      }}
+                    />
+                  </span>
+                </button>
+              </ChartTooltip>
+            </div>
           )
         })}
       </div>

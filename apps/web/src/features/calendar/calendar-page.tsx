@@ -257,7 +257,7 @@ function DayCell({
             ? 'bg-accent font-medium text-primary-fg'
             : inMonth
               ? 'text-fg-muted'
-              : 'text-fg-subtle/60',
+              : 'text-fg-subtle',
         )}
       >
         {fromKey(day).getDate()}

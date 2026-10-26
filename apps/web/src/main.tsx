@@ -2,6 +2,7 @@ import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@ta
 import { RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { MotionConfig } from 'motion/react'
 import { Toaster } from 'sonner'
 import { createAppRouter } from '@/app/router'
 import { ThemeProvider, useTheme } from '@/lib/theme'
@@ -32,12 +33,15 @@ function ThemedToaster() {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ThemeProvider>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-        <ThemedToaster />
-      </QueryClientProvider>
-    </ThemeProvider>
+    {/* As animações do motion seguem a preferência de reduzir movimento do sistema. */}
+    <MotionConfig reducedMotion="user">
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+          <ThemedToaster />
+        </QueryClientProvider>
+      </ThemeProvider>
+    </MotionConfig>
   </StrictMode>,
 )
 

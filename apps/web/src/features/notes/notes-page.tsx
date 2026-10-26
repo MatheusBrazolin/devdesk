@@ -33,6 +33,7 @@ export function NotesPage() {
     <div className="-mx-4 -my-6 h-[calc(100dvh-3rem)] sm:-mx-6 lg:mx-0 lg:my-0 lg:h-[calc(100dvh-6rem)]">
       <div className="grid h-full grid-cols-1 overflow-hidden border-border bg-surface lg:grid-cols-[19rem_minmax(0,1fr)] lg:rounded-lg lg:border">
         <aside
+          aria-label="Lista de notas"
           className={cn(
             'flex min-h-0 min-w-0 flex-col border-border lg:border-r',
             search.nota && 'hidden lg:flex',
@@ -127,7 +128,10 @@ export function NotesPage() {
           </div>
         </aside>
 
-        <section className={cn('min-h-0 min-w-0', !search.nota && 'hidden lg:block')}>
+        <section
+          aria-label="Nota aberta"
+          className={cn('min-h-0 min-w-0', !search.nota && 'hidden lg:block')}
+        >
           {search.nota ? (
             <SelectedNote
               id={search.nota}

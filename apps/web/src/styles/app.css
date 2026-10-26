@@ -21,14 +21,15 @@
   --border-strong: #d6d4d0;
   --fg: #1c1b19;
   --fg-muted: #5b5954;
-  --fg-subtle: #8f8c86;
-  --accent: #b8700f;
+  --fg-subtle: #706e69;
+  /* Texto e destaque: 4,6:1 sobre o fundo âmbar claro e o branco (WCAG AA). */
+  --accent: #9c5f0d;
   --accent-soft: #fbf1e1;
   --primary: #1c1b19;
   --primary-fg: #fafaf9;
-  --success: #1a7f4b;
+  --success: #197b49;
   --danger: #c4352b;
-  --ring: #b8700f;
+  --ring: #9c5f0d;
   /*
    * Cores dos gráficos, validadas com o script do skill de dataviz:
    * destaque x contexto ΔE 26,6 (visão normal) e 25,4 (deuteranopia).
@@ -56,7 +57,8 @@
   --border-strong: #3a3936;
   --fg: #ecebe8;
   --fg-muted: #a6a39d;
-  --fg-subtle: #75726c;
+  /* 4,6:1 até sobre o fundo elevado (WCAG AA). */
+  --fg-subtle: #8a8883;
   --accent: #e8a13a;
   --accent-soft: #2b2216;
   --primary: #ecebe8;

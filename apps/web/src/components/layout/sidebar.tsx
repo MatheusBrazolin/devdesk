@@ -4,7 +4,10 @@ import { UserMenu } from './user-menu'
 
 export function Sidebar() {
   return (
-    <aside className="sticky top-0 hidden h-dvh w-56 shrink-0 flex-col border-r border-border bg-surface px-3 lg:flex">
+    <aside
+      aria-label="Barra lateral"
+      className="sticky top-0 hidden h-dvh w-56 shrink-0 flex-col border-r border-border bg-surface px-3 lg:flex"
+    >
       <div className="flex h-12 items-center px-1">
         <Logo />
       </div>
