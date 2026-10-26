@@ -25,8 +25,10 @@ const envSchema = z
       message: 'precisa ter 32 bytes em base64 (gere com: openssl rand -base64 32)',
     }),
     /**
-     * Token pessoal (PAT classic) para o modo de uma pessoa só. Age como você,
-     * então enxerga repositórios de organizações que bloqueiam OAuth Apps.
+     * Token pessoal (PAT classic) do dono. Age como ele, então enxerga
+     * repositórios de organizações que bloqueiam OAuth Apps. Local: login
+     * direto ("Entrar como"). Em produção o login direto não existe; o dono
+     * entra pelo OAuth, que prova quem é, e os dados vêm deste token.
      */
     GITHUB_PERSONAL_TOKEN: z.string().optional(),
     DEMO_ENABLED: booleanFromString.optional(),

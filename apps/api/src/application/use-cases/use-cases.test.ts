@@ -17,6 +17,27 @@ describe('CompleteGitHubLogin', () => {
     expect(sessions.items.has(tokens.hash(session.token))).toBe(true)
   })
 
+  it('o dono do token pessoal entra pelo OAuth e passa a usar o token pessoal', async () => {
+    const { deps, users, cipher } = createTestContext({ ownerToken: 'ghp_valido' })
+    await deps.github!.completeLogin.execute('bom')
+    const [user] = [...users.items.values()]
+    expect(cipher.decrypt(users.tokens.get(user!.id)!.accessToken)).toBe('ghp_valido')
+  })
+
+  it('outra pessoa entra com o próprio OAuth, nunca com o token do dono', async () => {
+    const { deps, users, cipher } = createTestContext({ ownerToken: 'ghp_outra_pessoa' })
+    await deps.github!.completeLogin.execute('bom')
+    const [user] = [...users.items.values()]
+    expect(cipher.decrypt(users.tokens.get(user!.id)!.accessToken)).toBe('gho_token_de_teste')
+  })
+
+  it('token pessoal revogado: o dono entra com o OAuth mesmo', async () => {
+    const { deps, users, cipher } = createTestContext({ ownerToken: 'ghp_revogado' })
+    await deps.github!.completeLogin.execute('bom')
+    const [user] = [...users.items.values()]
+    expect(cipher.decrypt(users.tokens.get(user!.id)!.accessToken)).toBe('gho_token_de_teste')
+  })
+
   it('não duplica o usuário em logins seguidos', async () => {
     const { deps, users } = createTestContext()
     await deps.github!.completeLogin.execute('bom')

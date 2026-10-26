@@ -65,7 +65,17 @@ export function createContainer(env: Env, db: Database): AppDependencies {
     },
     github: oauth && {
       oauth,
-      completeLogin: new CompleteGitHubLogin(oauth, users, githubTokens, createSession),
+      completeLogin: new CompleteGitHubLogin(
+        oauth,
+        users,
+        githubTokens,
+        createSession,
+        // Com o token pessoal configurado, o dono dele entra pelo OAuth e vê
+        // as organizações; vale também em produção, onde o login direto não existe.
+        env.GITHUB_PERSONAL_TOKEN
+          ? { token: env.GITHUB_PERSONAL_TOKEN, profiles: new GitHubProfileClient() }
+          : null,
+      ),
     },
     personal:
       env.personalTokenEnabled && env.GITHUB_PERSONAL_TOKEN

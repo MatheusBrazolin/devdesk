@@ -101,6 +101,9 @@ export class FakeGitHubProfiles implements GitHubProfiles {
 
   async fetchProfile(accessToken: string): Promise<GitHubProfile> {
     this.calls += 1
+    // Token de outra pessoa: perfil diferente do que entra pelo OAuth falso.
+    if (accessToken === 'ghp_outra_pessoa')
+      return { githubId: 999, login: 'outra', name: null, avatarUrl: null }
     if (accessToken !== 'ghp_valido') throw githubReconnect('O GitHub recusou o token.')
     return { githubId: 583231, login: 'octocat', name: 'The Octocat', avatarUrl: null }
   }
@@ -148,6 +151,8 @@ export function createTestContext(
     github?: boolean
     tokenExpiresInMs?: number
     personalToken?: string
+    /** Token pessoal do dono, usado quando ele entra pelo OAuth. */
+    ownerToken?: string
   } = {},
 ) {
   const users = new InMemoryUserRepository()
@@ -182,7 +187,13 @@ export function createTestContext(
         ? null
         : {
             oauth,
-            completeLogin: new CompleteGitHubLogin(oauth, users, githubTokens, createSession),
+            completeLogin: new CompleteGitHubLogin(
+              oauth,
+              users,
+              githubTokens,
+              createSession,
+              options.ownerToken ? { token: options.ownerToken, profiles } : null,
+            ),
           },
     personal: options.personalToken
       ? new StartPersonalSession(
