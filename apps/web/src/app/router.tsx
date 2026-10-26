@@ -3,25 +3,38 @@ import {
   createRootRouteWithContext,
   createRoute,
   createRouter,
+  lazyRouteComponent,
   Outlet,
   redirect,
 } from '@tanstack/react-router'
 import { NotFound, RouteError } from '@/app/route-states'
 import { AppShell } from '@/components/layout/app-shell'
-import { FocusPage } from '@/features/focus/focus-page'
-import { TvPage } from '@/features/tv/tv-page'
 import { isTvLayoutChoice, type TvLayoutChoice } from '@/features/tv/tv-scale'
 import { LoginPage } from '@/features/auth/login-page'
 import { meQuery } from '@/features/auth/queries'
-import { CalendarPage } from '@/features/calendar/calendar-page'
-import { NotesPage } from '@/features/notes/notes-page'
-import { StandupPage } from '@/features/standup/standup-page'
 import { HomePage } from '@/features/home/home-page'
-import { IssuesPage } from '@/features/work/issues-page'
 import { type ListSearch, parseListSearch } from '@/features/work/list-search'
-import { type PullRequestTab, PullRequestsPage } from '@/features/work/pull-requests-page'
+import type { PullRequestTab } from '@/features/work/pull-requests-page'
 import { isUnauthenticated } from '@/lib/api'
 import { dateKey, fromKey } from '@/lib/calendar-dates'
+
+/**
+ * O Hoje e o login vão no arquivo principal: são a primeira tela. As outras
+ * páginas são carregadas quando abertas (o editor de markdown das notas, por
+ * exemplo, não pesa em quem só olha o painel).
+ */
+const lazy = {
+  focus: lazyRouteComponent(() => import('@/features/focus/focus-page'), 'FocusPage'),
+  tv: lazyRouteComponent(() => import('@/features/tv/tv-page'), 'TvPage'),
+  pullRequests: lazyRouteComponent(
+    () => import('@/features/work/pull-requests-page'),
+    'PullRequestsPage',
+  ),
+  issues: lazyRouteComponent(() => import('@/features/work/issues-page'), 'IssuesPage'),
+  notes: lazyRouteComponent(() => import('@/features/notes/notes-page'), 'NotesPage'),
+  calendar: lazyRouteComponent(() => import('@/features/calendar/calendar-page'), 'CalendarPage'),
+  standup: lazyRouteComponent(() => import('@/features/standup/standup-page'), 'StandupPage'),
+}
 
 interface RouterContext {
   queryClient: QueryClient
@@ -67,12 +80,12 @@ const tvRoute = createRoute({
   // ?layout=coluna fixa o arranjo; sem ele, segue o formato da janela.
   validateSearch: (search: Record<string, unknown>): { layout?: TvLayoutChoice } =>
     isTvLayoutChoice(search.layout) && search.layout !== 'auto' ? { layout: search.layout } : {},
-  component: TvPage,
+  component: lazy.tv,
 })
 const focusRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/foco',
-  component: FocusPage,
+  component: lazy.focus,
 })
 
 const PR_TABS: PullRequestTab[] = ['review', 'meus', 'mergeados']
@@ -84,7 +97,7 @@ const pullRequestsRoute = createRoute({
     aba: PR_TABS.find((tab) => tab === search.aba) ?? 'review',
     ...parseListSearch(search),
   }),
-  component: PullRequestsPage,
+  component: lazy.pullRequests,
 })
 
 const text = (value: unknown) => (typeof value === 'string' && value ? value : undefined)
@@ -99,7 +112,7 @@ const notesRoute = createRoute({
     q: text(search.q),
     tag: text(search.tag),
   }),
-  component: NotesPage,
+  component: lazy.notes,
 })
 
 const calendarRoute = createRoute({
@@ -108,7 +121,7 @@ const calendarRoute = createRoute({
   validateSearch: (search: Record<string, unknown>): { mes?: string } => ({
     mes: text(search.mes),
   }),
-  component: CalendarPage,
+  component: lazy.calendar,
 })
 
 const standupRoute = createRoute({
@@ -122,7 +135,7 @@ const standupRoute = createRoute({
         dia && /^\d{4}-\d{2}-\d{2}$/.test(dia) && dateKey(fromKey(dia)) === dia ? dia : undefined,
     }
   },
-  component: StandupPage,
+  component: lazy.standup,
 })
 
 const issuesRoute = createRoute({
@@ -132,7 +145,7 @@ const issuesRoute = createRoute({
     const { q, org } = parseListSearch(search)
     return { q, org }
   },
-  component: IssuesPage,
+  component: lazy.issues,
 })
 
 const routeTree = rootRoute.addChildren([
