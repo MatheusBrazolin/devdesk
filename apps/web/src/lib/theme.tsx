@@ -1,4 +1,12 @@
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useState } from 'react'
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
 export type ThemePreference = 'light' | 'dark' | 'system'
 
@@ -24,6 +32,31 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
+const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+/** Quanto dura a fusão de um tema no outro (precisa bater com o CSS). */
+const FALLBACK_MS = 450
+
+/**
+ * Troca o tema sem acender a tela de uma vez. Com View Transitions, o
+ * navegador fotografa o tema antigo e funde no novo; sem ela, as cores
+ * mudam por transição de CSS. Com movimento reduzido, a troca é direta.
+ */
+function applyTheme(dark: boolean, animate: boolean) {
+  const root = document.documentElement
+  const swap = () => root.classList.toggle('dark', dark)
+  if (root.classList.contains('dark') === dark) return
+  if (!animate || reducedMotion()) return swap()
+
+  if (typeof document.startViewTransition === 'function') {
+    document.startViewTransition(swap)
+    return
+  }
+  root.classList.add('theme-fading')
+  swap()
+  window.setTimeout(() => root.classList.remove('theme-fading'), FALLBACK_MS)
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [preference, setPreferenceState] = useState(readPreference)
   const [systemDark, setSystemDark] = useState(() => media().matches)
@@ -37,8 +70,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const resolved = preference === 'system' ? (systemDark ? 'dark' : 'light') : preference
 
+  // A primeira aplicação é direta (o tema já veio certo do theme-init.js);
+  // as seguintes, escolhidas pela pessoa ou pelo sistema, são suaves.
+  const applied = useRef(false)
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', resolved === 'dark')
+    applyTheme(resolved === 'dark', applied.current)
+    applied.current = true
   }, [resolved])
 
   const setPreference = useCallback((next: ThemePreference) => {

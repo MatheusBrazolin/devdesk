@@ -188,3 +188,28 @@ test.describe('foco e modo TV', () => {
     })
   }
 })
+
+test.describe('tema', () => {
+  test('troca com transição, sem acender a tela de uma vez, e fica salvo', async ({ page }) => {
+    await enterDemo(page)
+    const startedTransition = page.evaluate(
+      () =>
+        new Promise<boolean>((resolve) => {
+          const original = document.startViewTransition.bind(document)
+          document.startViewTransition = (update) => {
+            resolve(true)
+            return original(update)
+          }
+        }),
+    )
+    const wasDark = await page.evaluate(() => document.documentElement.classList.contains('dark'))
+
+    await page.getByRole('button', { name: /Visitante/ }).click()
+    await page.getByRole('menuitemradio', { name: wasDark ? 'Claro' : 'Escuro' }).click()
+
+    expect(await startedTransition).toBe(true)
+    await expect(page.locator('html')).toHaveClass(wasDark ? /^(?!.*\bdark\b)/ : /\bdark\b/)
+    await page.reload()
+    await expect(page.locator('html')).toHaveClass(wasDark ? /^(?!.*\bdark\b)/ : /\bdark\b/)
+  })
+})

@@ -213,6 +213,29 @@
   }
 }
 
+/*
+ * Troca de tema: o tema antigo se funde no novo, em vez de a tela clarear de
+ * uma vez. View Transitions quando o navegador tem; senão, as cores mudam por
+ * transição (classe posta só durante a troca, para não pesar o resto do app).
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 450ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-fading,
+.theme-fading *,
+.theme-fading *::before,
+.theme-fading *::after {
+  transition:
+    background-color 450ms cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 450ms cubic-bezier(0.4, 0, 0.2, 1),
+    color 450ms cubic-bezier(0.4, 0, 0.2, 1),
+    fill 450ms cubic-bezier(0.4, 0, 0.2, 1),
+    stroke 450ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
