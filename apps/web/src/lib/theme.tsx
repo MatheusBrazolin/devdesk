@@ -43,6 +43,10 @@ const FALLBACK_MS = 450
  * mudam por transição de CSS. Com movimento reduzido, a troca é direta.
  */
 function applyTheme(dark: boolean, animate: boolean) {
+  // A barra da janela do app instalado acompanha o tema escolhido no app,
+  // não só o do sistema.
+  for (const meta of document.querySelectorAll('meta[name="theme-color"]'))
+    meta.setAttribute('content', dark ? '#121211' : '#fafaf9')
   const root = document.documentElement
   const swap = () => root.classList.toggle('dark', dark)
   if (root.classList.contains('dark') === dark) return

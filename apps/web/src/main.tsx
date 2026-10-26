@@ -40,3 +40,9 @@ createRoot(document.getElementById('root')!).render(
     </ThemeProvider>
   </StrictMode>,
 )
+
+// App instalável: o service worker só existe no build (em desenvolvimento o
+// Vite troca o código sozinho e um cache só atrapalharia).
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => void navigator.serviceWorker.register('/sw.js'))
+}

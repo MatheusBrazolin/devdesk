@@ -5,6 +5,7 @@ import {
   BellOff,
   ChevronsUpDown,
   Crosshair,
+  Download,
   LogOut,
   MessageSquareText,
   Monitor,
@@ -30,6 +31,7 @@ import {
   enableNotifications,
   useNotificationsSetting,
 } from '@/lib/notifications'
+import { useInstallPrompt } from '@/lib/install'
 import { type ThemePreference, useTheme } from '@/lib/theme'
 
 export function UserMenu() {
@@ -38,6 +40,7 @@ export function UserMenu() {
   const logout = useLogout()
   const notifications = useNotificationsSetting()
   const navigate = useNavigate()
+  const installPrompt = useInstallPrompt()
 
   const toggleNotifications = async () => {
     if (notifications.enabled) return disableNotifications()
@@ -93,6 +96,17 @@ export function UserMenu() {
         <DropdownMenuItem onSelect={() => void navigate({ to: '/tv' })}>
           <Tv /> Modo TV
         </DropdownMenuItem>
+        {installPrompt.available && (
+          <DropdownMenuItem
+            onSelect={() =>
+              void installPrompt
+                .install()
+                .then((accepted) => accepted && toast.success('DevDesk instalado'))
+            }
+          >
+            <Download /> Instalar app
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onSelect={() => void toggleNotifications()}>
           {notifications.enabled ? <BellOff /> : <Bell />}
           {notifications.enabled ? 'Desligar notificações' : 'Ligar notificações'}

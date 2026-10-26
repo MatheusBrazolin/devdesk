@@ -285,3 +285,62 @@ test.describe('abas sincronizadas', () => {
     await expect(tv.getByText('nada pede atenção')).toHaveCount(0)
   })
 })
+
+test.describe('app instalável', () => {
+  test.use({ serviceWorkers: 'allow' })
+
+  test('tem manifesto, ícones e atalhos', async ({ page }) => {
+    const response = await page.request.get('/manifest.webmanifest')
+    expect(response.ok()).toBe(true)
+    const manifest = await response.json()
+    expect(manifest).toMatchObject({ name: 'DevDesk', display: 'standalone', start_url: '/' })
+    expect(manifest.icons.some((icon: { purpose: string }) => icon.purpose === 'maskable')).toBe(
+      true,
+    )
+    expect(manifest.shortcuts.map((s: { url: string }) => s.url)).toContain('/tv?layout=coluna')
+    for (const icon of manifest.icons) {
+      const image = await page.request.get(icon.src)
+      expect(image.headers()['content-type'], icon.src).toBe('image/png')
+    }
+  })
+
+  test('o service worker assume a página e nunca guarda os dados da conta', async ({ page }) => {
+    await enterDemo(page)
+    await page.evaluate(() => navigator.serviceWorker.ready)
+    await page.reload()
+    await expect
+      .poll(() => page.evaluate(() => navigator.serviceWorker.controller !== null))
+      .toBe(true)
+
+    const cached = await page.evaluate(async () => {
+      const urls: string[] = []
+      for (const name of await caches.keys()) {
+        const cache = await caches.open(name)
+        urls.push(...(await cache.keys()).map((request) => new URL(request.url).pathname))
+      }
+      return urls
+    })
+    expect(cached.some((path) => path.startsWith('/assets/'))).toBe(true)
+    expect(cached.some((path) => path.startsWith('/api/'))).toBe(false)
+  })
+
+  test('o Chrome considera o DevDesk instalável', async ({ page, browserName }) => {
+    test.skip(browserName !== 'chromium', 'a verificação usa o protocolo do Chrome')
+    await enterDemo(page)
+    await page.evaluate(() => navigator.serviceWorker.ready)
+    const cdp = await page.context().newCDPSession(page)
+    const { installabilityErrors } = await cdp.send('Page.getInstallabilityErrors')
+    expect(installabilityErrors).toEqual([])
+  })
+
+  test('a página vem sempre da rede: versão nova chega no recarregar', async ({ page }) => {
+    await enterDemo(page)
+    await page.evaluate(() => navigator.serviceWorker.ready)
+    await page.reload()
+    const served = await (await page.request.get('/')).text()
+    const loaded = await page.evaluate(
+      () => document.querySelector('script[type="module"]')?.getAttribute('src') ?? '',
+    )
+    expect(served).toContain(loaded)
+  })
+})

@@ -20,6 +20,9 @@ export default defineConfig({
     timezoneId: 'America/Sao_Paulo',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
+    // O service worker passaria por cima das interceptações de rede dos testes;
+    // o grupo do app instalável liga ele de volta.
+    serviceWorkers: 'block',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
