@@ -172,7 +172,7 @@ test.describe('foco e modo TV', () => {
     await enterDemo(page)
     await page.goto('/foco')
     await expect(page.getByRole('timer')).toHaveText('25:00')
-    await page.getByRole('button', { name: 'Começar' }).click()
+    await page.getByRole('button', { name: 'Começar', exact: true }).click()
     await expect(page.getByRole('timer')).not.toHaveText('25:00', { timeout: 5_000 })
     await page.getByRole('button', { name: 'Zerar' }).click()
     await expect(page.getByRole('timer')).toHaveText('25:00')
