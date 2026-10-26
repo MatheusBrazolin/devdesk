@@ -254,3 +254,34 @@ test.describe('versão nova', () => {
     await expect(page).toHaveURL(/\/tv/)
   })
 })
+
+test.describe('abas sincronizadas', () => {
+  test('o modo TV aberto ao lado muda quando outra aba recebe dados novos', async ({ context }) => {
+    const main = await context.newPage()
+    await enterDemo(main)
+
+    // A TV começa com um retrato antigo, em que a fila estava vazia.
+    const tv = await context.newPage()
+    await tv.route(
+      '**/api/dashboard',
+      async (route) => {
+        const response = await route.fetch()
+        const old = await response.json()
+        await route.fulfill({
+          response,
+          json: { ...old, attention: [], fetchedAt: '2026-01-01T00:00:00.000Z' },
+        })
+      },
+      { times: 1 },
+    )
+    await tv.goto('/tv')
+    // Fila vazia no modo TV: no lugar dela entram os seus PRs abertos.
+    await expect(tv.getByText('nada pede atenção')).toBeVisible()
+
+    // Na outra aba, alguém atualiza: a TV recebe na hora, sem recarregar.
+    await main.getByRole('button', { name: 'Atualizar agora' }).click()
+    await expect(tv.getByText('Precisa de atenção')).toBeVisible()
+    await expect(tv.getByText('review pedida').first()).toBeVisible()
+    await expect(tv.getByText('nada pede atenção')).toHaveCount(0)
+  })
+})

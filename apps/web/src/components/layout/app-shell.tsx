@@ -4,6 +4,7 @@ import { useReminderToasts } from '@/features/calendar/use-reminder-toasts'
 import { CommandPaletteProvider } from '@/features/commands/command-palette'
 import { useGoToShortcuts } from '@/features/commands/use-go-to-shortcuts'
 import { useFocusAlarm } from '@/features/focus/focus-timer'
+import { useDashboardSync } from '@/features/work/dashboard-sync'
 import { useWorkNotifications } from '@/features/work/use-work-notifications'
 import { cn } from '@/lib/cn'
 import { useUpdateCheck } from '@/lib/update-check'
@@ -17,6 +18,7 @@ export function AppShell() {
   useWorkNotifications()
   useFocusAlarm()
   useUpdateCheck()
+  useDashboardSync()
   // No foco, a barra lateral sai da frente: a saída é o botão da própria página.
   const focus = pathname === '/foco'
 
