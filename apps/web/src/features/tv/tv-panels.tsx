@@ -547,9 +547,11 @@ export function AgendaPanel({
       ) : days.length === 0 ? (
         <p className="text-center text-[14px] text-fg-muted">Nada marcado nos próximos 7 dias.</p>
       ) : (
-        <div className="flex h-full flex-col gap-3 overflow-hidden">
+        // Os dias não encolhem: o que não cabe é cortado no fim do painel, com um esmaecido,
+        // em vez de um dia ficar por cima do outro.
+        <div className="flex h-full flex-col gap-3 overflow-hidden [mask-image:linear-gradient(to_bottom,black_85%,transparent)]">
           {days.map(({ day, items }) => (
-            <div key={day} className="min-h-0">
+            <div key={day} className="shrink-0">
               <p className="mb-1 text-[12px] font-semibold tracking-wide text-fg-subtle uppercase">
                 {label(day)}
               </p>
