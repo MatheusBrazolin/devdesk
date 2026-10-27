@@ -7,7 +7,7 @@ import { GitHubIcon } from '@/components/ui/github-icon'
 import { LanguageSwitch } from '@/components/ui/language-switch'
 import { Logo } from '@/components/ui/logo'
 import { t, tx } from '@/lib/i18n'
-import { ProductPreview } from './product-preview'
+import { BoardPreview } from './board-preview'
 import { GITHUB_LOGIN_URL, configQuery, useDemoLogin, usePersonalLogin } from './queries'
 
 const route = getRouteApi('/login')
@@ -16,6 +16,13 @@ const ERROR_MESSAGES: Record<string, string> = {
   cancelado: t('O login foi cancelado no GitHub.'),
   'estado-invalido': t('A tentativa de login expirou. Tente de novo.'),
   github: t('O GitHub não confirmou o login. Tente de novo em instantes.'),
+}
+
+/** Entrada em sequência: título, texto, botões e o resto, um depois do outro. */
+const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } } }
+const rise = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.2, 0.9, 0.3, 1] as const } },
 }
 
 export function LoginPage() {
@@ -40,17 +47,22 @@ export function LoginPage() {
         </div>
 
         <motion.div
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, ease: 'easeOut' }}
+          variants={stagger}
+          initial="hidden"
+          animate="show"
           className="mx-auto my-auto w-full max-w-sm py-12"
         >
-          <h1 className="text-2xl font-semibold">{t('Entrar no DevDesk')}</h1>
-          <p className="mt-2 text-sm leading-relaxed text-fg-muted">
+          <motion.h1
+            variants={rise}
+            className="text-[40px] leading-[1.05] font-semibold tracking-[-0.035em]"
+          >
+            {t('Entrar no DevDesk')}
+          </motion.h1>
+          <motion.p variants={rise} className="mt-3 text-[15px] leading-relaxed text-fg-muted">
             {t(
               'Reviews pendentes, seus pull requests e issues, junto com suas notas e sua agenda.',
             )}
-          </p>
+          </motion.p>
 
           {errorMessage && (
             <p
@@ -71,7 +83,7 @@ export function LoginPage() {
             </p>
           )}
 
-          <div className="mt-8 flex flex-col gap-2">
+          <motion.div variants={rise} className="mt-8 flex flex-col gap-2">
             {personalLogin && (
               <Button size="lg" disabled={personal.isPending} onClick={() => personal.mutate()}>
                 {personal.isPending ? <Loader2 className="animate-spin" /> : <GitHubIcon />}
@@ -102,7 +114,7 @@ export function LoginPage() {
                 {!demo.isPending && <ArrowRight className="text-fg-subtle" />}
               </Button>
             )}
-          </div>
+          </motion.div>
 
           {personal.isError && (
             <p role="alert" className="mt-3 text-[13px] text-danger">
@@ -115,7 +127,7 @@ export function LoginPage() {
             </p>
           )}
 
-          <p className="mt-6 text-[12px] leading-relaxed text-fg-subtle">
+          <motion.p variants={rise} className="mt-6 text-[12px] leading-relaxed text-fg-subtle">
             {personalLogin ? (
               t(
                 'Modo pessoal: esta instalação usa o seu token do GitHub e só aceita acesso desta máquina.',
@@ -140,18 +152,30 @@ export function LoginPage() {
                 'O GitHub vai pedir acesso aos seus repositórios, porque OAuth Apps não têm uma permissão só de leitura. O DevDesk apenas lê: não comenta, não aprova e não faz merge. Se a sua empresa bloqueia apps de terceiros, depois de entrar conecte um token pessoal em Configurações.',
               )
             )}
-          </p>
-          <Link
-            to="/privacidade"
-            className="mt-3 inline-block text-[12px] text-fg-subtle underline-offset-2 hover:text-fg-muted hover:underline"
-          >
-            {t('Privacidade: o que fica guardado e como apagar')}
-          </Link>
+          </motion.p>
+          <motion.div variants={rise}>
+            <Link
+              to="/privacidade"
+              className="mt-3 inline-block text-[12px] text-fg-subtle underline-offset-2 hover:text-fg-muted hover:underline"
+            >
+              {t('Privacidade: o que fica guardado e como apagar')}
+            </Link>
+          </motion.div>
         </motion.div>
       </section>
 
-      <aside className="hidden border-l border-border bg-elevated lg:flex lg:items-center lg:justify-center lg:p-12">
-        <ProductPreview />
+      <aside
+        aria-label={t('Exemplo do quadro do DevDesk')}
+        className="hidden border-l border-border bg-bg lg:flex lg:items-center lg:justify-center lg:p-12"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25, duration: 0.5, ease: [0.2, 0.9, 0.3, 1] }}
+          className="flex w-full justify-center"
+        >
+          <BoardPreview />
+        </motion.div>
       </aside>
     </main>
   )

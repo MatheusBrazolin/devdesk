@@ -41,4 +41,12 @@ export default {
     'Illustrative example of the dashboard. With your account, the list comes from your repositories.',
   'Login com GitHub desligado: defina {id} e {secret} no {env}.':
     'GitHub login is off: set {id} and {secret} in {env}.',
+  'Retentativa com backoff no webhook': 'Retry with backoff on the webhook',
+  'Corrige o fuso horário do relatório': 'Fix the report time zone',
+  'Alerta de fila parada no worker': 'Alert on a stuck worker queue',
+  'Paginação por cursor nos pedidos': 'Cursor pagination for orders',
+  'Exemplo ilustrativo: os PRs mudam de coluna conforme o trabalho anda. Com a sua conta, o quadro vem dos seus repositórios.':
+    'Illustrative example: PRs move between columns as work moves along. With your account, the board comes from your repositories.',
+  'Tudo em dia.': 'All caught up.',
+  'Exemplo do quadro do DevDesk': 'DevDesk board example',
 } satisfies Record<string, string>
