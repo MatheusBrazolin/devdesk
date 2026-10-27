@@ -4,6 +4,8 @@ import type { GitHubOAuth } from '../ports/github-oauth.js'
 import type { Clock, TokenCipher } from '../ports/security.js'
 import type { UserRepository } from '../ports/user-repository.js'
 
+export type TokenSource = 'personal' | 'server' | 'oauth'
+
 /**
  * Guarda os tokens do GitHub cifrados e entrega sempre um token válido,
  * renovando antes de expirar. Um token pessoal colado pela própria pessoa
@@ -55,6 +57,16 @@ export class GitHubTokenProvider {
   /** Quando o token pessoal foi guardado, ou nulo sem token pessoal. */
   async personalSavedAt(userId: string): Promise<Date | null> {
     return (await this.users.findPersonalToken(userId))?.savedAt ?? null
+  }
+
+  /**
+   * De onde vem o token que vale agora: o pessoal colado pela pessoa, o do
+   * servidor (o dono, ADR 0011) ou o do login pelo OAuth.
+   */
+  async source(userId: string): Promise<TokenSource> {
+    if (await this.users.findPersonalToken(userId)) return 'personal'
+    const token = await this.getAccessToken(userId)
+    return /^(ghp_|github_pat_)/.test(token) ? 'server' : 'oauth'
   }
 
   private async resolve(userId: string): Promise<string> {

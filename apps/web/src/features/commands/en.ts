@@ -1,0 +1,27 @@
+/** Inglês da paleta de comandos e dos atalhos. A chave é o texto em português, exatamente como no código. */
+export default {
+  'Paleta de comandos': 'Command palette',
+  'Busque PRs, issues, notas e eventos, ou vá para uma página':
+    'Search PRs, issues, notes and events, or go to a page',
+  'Nada encontrado.': 'Nothing found.',
+  'Ir para': 'Go to',
+  Criar: 'Create',
+  'Nova nota': 'New note',
+  Preferências: 'Preferences',
+  'Usar tema claro': 'Use light theme',
+  'Usar tema escuro': 'Use dark theme',
+  Sair: 'Sign out',
+  Notas: 'Notes',
+  'Sem título': 'Untitled',
+  Agenda: 'Calendar',
+  'Paleta de comandos: ir para qualquer lugar': 'Command palette: go anywhere',
+  'Buscar PRs, issues, notas e eventos': 'Search PRs, issues, notes and events',
+  'Esta ajuda': 'This help',
+  'Fechar diálogo ou menu': 'Close dialog or menu',
+  'Tela cheia, no modo TV': 'Full screen, in TV mode',
+  'Atalhos de teclado': 'Keyboard shortcuts',
+  Fechar: 'Close',
+  Aperte: 'Press',
+  'e, logo depois, a letra da página.': "then the page's letter.",
+  Geral: 'General',
+} satisfies Record<string, string>

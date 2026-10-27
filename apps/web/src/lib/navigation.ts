@@ -1,6 +1,7 @@
 import {
-  ChartColumn,
   CalendarDays,
+  CalendarRange,
+  ChartColumn,
   CircleDot,
   Crosshair,
   GitPullRequest,
@@ -13,6 +14,7 @@ import {
   Users,
 } from 'lucide-react'
 import type { Tone } from './tones'
+import { t } from './i18n'
 
 export interface NavItem {
   to:
@@ -26,6 +28,7 @@ export interface NavItem {
     | '/notas'
     | '/calendario'
     | '/standup'
+    | '/semana'
     | '/configuracoes'
   label: string
   icon: LucideIcon
@@ -39,10 +42,10 @@ export interface NavItem {
 
 /** Fonte única da navegação: a sidebar e a paleta de comandos leem daqui. */
 export const NAV_ITEMS: NavItem[] = [
-  { to: '/', label: 'Hoje', icon: Sun, shortcut: 'h', tone: 'accent' },
+  { to: '/', label: t('Hoje'), icon: Sun, shortcut: 'h', tone: 'accent' },
   {
     to: '/foco',
-    label: 'Foco',
+    label: t('Foco'),
     icon: Crosshair,
     shortcut: 'f',
     tone: 'success',
@@ -56,10 +59,11 @@ export const NAV_ITEMS: NavItem[] = [
     tone: 'success',
   },
   { to: '/issues', label: 'Issues', icon: CircleDot, shortcut: 'i', tone: 'info' },
-  { to: '/notas', label: 'Notas', icon: NotebookPen, shortcut: 'n', tone: 'merged' },
-  { to: '/calendario', label: 'Calendário', icon: CalendarDays, shortcut: 'c', tone: 'info' },
-  { to: '/metricas', label: 'Métricas', icon: ChartColumn, shortcut: 'm', tone: 'merged' },
-  { to: '/time', label: 'Time', icon: Users, shortcut: 'e', tone: 'success' },
+  { to: '/notas', label: t('Notas'), icon: NotebookPen, shortcut: 'n', tone: 'merged' },
+  { to: '/calendario', label: t('Calendário'), icon: CalendarDays, shortcut: 'c', tone: 'info' },
+  { to: '/metricas', label: t('Métricas'), icon: ChartColumn, shortcut: 'm', tone: 'merged' },
+  { to: '/time', label: t('Time'), icon: Users, shortcut: 'e', tone: 'success' },
+  { to: '/semana', label: t('Semana'), icon: CalendarRange, shortcut: 'w', tone: 'merged' },
   {
     to: '/standup',
     label: 'Standup',
@@ -68,10 +72,17 @@ export const NAV_ITEMS: NavItem[] = [
     tone: 'accent',
     hiddenFromSidebar: true,
   },
-  { to: '/tv', label: 'Modo TV', icon: Tv, shortcut: 't', tone: 'info', hiddenFromSidebar: true },
+  {
+    to: '/tv',
+    label: t('Modo TV'),
+    icon: Tv,
+    shortcut: 't',
+    tone: 'info',
+    hiddenFromSidebar: true,
+  },
   {
     to: '/configuracoes',
-    label: 'Configurações',
+    label: t('Configurações'),
     icon: Settings,
     shortcut: 'o',
     tone: 'accent',

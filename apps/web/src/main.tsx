@@ -8,6 +8,9 @@ import { createAppRouter } from '@/app/router'
 import { ThemeProvider, useTheme } from '@/lib/theme'
 import '@/styles/app.css'
 import { isUnauthenticated } from '@/lib/api'
+import { LANGUAGE } from '@/lib/i18n'
+
+document.documentElement.lang = LANGUAGE
 
 /**
  * Sessão expirada no meio do uso: em vez de cada tela mostrar um erro, limpa

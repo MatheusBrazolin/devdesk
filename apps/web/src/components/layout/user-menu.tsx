@@ -9,10 +9,7 @@ import {
   GraduationCap,
   LogOut,
   MessageSquareText,
-  Monitor,
   Settings,
-  Moon,
-  Sun,
   Tv,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -21,9 +18,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -36,11 +30,12 @@ import {
 import { openWelcomeTour } from '@/features/onboarding/welcome-store'
 import { useInstallPrompt } from '@/lib/install'
 import { disablePush, enablePush } from '@/lib/push'
-import { type ThemePreference, useTheme } from '@/lib/theme'
+import { initials } from '@/lib/greeting'
+import { t } from '@/lib/i18n'
 
-export function UserMenu() {
+/** Menu da conta: na barra lateral, o nome e o login; no Quadro, só o avatar. */
+export function UserMenu({ variant = 'sidebar' }: { variant?: 'sidebar' | 'avatar' }) {
   const { user } = useSuspenseQuery(meQuery).data
-  const { preference, setPreference } = useTheme()
   const logout = useLogout()
   const notifications = useNotificationsSetting()
   const navigate = useNavigate()
@@ -52,86 +47,80 @@ export function UserMenu() {
       return void disablePush()
     }
     if (notifications.permission === 'unsupported') {
-      return toast.error('Este navegador não mostra notificações.')
+      return toast.error(t('Este navegador não mostra notificações.'))
     }
     if (notifications.permission === 'denied') {
-      return toast.error('O navegador bloqueou as notificações deste site', {
-        description: 'Libere nas configurações do site e tente de novo.',
+      return toast.error(t('O navegador bloqueou as notificações deste site'), {
+        description: t('Libere nas configurações do site e tente de novo.'),
       })
     }
     if (!(await enableNotifications())) return
-    toast.success('Notificações ligadas', {
+    toast.success(t('Notificações ligadas'), {
       description: (await enablePush())
-        ? 'Chegam também com o DevDesk fechado.'
-        : 'Chegam enquanto o DevDesk estiver aberto.',
+        ? t('Chegam também com o DevDesk fechado.')
+        : t('Chegam enquanto o DevDesk estiver aberto.'),
     })
   }
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex w-full items-center gap-2.5 rounded-md p-1.5 text-left transition-colors hover:bg-elevated data-[state=open]:bg-elevated">
-        <Avatar name={user.name} login={user.login} src={user.avatarUrl} />
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-[13px] font-medium">{user.name ?? user.login}</span>
-          <span className="block truncate text-[12px] text-fg-subtle">@{user.login}</span>
-        </span>
-        <ChevronsUpDown className="size-4 text-fg-subtle" />
-      </DropdownMenuTrigger>
+      {variant === 'avatar' ? (
+        // Barra superior do Quadro: só o avatar, com as iniciais e anel lima.
+        <DropdownMenuTrigger className="q-ease grid size-10 shrink-0 place-items-center rounded-full border-2 border-q-lime bg-q-col text-[14px] font-semibold text-q-text hover:bg-q-card">
+          {initials(user.name, user.login)}
+          <span className="sr-only">{t('Menu de {nome}', { nome: user.name ?? user.login })}</span>
+        </DropdownMenuTrigger>
+      ) : (
+        <DropdownMenuTrigger className="flex w-full items-center gap-2.5 rounded-md p-1.5 text-left transition-colors hover:bg-elevated data-[state=open]:bg-elevated">
+          <Avatar name={user.name} login={user.login} src={user.avatarUrl} />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[13px] font-medium">
+              {user.name ?? user.login}
+            </span>
+            <span className="block truncate text-[12px] text-fg-subtle">@{user.login}</span>
+          </span>
+          <ChevronsUpDown className="size-4 text-fg-subtle" />
+        </DropdownMenuTrigger>
+      )}
 
       <DropdownMenuContent
-        side="top"
-        align="start"
-        className="w-[var(--radix-dropdown-menu-trigger-width)]"
+        side={variant === 'avatar' ? 'bottom' : 'top'}
+        align={variant === 'avatar' ? 'end' : 'start'}
+        className={variant === 'avatar' ? 'w-60' : 'w-[var(--radix-dropdown-menu-trigger-width)]'}
       >
-        <DropdownMenuLabel>Tema</DropdownMenuLabel>
-        <DropdownMenuRadioGroup
-          value={preference}
-          onValueChange={(value) => setPreference(value as ThemePreference)}
-        >
-          <DropdownMenuRadioItem value="light">
-            <Sun /> Claro
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="dark">
-            <Moon /> Escuro
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="system">
-            <Monitor /> Sistema
-          </DropdownMenuRadioItem>
-        </DropdownMenuRadioGroup>
-        <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => void navigate({ to: '/foco' })}>
-          <Crosshair /> Modo foco
+          <Crosshair /> {t('Modo foco')}
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => void navigate({ to: '/standup' })}>
           <MessageSquareText /> Standup
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => void navigate({ to: '/tv' })}>
-          <Tv /> Modo TV
+          <Tv /> {t('Modo TV')}
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => void navigate({ to: '/configuracoes' })}>
-          <Settings /> Configurações
+          <Settings /> {t('Configurações')}
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={openWelcomeTour}>
-          <GraduationCap /> Primeiros passos
+          <GraduationCap /> {t('Primeiros passos')}
         </DropdownMenuItem>
         {installPrompt.available && (
           <DropdownMenuItem
             onSelect={() =>
               void installPrompt
                 .install()
-                .then((accepted) => accepted && toast.success('DevDesk instalado'))
+                .then((accepted) => accepted && toast.success(t('DevDesk instalado')))
             }
           >
-            <Download /> Instalar app
+            <Download /> {t('Instalar app')}
           </DropdownMenuItem>
         )}
         <DropdownMenuItem onSelect={() => void toggleNotifications()}>
           {notifications.enabled ? <BellOff /> : <Bell />}
-          {notifications.enabled ? 'Desligar notificações' : 'Ligar notificações'}
+          {notifications.enabled ? t('Desligar notificações') : t('Ligar notificações')}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => logout.mutate()}>
-          <LogOut /> Sair
+          <LogOut /> {t('Sair')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

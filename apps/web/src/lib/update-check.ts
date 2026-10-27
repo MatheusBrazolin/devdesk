@@ -1,6 +1,7 @@
 import { useRouterState } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { toast } from 'sonner'
+import { t } from './i18n'
 
 /**
  * Avisa quando sai uma versão nova do DevDesk numa aba que ficou aberta: sem
@@ -50,11 +51,11 @@ export function useUpdateCheck(): void {
       if (!served || served === current) return
       notified = true
       if (tv) return window.location.reload()
-      toast('Nova versão do DevDesk disponível', {
+      toast(t('Nova versão do DevDesk disponível'), {
         id: TOAST_ID,
-        description: 'Recarregue para usar a versão mais nova.',
+        description: t('Recarregue para usar a versão mais nova.'),
         duration: Number.POSITIVE_INFINITY,
-        action: { label: 'Recarregar', onClick: () => window.location.reload() },
+        action: { label: t('Recarregar'), onClick: () => window.location.reload() },
       })
     }
     const onVisible = () => document.visibilityState === 'visible' && void check()

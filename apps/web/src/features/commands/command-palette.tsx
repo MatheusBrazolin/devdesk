@@ -1,7 +1,7 @@
 import * as Dialog from '@radix-ui/react-dialog'
 import { useNavigate } from '@tanstack/react-router'
 import { Command } from 'cmdk'
-import { LogOut, Moon, NotebookPen, Search, Sun } from 'lucide-react'
+import { Languages, LogOut, NotebookPen, Search } from 'lucide-react'
 import {
   createContext,
   type ReactNode,
@@ -14,12 +14,17 @@ import {
 import { Kbd } from '@/components/ui/kbd'
 import { useLogout } from '@/features/auth/queries'
 import { useCreateNote } from '@/features/notes/queries'
+import { LANGUAGE, setLanguage, t } from '@/lib/i18n'
 import { NAV_ITEMS } from '@/lib/navigation'
-import { useTheme } from '@/lib/theme'
+import { SearchResults } from './search-results'
 
 interface PaletteContextValue {
   open: () => void
 }
+
+const isTyping = (target: EventTarget | null) =>
+  target instanceof HTMLElement &&
+  (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
 
 const PaletteContext = createContext<PaletteContextValue | null>(null)
 
@@ -37,6 +42,13 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
       if (event.key.toLowerCase() === 'k' && (event.metaKey || event.ctrlKey)) {
         event.preventDefault()
         setIsOpen((current) => !current)
+        return
+      }
+      // "/" abre direto na busca, como no GitHub, quando não se está escrevendo.
+      if (event.key === '/' && !event.metaKey && !event.ctrlKey && !isTyping(event.target)) {
+        if (document.querySelector('[role="dialog"], [role="alertdialog"]')) return
+        event.preventDefault()
+        setIsOpen(true)
       }
     }
     window.addEventListener('keydown', onKeyDown)
@@ -64,9 +76,17 @@ function CommandPalette({
   onOpenChange: (open: boolean) => void
 }) {
   const navigate = useNavigate()
-  const { resolved, toggle } = useTheme()
   const logout = useLogout()
   const createNote = useCreateNote()
+  const [search, setSearch] = useState('')
+  const searching = search.trim().length >= 2
+
+  // Fechou: a próxima abertura começa com a busca vazia.
+  const [wasOpen, setWasOpen] = useState(open)
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (!open) setSearch('')
+  }
 
   const run = useCallback(
     (action: () => void) => {
@@ -84,27 +104,31 @@ function CommandPalette({
           aria-describedby={undefined}
           className="fixed top-[18vh] left-1/2 z-50 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 overflow-hidden rounded-lg border border-border bg-surface shadow-pop animate-pop-in"
         >
-          <Dialog.Title className="sr-only">Paleta de comandos</Dialog.Title>
+          <Dialog.Title className="sr-only">{t('Paleta de comandos')}</Dialog.Title>
           <Command loop className="flex flex-col">
             <div className="flex items-center gap-3 border-b border-border px-4">
               <Search className="size-4 text-fg-subtle" />
               <Command.Input
                 autoFocus
-                placeholder="O que você procura?"
+                value={search}
+                onValueChange={setSearch}
+                placeholder={t('Busque PRs, issues, notas e eventos, ou vá para uma página')}
                 className="h-12 flex-1 bg-transparent text-[15px] outline-none placeholder:text-fg-subtle"
               />
               <Kbd>esc</Kbd>
             </div>
             <Command.List className="max-h-80 overflow-y-auto p-2 [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-2 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-fg-subtle">
               <Command.Empty className="py-10 text-center text-sm text-fg-subtle">
-                Nada encontrado.
+                {t('Nada encontrado.')}
               </Command.Empty>
 
-              <Command.Group heading="Ir para">
+              {searching && <SearchResults query={search.trim()} itemClass={itemClass} run={run} />}
+
+              <Command.Group heading={t('Ir para')}>
                 {NAV_ITEMS.map(({ to, label, icon: Icon, shortcut }) => (
                   <Command.Item
                     key={to}
-                    value={`ir ${label}`}
+                    value={`ir go ${label}`}
                     onSelect={() => run(() => void navigate({ to }))}
                     className={itemClass}
                   >
@@ -118,9 +142,9 @@ function CommandPalette({
                 ))}
               </Command.Group>
 
-              <Command.Group heading="Criar">
+              <Command.Group heading={t('Criar')}>
                 <Command.Item
-                  value="nova nota criar anotar"
+                  value="nova nota criar anotar new note create"
                   onSelect={() =>
                     run(() =>
                       createNote.mutate(
@@ -135,26 +159,26 @@ function CommandPalette({
                   className={itemClass}
                 >
                   <NotebookPen />
-                  Nova nota
+                  {t('Nova nota')}
                 </Command.Item>
               </Command.Group>
 
-              <Command.Group heading="Preferências">
+              <Command.Group heading={t('Preferências')}>
                 <Command.Item
-                  value="alternar tema claro escuro"
-                  onSelect={() => run(toggle)}
+                  value="idioma language english português ingles"
+                  onSelect={() => run(() => setLanguage(LANGUAGE === 'en' ? 'pt-BR' : 'en'))}
                   className={itemClass}
                 >
-                  {resolved === 'dark' ? <Sun /> : <Moon />}
-                  Usar tema {resolved === 'dark' ? 'claro' : 'escuro'}
+                  <Languages />
+                  {LANGUAGE === 'en' ? 'Usar em português' : 'Use in English'}
                 </Command.Item>
                 <Command.Item
-                  value="sair logout"
+                  value="sair logout sign out"
                   onSelect={() => run(() => logout.mutate())}
                   className={itemClass}
                 >
                   <LogOut />
-                  Sair
+                  {t('Sair')}
                 </Command.Item>
               </Command.Group>
             </Command.List>

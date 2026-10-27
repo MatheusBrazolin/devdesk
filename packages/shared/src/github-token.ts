@@ -17,3 +17,24 @@ export const gitHubTokenStatusSchema = z.object({
 
 export type ConnectGitHubTokenInput = z.infer<typeof connectGitHubTokenInputSchema>
 export type GitHubTokenStatus = z.infer<typeof gitHubTokenStatusSchema>
+
+export const tokenSourceSchema = z.enum(['personal', 'server', 'oauth'])
+
+/** Saúde do acesso ao GitHub, para as Configurações e o aviso de vencimento. */
+export const gitHubHealthSchema = z.discriminatedUnion('ok', [
+  z.object({
+    ok: z.literal(true),
+    source: tokenSourceSchema,
+    /** Só tokens pessoais com validade informam quando vencem. */
+    expiresAt: z.iso.datetime().nullable(),
+    organizations: z.array(z.object({ login: z.string(), avatarUrl: z.string().nullable() })),
+    rateLimit: z
+      .object({ remaining: z.number(), limit: z.number(), resetAt: z.iso.datetime() })
+      .nullable(),
+  }),
+  /** O GitHub recusou o token: venceu ou foi revogado. */
+  z.object({ ok: z.literal(false), source: tokenSourceSchema }),
+])
+
+export type TokenSource = z.infer<typeof tokenSourceSchema>
+export type GitHubHealth = z.infer<typeof gitHubHealthSchema>

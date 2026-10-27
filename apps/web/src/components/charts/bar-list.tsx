@@ -22,7 +22,7 @@ interface BarListProps {
   tone?: 'ink' | 'muted' | 'info'
 }
 
-const TONE = { ink: 'bg-chart-ink', muted: 'bg-chart-muted', info: 'bg-info' }
+const TONE = { ink: 'bg-chart-ink', muted: 'bg-chart-muted', info: 'bg-accent' }
 
 /**
  * Barras horizontais com o valor escrito na ponta de cada uma. Escrever todos
@@ -52,7 +52,7 @@ export function BarList({ rows, unit, tone = 'ink' }: BarListProps) {
                 <span
                   className={cn(
                     'h-3 origin-left animate-grow-right rounded-r-[4px] transition-opacity group-hover:opacity-80',
-                    row.emphasis ? 'bg-chart-accent' : TONE[tone],
+                    row.emphasis ? 'bg-warning' : TONE[tone],
                   )}
                   style={{
                     width: row.value === 0 ? 0 : `max(4px, ${(row.value / max) * 85}%)`,

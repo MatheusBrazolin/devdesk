@@ -30,6 +30,7 @@ import { orderAttention } from '@/features/work/review-queue'
 import { dashboardQuery } from '@/features/work/queries'
 import { addDaysToKey, compareEvents, formatTime } from '@/lib/calendar-dates'
 import { cn } from '@/lib/cn'
+import { plural, t } from '@/lib/i18n'
 import { useHeldCount } from '@/lib/notifications'
 import { useToday } from '@/lib/use-today'
 import {
@@ -61,10 +62,10 @@ export function FocusPage() {
     <div className="mx-auto max-w-5xl space-y-5">
       <PageHeader
         section="/foco"
-        subtitle="Uma coisa de cada vez: o que pede ação agora e um tempo para fazer."
+        subtitle={t('Uma coisa de cada vez: o que pede ação agora e um tempo para fazer.')}
         actions={
           <Link to="/" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-            Sair do foco
+            {t('Sair do foco')}
           </Link>
         }
       />
@@ -76,7 +77,7 @@ export function FocusPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="size-3.5 text-success" strokeWidth={2} />
-                  Agora
+                  {t('Agora')}
                 </CardTitle>
               </CardHeader>
               {dashboard.isPending ? (
@@ -90,8 +91,10 @@ export function FocusPage() {
               ) : (
                 <EmptyState
                   icon={CircleCheck}
-                  title="Nada pedindo ação agora"
-                  description="Sem reviews pedidas, CI quebrado, conflitos ou mudanças pedidas. Bom momento para o trabalho mais longo."
+                  title={t('Nada pedindo ação agora')}
+                  description={t(
+                    'Sem reviews pedidas, CI quebrado, conflitos ou mudanças pedidas. Bom momento para o trabalho mais longo.',
+                  )}
                   className="py-10"
                 />
               )}
@@ -104,7 +107,7 @@ export function FocusPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <ListTodo className="size-3.5 text-fg-subtle" strokeWidth={2} />
-                    Depois
+                    {t('Depois')}
                   </CardTitle>
                   <span className="font-mono text-[11px] text-fg-subtle">{queue.length}</span>
                 </CardHeader>
@@ -160,12 +163,14 @@ function Current({ item }: { item: AttentionItem }) {
           <span className="font-mono">
             {pr.repository}#{pr.number}
           </span>
-          {pr.author && item.reason === 'review_requested' && <span>· de {pr.author.login}</span>}
+          {pr.author && item.reason === 'review_requested' && (
+            <span>· {t('de {autor}', { autor: pr.author.login })}</span>
+          )}
         </p>
       </div>
       <p className="text-[13px] text-fg-muted">{NEXT_STEP[item.reason]}</p>
       <a href={pr.url} target="_blank" rel="noreferrer" className={buttonVariants({ size: 'sm' })}>
-        Abrir no GitHub <ExternalLink />
+        {t('Abrir no GitHub')} <ExternalLink />
       </a>
     </motion.div>
   )
@@ -173,16 +178,16 @@ function Current({ item }: { item: AttentionItem }) {
 
 /** O que fazer com cada motivo, numa frase. */
 const NEXT_STEP: Record<AttentionItem['reason'], string> = {
-  review_requested: 'Alguém espera a sua review. Ler, comentar e responder destrava o time.',
-  changes_requested: 'Pediram mudanças. Ajustar e responder os comentários devolve o PR à fila.',
-  ci_failed: 'O CI falhou. Ver o log do job vermelho costuma bastar para achar a causa.',
-  conflict: 'Há conflito com a base. Atualizar a branch e resolver antes de pedir nova review.',
-  ready_to_merge: 'Aprovado e com CI verde. Falta só o merge.',
+  review_requested: t('Alguém espera a sua review. Ler, comentar e responder destrava o time.'),
+  changes_requested: t('Pediram mudanças. Ajustar e responder os comentários devolve o PR à fila.'),
+  ci_failed: t('O CI falhou. Ver o log do job vermelho costuma bastar para achar a causa.'),
+  conflict: t('Há conflito com a base. Atualizar a branch e resolver antes de pedir nova review.'),
+  ready_to_merge: t('Aprovado e com CI verde. Falta só o merge.'),
 }
 
 function CurrentSkeleton() {
   return (
-    <div aria-busy="true" aria-label="Carregando" className="space-y-4 p-5">
+    <div aria-busy="true" aria-label={t('Carregando')} className="space-y-4 p-5">
       <Skeleton className="h-5 w-24" />
       <Skeleton className="h-5 w-4/5" />
       <Skeleton className="h-3 w-48" />
@@ -206,11 +211,11 @@ function FocusTimerCard() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Timer className="size-3.5 text-accent" strokeWidth={2} />
-          Bloco de foco
+          {t('Bloco de foco')}
         </CardTitle>
         <div
           role="radiogroup"
-          aria-label="Duração"
+          aria-label={t('Duração')}
           className="flex rounded-md border border-border p-0.5"
         >
           {DURATIONS.map((minutes) => (
@@ -257,42 +262,46 @@ function FocusTimerCard() {
           <span className="text-center">
             <span
               role="timer"
-              aria-label={`Faltam ${formatClock(left)}`}
+              aria-label={t('Faltam {tempo}', { tempo: formatClock(left) })}
               className="block text-3xl font-semibold tracking-tight tabular-nums"
             >
               {formatClock(left)}
             </span>
             <span className="text-[12px] text-fg-subtle">
-              {running ? 'focando' : timer.status === 'paused' ? 'pausado' : 'pronto'}
+              {running ? t('focando') : timer.status === 'paused' ? t('pausado') : t('pronto')}
             </span>
           </span>
         </div>
         <div className="flex gap-2">
           {running ? (
             <Button variant="outline" onClick={() => setTimer(pause(timer, Date.now()))}>
-              <Pause /> Pausar
+              <Pause /> {t('Pausar')}
             </Button>
           ) : (
             <Button onClick={() => setTimer(start(timer, Date.now()))}>
-              <Play /> {timer.status === 'paused' ? 'Continuar' : 'Começar'}
+              <Play /> {timer.status === 'paused' ? t('Continuar') : t('Começar')}
             </Button>
           )}
           {timer.status !== 'idle' && (
             <Button variant="ghost" onClick={() => setTimer(reset(timer))}>
-              <RotateCcw /> Zerar
+              <RotateCcw /> {t('Zerar')}
             </Button>
           )}
         </div>
         <p className="text-center text-[12px] text-fg-subtle">
           {running
-            ? 'Avisos de trabalho esperam o fim do bloco; lembretes da agenda chegam na hora.'
-            : 'Avisa no fim, mesmo em outra página. Durante o bloco, os avisos de trabalho esperam.'}
+            ? t('Avisos de trabalho esperam o fim do bloco; lembretes da agenda chegam na hora.')
+            : t(
+                'Avisa no fim, mesmo em outra página. Durante o bloco, os avisos de trabalho esperam.',
+              )}
         </p>
         {held > 0 && (
           <p role="status" className="text-center text-[12px] font-medium text-accent">
-            {held === 1
-              ? '1 aviso esperando o fim do foco'
-              : `${held} avisos esperando o fim do foco`}
+            {plural(
+              held,
+              '{n} aviso esperando o fim do foco',
+              '{n} avisos esperando o fim do foco',
+            )}
           </p>
         )}
       </CardBody>
@@ -316,7 +325,7 @@ function NextEventCard() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <CalendarClock className="size-3.5 text-info" strokeWidth={2} />
-          Próximo compromisso
+          {t('Próximo compromisso')}
         </CardTitle>
       </CardHeader>
       <div className="px-4 py-3">
@@ -330,7 +339,7 @@ function NextEventCard() {
             </span>
           </p>
         ) : (
-          <p className="text-[13px] text-fg-muted">Nada com horário até amanhã.</p>
+          <p className="text-[13px] text-fg-muted">{t('Nada com horário até amanhã.')}</p>
         )}
       </div>
       {events.data && <FreeTime window={focusWindow(events.data.events, now)} />}
@@ -345,13 +354,18 @@ function FreeTime({ window }: { window: FocusWindow }) {
 
   let text: string
   if (window.kind === 'busy') {
-    text = `Em reunião até ${formatTime(new Date(window.endsAt).toISOString())}.`
+    text = t('Em reunião até {hora}.', { hora: formatTime(new Date(window.endsAt).toISOString()) })
   } else if (window.minutes === null) {
-    text = 'Sem mais reuniões hoje: tempo bom para um bloco longo.'
+    text = t('Sem mais reuniões hoje: tempo bom para um bloco longo.')
   } else if (window.suggestion) {
-    text = `Livre por ${formatDuration(window.minutes)}: cabe um bloco de ${window.suggestion} min.`
+    text = t('Livre por {duracao}: cabe um bloco de {n} min.', {
+      duracao: formatDuration(window.minutes),
+      n: window.suggestion,
+    })
   } else {
-    text = `Só ${formatDuration(window.minutes)} até a próxima: bom para uma review curta.`
+    text = t('Só {duracao} até a próxima: bom para uma review curta.', {
+      duracao: formatDuration(window.minutes),
+    })
   }
 
   const suggestion = window.kind === 'free' ? window.suggestion : null
@@ -364,7 +378,7 @@ function FreeTime({ window }: { window: FocusWindow }) {
           variant="outline"
           onClick={() => setTimer(start(choose(getTimer(), suggestion), Date.now()))}
         >
-          Começar {suggestion} min
+          {t('Começar {n} min', { n: suggestion })}
         </Button>
       )}
     </div>
@@ -373,9 +387,9 @@ function FreeTime({ window }: { window: FocusWindow }) {
 
 function until(ms: number): string {
   const minutes = Math.round(ms / 60_000)
-  if (minutes < 1) return 'agora'
-  if (minutes < 60) return `em ${minutes} min`
+  if (minutes < 1) return t('agora')
+  if (minutes < 60) return t('em {n} min', { n: minutes })
   const hours = Math.floor(minutes / 60)
   const rest = minutes % 60
-  return rest ? `em ${hours} h ${rest} min` : `em ${hours} h`
+  return rest ? t('em {h} h {min} min', { h: hours, min: rest }) : t('em {h} h', { h: hours })
 }

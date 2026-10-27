@@ -50,27 +50,27 @@ import { formatRelative } from '@/lib/time'
 import { TONE_CHIP, type Tone } from '@/lib/tones'
 import { useToday } from '@/lib/use-today'
 import { rowsToShow } from './tv-scale'
+import { LOCALE, plural, t } from '@/lib/i18n'
 
 /**
  * Peças do modo TV. Cada arranjo (grade, coluna, faixa, mini) monta as
  * mesmas peças em quantidades e densidades diferentes.
  */
 
-const clockFormat = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' })
-const dateFormat = new Intl.DateTimeFormat('pt-BR', {
+const clockFormat = new Intl.DateTimeFormat(LOCALE, { hour: '2-digit', minute: '2-digit' })
+const dateFormat = new Intl.DateTimeFormat(LOCALE, {
   weekday: 'long',
   day: 'numeric',
   month: 'long',
 })
-const shortDate = new Intl.DateTimeFormat('pt-BR', { weekday: 'short', day: 'numeric' })
-const weekday = new Intl.DateTimeFormat('pt-BR', { weekday: 'short' })
-const longDay = new Intl.DateTimeFormat('pt-BR', {
+const shortDate = new Intl.DateTimeFormat(LOCALE, { weekday: 'short', day: 'numeric' })
+const weekday = new Intl.DateTimeFormat(LOCALE, { weekday: 'short' })
+const longDay = new Intl.DateTimeFormat(LOCALE, {
   weekday: 'short',
   day: 'numeric',
   month: 'short',
 })
-const agendaDay = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric' })
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
+const agendaDay = new Intl.DateTimeFormat(LOCALE, { weekday: 'long', day: 'numeric' })
 
 /** Hora que anda: atualiza a cada 10 s, o bastante para o relógio de minutos. */
 function useClock(): Date {
@@ -92,8 +92,8 @@ const LiveDot = () => (
 
 const freshness = (data: Dashboard | undefined, now: Date) =>
   data
-    ? `${data.isSample ? 'Dados de exemplo' : 'GitHub'} · atualizado ${formatRelative(new Date(data.fetchedAt), now)}`
-    : 'Conectando…'
+    ? `${data.isSample ? t('Dados de exemplo') : 'GitHub'} · ${t('atualizado {quando}', { quando: formatRelative(new Date(data.fetchedAt), now) })}`
+    : t('Conectando…')
 
 /** Logo, frescor dos dados e relógio. `compact` para coluna e mini. */
 export function TvHeader({ data, compact }: { data: Dashboard | undefined; compact?: boolean }) {
@@ -148,7 +148,7 @@ export function TvClockBlock({ data }: { data: Dashboard | undefined }) {
       </span>
       <span className="flex items-center gap-1.5 text-[11px] text-fg-subtle">
         <LiveDot />
-        <span className="truncate">{data ? 'atualizando' : 'conectando…'}</span>
+        <span className="truncate">{data ? t('atualizando') : t('conectando…')}</span>
       </span>
     </div>
   )
@@ -157,7 +157,7 @@ export function TvClockBlock({ data }: { data: Dashboard | undefined }) {
 interface Kpi {
   label: string
   icon: LucideIcon
-  tone: Tone | 'danger'
+  tone: Tone | 'danger' | 'warning'
   value: number | undefined
   hint: string
   /** Pinta o número quando há algo a resolver. */
@@ -170,34 +170,34 @@ function kpisOf(data: Dashboard | undefined): Kpi[] {
   const stale = authored.filter((pr) => !pr.isDraft && isStale(pr)).length
   return [
     {
-      label: 'Reviews pedidas',
+      label: t('Reviews pedidas'),
       icon: Eye,
       tone: 'accent',
       value: data?.summary.reviewRequested,
-      hint: 'aguardando você',
+      hint: t('aguardando você'),
       alert: true,
     },
     {
-      label: 'PRs abertos',
+      label: t('PRs abertos'),
       icon: GitPullRequest,
       tone: 'success',
       value: data?.summary.openPullRequests,
-      hint: 'seus, sem rascunho',
+      hint: t('seus, sem rascunho'),
     },
     {
-      label: 'CI falhando',
+      label: t('CI falhando'),
       icon: CircleX,
       tone: 'danger',
       value: data && failing,
-      hint: failing ? 'precisa de correção' : 'tudo verde',
+      hint: failing ? t('precisa de correção') : t('tudo verde'),
       alert: true,
     },
     {
-      label: 'Parados',
+      label: t('Parados'),
       icon: Hourglass,
-      tone: 'accent',
+      tone: 'warning',
       value: data && stale,
-      hint: 'sem movimento há +7 dias',
+      hint: t('sem movimento há +7 dias'),
       alert: true,
     },
     {
@@ -205,14 +205,14 @@ function kpisOf(data: Dashboard | undefined): Kpi[] {
       icon: CircleDot,
       tone: 'info',
       value: data?.summary.assignedIssues,
-      hint: 'atribuídas a você',
+      hint: t('atribuídas a você'),
     },
     {
-      label: 'Mergeados',
+      label: t('Mergeados'),
       icon: GitMerge,
       tone: 'merged',
       value: data?.summary.mergedThisWeek,
-      hint: 'nos últimos 7 dias',
+      hint: t('nos últimos 7 dias'),
     },
   ]
 }
@@ -237,7 +237,7 @@ export function KpiTiles({
 }) {
   return (
     <section
-      aria-label="Indicadores"
+      aria-label={t('Indicadores')}
       className={cn(
         'grid gap-3',
         { 2: 'grid-cols-2', 3: 'grid-cols-3', 6: 'grid-cols-6' }[columns],
@@ -257,9 +257,13 @@ export function KpiTiles({
             <span className="truncate text-[13px] font-medium text-fg-muted">{kpi.label}</span>
             <span
               className={cn(
-                'grid shrink-0 place-items-center rounded-md',
+                'grid shrink-0 place-items-center',
                 dense ? 'size-6' : 'size-7',
-                kpi.tone === 'danger' ? 'bg-danger/12 text-danger' : TONE_CHIP[kpi.tone],
+                kpi.tone === 'danger'
+                  ? 'text-danger'
+                  : kpi.tone === 'warning'
+                    ? 'text-warning'
+                    : TONE_CHIP[kpi.tone],
               )}
             >
               <kpi.icon className={dense ? 'size-3.5' : 'size-4'} strokeWidth={2} />
@@ -279,7 +283,9 @@ export function KpiTiles({
                 kpi.alert && kpi.value > 0
                   ? kpi.tone === 'danger'
                     ? 'text-danger'
-                    : 'text-accent'
+                    : kpi.tone === 'warning'
+                      ? 'text-warning'
+                      : 'text-accent'
                   : 'text-fg',
               )}
             >
@@ -338,18 +344,23 @@ export function MergedPanel({
 }) {
   const today = dateKey(new Date())
   return (
-    <Panel icon={GitMerge} iconClass="text-merged" title="Mergeados por dia" className={className}>
+    <Panel
+      icon={GitMerge}
+      iconClass="text-merged"
+      title={t('Mergeados por dia')}
+      className={className}
+    >
       {data ? (
         <ColumnChart
           tone="merged"
           highlightKey={today}
           columns={mergedPerDay(data.pullRequests.merged, today).map(({ day, count }) => ({
             key: day,
-            label: day === today ? 'hoje' : weekday.format(fromKey(day)).replace('.', ''),
-            fullLabel: day === today ? 'hoje' : longDay.format(fromKey(day)),
+            label: day === today ? t('hoje') : weekday.format(fromKey(day)).replace('.', ''),
+            fullLabel: day === today ? t('hoje') : longDay.format(fromKey(day)),
             value: count,
           }))}
-          unit={(n) => plural(n, 'PR mergeado', 'PRs mergeados')}
+          unit={(n) => plural(n, '{n} PR mergeado', '{n} PRs mergeados')}
         />
       ) : (
         <Skeleton className="h-full min-h-16" />
@@ -360,18 +371,20 @@ export function MergedPanel({
 
 export function AgePanel({ data }: { data: Dashboard | undefined }) {
   return (
-    <Panel icon={Timer} iconClass="text-accent" title="Idade dos seus PRs abertos">
+    <Panel icon={Timer} iconClass="text-accent" title={t('Idade dos seus PRs abertos')}>
       {data ? (
         <BarList
           tone="muted"
           rows={ageBuckets(data.pullRequests.authored).map((bucket) => ({
             key: bucket.label,
             label: bucket.label,
-            labelText: bucket.stale ? `${bucket.label} (parados)` : bucket.label,
+            labelText: bucket.stale
+              ? t('{faixa} (parados)', { faixa: bucket.label })
+              : bucket.label,
             value: bucket.count,
             emphasis: bucket.stale && bucket.count > 0,
           }))}
-          unit={(n) => plural(n, 'PR', 'PRs')}
+          unit={(n) => plural(n, '{n} PR', '{n} PRs')}
         />
       ) : (
         <Skeleton className="h-24" />
@@ -406,17 +419,19 @@ export function AttentionPanel({
       <header className="flex h-10 shrink-0 items-center justify-between border-b border-border px-4">
         <h2 className="flex items-center gap-2 text-[14px] font-semibold">
           <CircleAlert className="size-4 text-accent" strokeWidth={2} />
-          Precisa de atenção
+          {t('Precisa de atenção')}
         </h2>
         {data && (
           <span className="font-mono text-[12px] text-fg-subtle">
-            {plural(items.length, 'item', 'itens')}
+            {plural(items.length, '{n} item', '{n} itens')}
           </span>
         )}
       </header>
       {!data ? (
         error ? (
-          <p className="p-4 text-[14px] text-danger">Não deu para carregar: {error.message}</p>
+          <p className="p-4 text-[14px] text-danger">
+            {t('Não deu para carregar: {erro}', { erro: error.message })}
+          </p>
         ) : (
           <div className="space-y-3 p-4">
             {[80, 65, 72].map((width) => (
@@ -427,10 +442,10 @@ export function AttentionPanel({
       ) : items.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-2 p-4 text-center">
           <CircleCheck className="size-9 text-success" strokeWidth={1.5} />
-          <p className="text-[16px] font-semibold">Nada esperando por você</p>
+          <p className="text-[16px] font-semibold">{t('Nada esperando por você')}</p>
           {!dense && (
             <p className="text-[13px] text-fg-muted">
-              Sem reviews pedidas, CI quebrado ou conflitos.
+              {t('Sem reviews pedidas, CI quebrado ou conflitos.')}
             </p>
           )}
         </div>
@@ -440,7 +455,9 @@ export function AttentionPanel({
             <AttentionRow key={`${item.reason}:${item.pullRequest.id}`} item={item} dense={dense} />
           ))}
           {hidden > 0 && (
-            <li className="px-4 py-2 text-[13px] text-fg-subtle">e mais {hidden} no painel</li>
+            <li className="px-4 py-2 text-[13px] text-fg-subtle">
+              {t('e mais {n} no painel', { n: hidden })}
+            </li>
           )}
         </ul>
       )}
@@ -478,7 +495,9 @@ function AttentionRow({ item, dense }: { item: AttentionItem; dense?: boolean })
         {!dense && (
           <span className="block truncate font-mono text-[12px] text-fg-subtle">
             {pr.repository}#{pr.number}
-            {item.reason === 'review_requested' && pr.author && ` · de ${pr.author.login}`}
+            {item.reason === 'review_requested' &&
+              pr.author &&
+              ` · ${t('de {autor}', { autor: pr.author.login })}`}
           </span>
         )}
       </span>
@@ -525,9 +544,9 @@ export function AgendaPanel({
 
   const label = (day: string) =>
     day === today
-      ? 'Hoje'
+      ? t('Hoje')
       : day === addDaysToKey(today, 1)
-        ? 'Amanhã'
+        ? t('Amanhã')
         : agendaDay.format(fromKey(day))
 
   if (dense && events.data && days.length === 0) {
@@ -535,17 +554,19 @@ export function AgendaPanel({
       <CalmStrip
         icon={CalendarDays}
         iconClass="text-info"
-        text="Nada marcado nos próximos 7 dias"
+        text={t('Nada marcado nos próximos 7 dias')}
       />
     )
   }
 
   return (
-    <Panel icon={CalendarDays} iconClass="text-info" title="Próximos 7 dias">
+    <Panel icon={CalendarDays} iconClass="text-info" title={t('Próximos 7 dias')}>
       {!events.data ? (
         <Skeleton className="h-20" />
       ) : days.length === 0 ? (
-        <p className="text-center text-[14px] text-fg-muted">Nada marcado nos próximos 7 dias.</p>
+        <p className="text-center text-[14px] text-fg-muted">
+          {t('Nada marcado nos próximos 7 dias.')}
+        </p>
       ) : (
         // Os dias não encolhem: o que não cabe é cortado no fim do painel, com um esmaecido,
         // em vez de um dia ficar por cima do outro.
@@ -576,17 +597,17 @@ function AgendaItem({ event, deadline }: { event?: CalendarEvent; deadline?: Dea
   return (
     <li className="flex items-start gap-2.5">
       <span className="mt-0.5 w-14 shrink-0 font-mono text-[13px] text-fg-subtle">
-        {deadline ? 'prazo' : event!.allDay ? 'dia todo' : formatTime(event!.startsAt)}
+        {deadline ? t('prazo') : event!.allDay ? t('dia todo') : formatTime(event!.startsAt)}
       </span>
       {deadline ? (
-        <Flag className="mt-1 size-3.5 shrink-0 text-accent" />
+        <Flag className="mt-1 size-3.5 shrink-0 text-warning" />
       ) : event!.kind === 'reminder' ? (
         <Bell className="mt-1 size-3.5 shrink-0 text-accent" />
       ) : (
         <span className="mt-2 size-1.5 shrink-0 rounded-full bg-info" />
       )}
       <span className="min-w-0 truncate text-[14px]">
-        {deadline ? `Prazo: ${deadline.title}` : event!.title}
+        {deadline ? t('Prazo: {titulo}', { titulo: deadline.title }) : event!.title}
       </span>
     </li>
   )
@@ -633,7 +654,7 @@ export function WorkPanel(props: {
       <CalmStrip
         icon={CircleCheck}
         iconClass="text-success"
-        text="Tudo em dia: nada aberto nem pedindo ação"
+        text={t('Tudo em dia: nada aberto nem pedindo ação')}
       />
     )
   }
@@ -660,11 +681,11 @@ function OpenPullRequestsPanel({
       <header className="flex h-10 shrink-0 items-center justify-between gap-3 border-b border-border px-4">
         <h2 className="flex min-w-0 items-center gap-2 text-[14px] font-semibold">
           <GitPullRequest className="size-4 shrink-0 text-success" strokeWidth={2} />
-          <span className="truncate">Seus PRs abertos</span>
+          <span className="truncate">{t('Seus PRs abertos')}</span>
         </h2>
         <span className="flex shrink-0 items-center gap-1.5 text-[12px] text-success">
           <CircleCheck className="size-3.5" strokeWidth={2} />
-          nada pede atenção
+          {t('nada pede atenção')}
         </span>
       </header>
       <ul ref={setList} className="min-h-0 flex-1 divide-y divide-border overflow-hidden">
@@ -683,7 +704,9 @@ function OpenPullRequestsPanel({
           </li>
         ))}
         {hidden > 0 && (
-          <li className="px-4 py-2 text-[13px] text-fg-subtle">e mais {hidden} no painel</li>
+          <li className="px-4 py-2 text-[13px] text-fg-subtle">
+            {t('e mais {n} no painel', { n: hidden })}
+          </li>
         )}
       </ul>
     </section>
@@ -695,39 +718,39 @@ function PullRequestState({ pr }: { pr: PullRequest }) {
   if (isStale(pr)) {
     return (
       <Badge tone="accent" className="h-6 shrink-0 text-[12px]">
-        parado há {daysSince(pr.updatedAt)} d
+        {t('parado há {dias} d', { dias: daysSince(pr.updatedAt) })}
       </Badge>
     )
   }
   if (pr.ciStatus === 'failure') {
     return (
       <Badge tone="danger" className="h-6 shrink-0 text-[12px]">
-        CI falhou
+        {t('CI falhou')}
       </Badge>
     )
   }
   if (pr.ciStatus === 'pending') {
-    return <Badge className="h-6 shrink-0 text-[12px]">CI rodando</Badge>
+    return <Badge className="h-6 shrink-0 text-[12px]">{t('CI rodando')}</Badge>
   }
   if (pr.ciStatus === 'success') {
     return (
       <Badge tone="success" className="h-6 shrink-0 text-[12px]">
-        CI verde
+        {t('CI verde')}
       </Badge>
     )
   }
-  return <Badge className="h-6 shrink-0 text-[12px]">aguardando review</Badge>
+  return <Badge className="h-6 shrink-0 text-[12px]">{t('aguardando review')}</Badge>
 }
 
 /** Onde está o trabalho aberto: PRs e issues por organização. */
 export function OwnersPanel({ data }: { data: Dashboard | undefined }) {
   const owners = data ? loadByOwner(data.pullRequests.authored, data.issues) : []
   return (
-    <Panel icon={Building2} iconClass="text-info" title="Abertos por organização">
+    <Panel icon={Building2} iconClass="text-info" title={t('Abertos por organização')}>
       {!data ? (
         <Skeleton className="h-20" />
       ) : owners.length === 0 ? (
-        <p className="text-center text-[14px] text-fg-muted">Nada aberto.</p>
+        <p className="text-center text-[14px] text-fg-muted">{t('Nada aberto.')}</p>
       ) : (
         <BarList
           tone="info"
@@ -739,10 +762,14 @@ export function OwnersPanel({ data }: { data: Dashboard | undefined }) {
                 <span className="truncate">{load.owner}</span>
               </>
             ),
-            labelText: `${load.owner}: ${plural(load.pullRequests, 'PR', 'PRs')} e ${plural(load.issues, 'issue', 'issues')}`,
+            labelText: t('{dono}: {prs} e {issues}', {
+              dono: load.owner,
+              prs: plural(load.pullRequests, '{n} PR', '{n} PRs'),
+              issues: plural(load.issues, '{n} issue', '{n} issues'),
+            }),
             value: load.pullRequests + load.issues,
           }))}
-          unit={(n) => plural(n, 'item aberto', 'itens abertos')}
+          unit={(n) => plural(n, '{n} item aberto', '{n} itens abertos')}
         />
       )}
     </Panel>

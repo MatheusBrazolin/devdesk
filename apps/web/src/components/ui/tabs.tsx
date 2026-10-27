@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import { cn } from '@/lib/cn'
+import { t } from '@/lib/i18n'
 
 export interface TabItem<T extends string> {
   value: T
@@ -19,7 +20,7 @@ interface TabsProps<T extends string> {
 export function Tabs<T extends string>({ items, value, search, layoutId }: TabsProps<T>) {
   return (
     <nav
-      aria-label="Seções"
+      aria-label={t('Seções')}
       className="-mx-1 flex gap-1 overflow-x-auto border-b border-border px-1"
     >
       {items.map((item) => {

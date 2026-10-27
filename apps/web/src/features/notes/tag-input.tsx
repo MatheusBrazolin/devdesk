@@ -1,4 +1,5 @@
 import { NOTE_LIMITS } from '@devdesk/shared'
+import { t } from '@/lib/i18n'
 import { X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
@@ -58,8 +59,8 @@ export function TagInput({ value, onChange, max = 10 }: TagInputProps) {
           #{tag}
           <button
             type="button"
-            aria-label={`Remover a tag ${tag}`}
-            onClick={() => onChange(value.filter((t) => t !== tag))}
+            aria-label={t('Remover a tag {tag}', { tag })}
+            onClick={() => onChange(value.filter((item) => item !== tag))}
             className="grid size-4 place-items-center rounded text-fg-subtle hover:text-fg"
           >
             <X className="size-3" />
@@ -79,8 +80,8 @@ export function TagInput({ value, onChange, max = 10 }: TagInputProps) {
               onChange(value.slice(0, -1))
             }
           }}
-          placeholder={value.length ? '' : 'Adicionar tag'}
-          aria-label="Adicionar tag"
+          placeholder={value.length ? '' : t('Adicionar tag')}
+          aria-label={t('Adicionar tag')}
           maxLength={NOTE_LIMITS.tag}
           className="h-6 min-w-24 flex-1 bg-transparent font-mono text-[11px] placeholder:text-fg-subtle focus:outline-none"
         />

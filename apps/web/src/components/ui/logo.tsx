@@ -1,27 +1,25 @@
 import { cn } from '@/lib/cn'
 
-/** Marca monocromática: um "D" com um ponto de acento. */
+/** Marca do Quadro: quadrado lima, raio 9, com o "D" no verde do fundo. */
 export function LogoMark({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 32 32" aria-hidden className={cn('size-6', className)}>
-      <rect width="32" height="32" rx="7" className="fill-primary" />
-      <path
-        d="M10 9h5.5a7 7 0 0 1 0 14H10z"
-        fill="none"
-        strokeWidth="2.6"
-        strokeLinejoin="round"
-        className="stroke-primary-fg"
-      />
-      <rect x="20.5" y="9" width="2.6" height="2.6" className="fill-accent" />
-    </svg>
+    <span
+      aria-hidden
+      className={cn(
+        'grid size-[30px] shrink-0 place-items-center rounded-q-logo bg-q-lime text-[16px] leading-none font-bold text-q-on-lime',
+        className,
+      )}
+    >
+      D
+    </span>
   )
 }
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <span className={cn('inline-flex items-center gap-2', className)}>
+    <span className={cn('inline-flex items-center gap-2.5', className)}>
       <LogoMark />
-      <span className="text-sm font-semibold">DevDesk</span>
+      <span className="text-[20px] font-semibold tracking-tight">DevDesk</span>
     </span>
   )
 }

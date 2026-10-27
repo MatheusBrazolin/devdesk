@@ -20,7 +20,7 @@ interface ColumnChartProps {
   tone?: 'ink' | 'merged'
 }
 
-const BAR = { ink: 'bg-chart-ink', merged: 'bg-merged' }
+const BAR = { ink: 'bg-chart-muted', merged: 'bg-merged' }
 
 /**
  * Colunas de uma série só: sem legenda (o título do cartão diz o que é),
@@ -58,7 +58,7 @@ export function ColumnChart({ columns, unit, highlightKey, tone = 'ink' }: Colum
                       className={cn(
                         'w-full max-w-7 origin-bottom 2xl:max-w-12 animate-grow-up rounded-t-[4px] transition-opacity group-hover:opacity-80',
                         BAR[tone],
-                        !highlighted && tone !== 'ink' && 'opacity-55',
+                        !highlighted && tone !== 'ink' && 'opacity-30',
                         highlighted && tone === 'ink' && 'bg-chart-accent',
                       )}
                       style={{

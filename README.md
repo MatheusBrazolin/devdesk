@@ -12,7 +12,7 @@ Painel de trabalho para desenvolvedores: o que pede a sua atenção no GitHub, s
 
 **[Ver a demonstração online →](https://devdesk-tklq.onrender.com)** (modo demonstração, com dados de exemplo; a primeira visita pode levar alguns segundos para o servidor acordar)
 
-> **Versão 1.0.0.** O que entrou em cada versão está no [CHANGELOG](CHANGELOG.md).
+> **Versão 1.1.0.** O que entrou em cada versão está no [CHANGELOG](CHANGELOG.md).
 
 ![Uma volta pelo DevDesk: entrada na demonstração, o painel Hoje, a busca com ⌘K, o modo foco, o Time, o calendário e o modo TV](docs/screenshots/tour.gif)
 
@@ -43,16 +43,16 @@ Painel de trabalho para desenvolvedores: o que pede a sua atenção no GitHub, s
 
 ## O que já funciona
 
-- **Hoje**, um dashboard que cabe numa tela: indicadores (reviews pedidas, PRs abertos, issues, mergeados), o que precisa da sua atenção em ordem de urgência, gráficos de mergeados por dia, idade dos seus PRs e carga por organização, PRs parados, agenda da semana e notas fixadas
+- **Hoje**, no visual Quadro: saudação com os números do dia (reviews pedidas, PRs abertos, issues, mergeados), os PRs num quadro por situação (precisa de você, parados há mais de 7 dias, em andamento, mergeados na semana com o gráfico por dia) e painéis de idade dos PRs, carga por organização, agenda e notas fixadas
 - **Fila de review inteligente**: as reviews pedidas a você saem em ordem de prioridade (há quanto tempo esperam, tamanho e CI), com o tempo de espera, uma estimativa de leitura ("~15 min") e aviso quando passam de 24 horas paradas
 - **Lembrete pronto** para PR seu parado: um clique copia uma mensagem educada, já marcando quem falta revisar, para colar no Slack ou no Teams
 - **Time**: os PRs abertos nos repositórios em que você trabalha, quem espera review há mais tempo, quantos estão sem nenhuma review ou parados, e com quem as reviews estão acumulando
 - **Minhas métricas** das últimas 8 semanas: PRs mergeados, tempo até o merge e até a primeira review, reviews que você fez e tamanho típico dos seus PRs, semana a semana
-- **Modo foco**: o item mais urgente em destaque, a fila logo abaixo, um cronômetro de 25 ou 50 minutos e o próximo compromisso, sem barra lateral. Enquanto o cronômetro corre, os avisos que não são urgentes esperam e chegam num resumo no fim do bloco. Com a agenda conectada, mostra o tempo livre até a próxima reunião e o bloco de foco que cabe nele
+- **Modo foco**: o item mais urgente em destaque, a fila logo abaixo, um cronômetro de 25 ou 50 minutos e o próximo compromisso, sem a navegação. Enquanto o cronômetro corre, os avisos que não são urgentes esperam e chegam num resumo no fim do bloco. Com a agenda conectada, mostra o tempo livre até a próxima reunião e o bloco de foco que cabe nele
 - **Primeiros passos**: um tour curto na primeira visita (e de novo pelo menu do usuário) e modelos de nota para review de PR, deploy, 1:1 e investigação de bug
 - **Modo TV**: o painel para deixar aberto numa TV ou numa janela ao lado do trabalho. Quatro arranjos que seguem o formato da janela (ou que você escolhe): **grade** para tela cheia, **coluna** para uma janela estreita ao lado, **faixa** para uma tira larga em cima ou embaixo e **mini** para um canto. "Abrir em janela" já abre no lugar certo da tela (coluna à direita ou à esquerda, faixa embaixo, canto). Nada rola: cada arranjo é ampliado para caber, e numa TV 4K tudo sai três vezes maior. Tela cheia com <kbd>F</kbd>, tela sempre acesa e cursor escondido quando parado
 - **App instalável (PWA)**: ícone no Dock e janela própria, sem barra do navegador (menu do usuário → "Instalar app", ou o ícone de instalar na barra de endereço). Atalhos no ícone para o modo TV em coluna, o foco e o standup. Abas e janelas abertas ficam sincronizadas e avisam quando sai versão nova
-- **Responsivo** de 320 px a 4K: no celular as páginas empilham; a partir de 1280 px o Hoje cabe numa tela só
+- **Responsivo** de 320 px a 4K: no celular as páginas e as colunas do quadro empilham, sem rolar para o lado
 - **Notificações** (opcionais, ligadas no menu do usuário): review nova pedida a você, CI quebrado, mudanças pedidas, conflito, PR pronto para merge, lembretes e fim do bloco de foco. Cada item avisa uma vez só. Com o servidor configurado, chegam também com o app fechado (Web Push), numa rodada a cada 10 minutos disparada por um agendador grátis do GitHub Actions
 - **Pull requests**: pedidos a você, seus abertos (com CI e aprovações) e os mergeados na semana
 - **Issues** atribuídas a você, agrupadas por repositório e com as labels
@@ -63,11 +63,15 @@ Painel de trabalho para desenvolvedores: o que pede a sua atenção no GitHub, s
 - **Funciona com organizações que bloqueiam apps de terceiros**: quem entra pelo GitHub e vê o painel vazio já encontra, no próprio Hoje, o passo para conectar um token pessoal: o link abre o GitHub com tudo preenchido e colar o token conecta sozinho (também fica em Configurações → Acesso ao GitHub). O token age como a pessoa, então os repositórios da empresa aparecem sem pedir nada à organização. Fica cifrado e só serve para ler
 - **Configurações**: quais avisos receber (review pedida, CI, conflito, reuniões…) e quais repositórios formam o time
 - **Seus dados (LGPD)**: página de [privacidade](https://devdesk-tklq.onrender.com/privacidade) dizendo o que fica guardado e por quanto tempo, "Baixar meus dados" em JSON e "Apagar minha conta", que leva tudo junto
+- **Busca única**: <kbd>/</kbd> acha PRs, issues, notas e eventos
+- **Resumo da semana**: o que você entregou, revisou e abriu, o que está travado e um texto pronto para o 1:1
+- **Português e inglês**: escolha nas Configurações, no login ou pelo <kbd>⌘</kbd> <kbd>K</kbd>
+- **Saúde do token**: de onde vêm os dados, organizações visíveis, cota da API e aviso uma semana antes do token vencer
 - **Atalhos**: <kbd>?</kbd> mostra todos
 - **Só leitura no GitHub:** o DevDesk nunca comenta, aprova, edita nem faz merge; uma trava no código recusa qualquer escrita
 - Login com GitHub (OAuth) e **modo demonstração**, para quem quer conhecer sem conectar uma conta
 - Sessão por cookie `httpOnly`, com o token guardado só como hash; o token do GitHub fica cifrado (AES-256-GCM)
-- Layout com sidebar animada, gaveta no celular, tema claro/escuro/sistema
+- **Visual Quadro** em todas as telas: escuro verde-floresta com acento lima, barra superior com navegação em pílula, painéis e cards arredondados, Bricolage Grotesque e DM Mono ([ADR 0014](docs/adr/0014-visual-quadro.md))
 - Paleta de comandos (<kbd>⌘</kbd> <kbd>K</kbd>) e atalhos no estilo do GitHub (<kbd>g</kbd> <kbd>p</kbd> vai para os pull requests)
 
 ## Roteiro

@@ -4,6 +4,7 @@ import { cn } from '@/lib/cn'
 import { formatRelative } from '@/lib/time'
 import { NoteButton } from '@/features/notes/note-button'
 import { daysSince, isStale } from './list-filters'
+import { t } from '@/lib/i18n'
 
 export function IssueRow({
   issue,
@@ -16,7 +17,7 @@ export function IssueRow({
   return (
     <li className="group relative flex items-start gap-3 px-4 py-3 transition-colors hover:bg-elevated/50">
       <CircleDot
-        aria-label="issue aberta"
+        aria-label={t('issue aberta')}
         className="mt-0.5 size-4 shrink-0 text-success"
         strokeWidth={1.75}
       />
@@ -33,12 +34,12 @@ export function IssueRow({
           <span className="font-mono text-[11px]">
             {showRepository ? `${issue.repository}#${issue.number}` : `#${issue.number}`}
           </span>
-          {issue.author && ` · aberta por ${issue.author.login}`}
+          {issue.author && ` · ${t('aberta por {autor}', { autor: issue.author.login })}`}
           {' · '}
-          <span className={cn(stale && 'text-accent')}>
+          <span className={cn(stale && 'text-warning')}>
             {stale
-              ? `parada há ${daysSince(issue.updatedAt)} dias`
-              : `atualizada ${formatRelative(new Date(issue.updatedAt))}`}
+              ? t('parada há {dias} dias', { dias: daysSince(issue.updatedAt) })
+              : t('atualizada {quando}', { quando: formatRelative(new Date(issue.updatedAt)) })}
           </span>
         </p>
         {issue.labels.length > 0 && (

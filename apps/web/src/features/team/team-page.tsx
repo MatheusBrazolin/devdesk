@@ -13,8 +13,7 @@ import { DashboardError } from '@/features/work/list-states'
 import { formatWaiting, OVERDUE_AFTER_HOURS } from '@/features/work/review-queue'
 import { cn } from '@/lib/cn'
 import { teamQuery } from './queries'
-
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
+import { plural, t } from '@/lib/i18n'
 
 /**
  * Painel do time: os PRs abertos nos repositórios em que você trabalha,
@@ -28,8 +27,10 @@ export function TeamPage() {
     <div className="space-y-5">
       <PageHeader
         section="/time"
-        subtitle="Os PRs abertos nos repositórios em que você trabalha: quem espera e quem está com reviews acumuladas."
-        actions={data?.isSample && <Badge tone="accent">dados de exemplo</Badge>}
+        subtitle={t(
+          'Os PRs abertos nos repositórios em que você trabalha: quem espera e quem está com reviews acumuladas.',
+        )}
+        actions={data?.isSample && <Badge tone="accent">{t('dados de exemplo')}</Badge>}
       />
 
       {team.isError ? (
@@ -42,30 +43,32 @@ export function TeamPage() {
             <MetricTile
               icon={GitPullRequest}
               tone="success"
-              label="PRs abertos"
+              label={t('PRs abertos')}
               value={data ? String(data.totals.open) : null}
-              hint={data ? plural(data.repositories.length, 'repositório', 'repositórios') : ''}
+              hint={
+                data ? plural(data.repositories.length, '{n} repositório', '{n} repositórios') : ''
+              }
             />
             <MetricTile
               icon={MessageSquareDashed}
               tone="accent"
-              label="Sem nenhuma review"
+              label={t('Sem nenhuma review')}
               value={data ? String(data.totals.withoutReview) : null}
-              hint="ninguém olhou ainda"
+              hint={t('ninguém olhou ainda')}
             />
             <MetricTile
               icon={Hourglass}
               tone="info"
-              label="Parados"
+              label={t('Parados')}
               value={data ? String(data.totals.stale) : null}
-              hint="sem movimento há 3 dias"
+              hint={t('sem movimento há 3 dias')}
             />
             <MetricTile
               icon={Clock3}
-              tone="merged"
-              label="Espera típica"
+              tone="info"
+              label={t('Espera típica')}
               value={data ? formatHours(data.totals.medianHoursWaiting) : null}
-              hint="mediana, dos que esperam"
+              hint={t('mediana, dos que esperam')}
             />
           </Reveal>
 
@@ -76,8 +79,8 @@ export function TeamPage() {
             <Card className="overflow-hidden">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Hourglass className="size-3.5 shrink-0 text-accent" strokeWidth={2} />
-                  Esperando review
+                  <Hourglass className="size-3.5 shrink-0 text-warning" strokeWidth={2} />
+                  {t('Esperando review')}
                 </CardTitle>
                 {data && (
                   <span className="font-mono text-[12px] text-fg-subtle">{data.queue.length}</span>
@@ -88,11 +91,11 @@ export function TeamPage() {
               ) : data.queue.length === 0 ? (
                 <EmptyState
                   icon={Users}
-                  title="Ninguém esperando"
-                  description="Todos os PRs abertos do time já têm aprovação."
+                  title={t('Ninguém esperando')}
+                  description={t('Todos os PRs abertos do time já têm aprovação.')}
                 />
               ) : (
-                <ol aria-label="PRs esperando review" className="divide-y divide-border">
+                <ol aria-label={t('PRs esperando review')} className="divide-y divide-border">
                   {data.queue.map((pr) => (
                     <QueueRow key={pr.id} pr={pr} />
                   ))}
@@ -104,7 +107,7 @@ export function TeamPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="size-3.5 shrink-0 text-success" strokeWidth={2} />
-                  Reviews pendentes por pessoa
+                  {t('Reviews pendentes por pessoa')}
                 </CardTitle>
               </CardHeader>
               {!data ? <QueueSkeleton rows={4} /> : <ReviewLoad load={data.reviewLoad} />}
@@ -113,8 +116,10 @@ export function TeamPage() {
 
           {data && data.repositories.length > 0 && (
             <p className="text-[12px] text-fg-subtle">
-              Repositórios: {data.repositories.join(', ')}. Saem dos seus PRs e reviews; rascunhos
-              ficam de fora. Só leitura, como todo o DevDesk.
+              {t(
+                'Repositórios: {repositorios}. Saem dos seus PRs e reviews; rascunhos ficam de fora. Só leitura, como todo o DevDesk.',
+                { repositorios: data.repositories.join(', ') },
+              )}
             </p>
           )}
         </>
@@ -140,19 +145,23 @@ function QueueRow({ pr }: { pr: TeamPullRequest }) {
             <span>
               {pr.repository}#{pr.number}
             </span>
-            <span>de {pr.author.login}</span>
-            <span className={cn(overdue && 'text-accent')}>{formatWaiting(pr.waitingHours)}</span>
-            {pr.lines !== null && <span>{pr.lines} linhas</span>}
+            <span>{t('de {autor}', { autor: pr.author.login })}</span>
+            <span className={cn(overdue && 'text-warning')}>{formatWaiting(pr.waitingHours)}</span>
+            {pr.lines !== null && <span>{t('{n} linhas', { n: pr.lines })}</span>}
           </span>
           {pr.pendingReviewers.length > 0 && (
             <span className="mt-0.5 block truncate text-[12px] text-fg-muted">
-              aguarda {pr.pendingReviewers.join(', ')}
+              {t('aguarda {revisores}', {
+                revisores: pr.pendingReviewers
+                  .map((login) => (login === 'você' ? t('você') : login))
+                  .join(', '),
+              })}
             </span>
           )}
         </span>
         {pr.reviews === 0 && (
-          <Badge tone="accent" className="shrink-0">
-            sem review
+          <Badge tone="warning" className="shrink-0">
+            {t('sem review')}
           </Badge>
         )}
       </a>
@@ -163,11 +172,13 @@ function QueueRow({ pr }: { pr: TeamPullRequest }) {
 /** Barras horizontais de uma série só: o tamanho é a quantidade, o número fica escrito ao lado. */
 function ReviewLoad({ load }: { load: Team['reviewLoad'] }) {
   if (load.length === 0) {
-    return <p className="px-4 py-6 text-[13px] text-fg-muted">Nenhuma review pendente no time.</p>
+    return (
+      <p className="px-4 py-6 text-[13px] text-fg-muted">{t('Nenhuma review pendente no time.')}</p>
+    )
   }
   const max = Math.max(...load.map((item) => item.pending))
   return (
-    <ul aria-label="Reviews pendentes por pessoa" className="space-y-2.5 px-4 py-3">
+    <ul aria-label={t('Reviews pendentes por pessoa')} className="space-y-2.5 px-4 py-3">
       {load.map((item) => (
         <li key={item.reviewer} className="grid grid-cols-[7rem_1fr_1.5rem] items-center gap-2">
           <span
@@ -176,7 +187,7 @@ function ReviewLoad({ load }: { load: Team['reviewLoad'] }) {
               item.reviewer === 'você' ? 'font-semibold text-fg' : 'text-fg-muted',
             )}
           >
-            {item.reviewer}
+            {item.reviewer === 'você' ? t('você') : item.reviewer}
           </span>
           <span aria-hidden className="h-2 overflow-hidden rounded-full bg-elevated">
             <span
@@ -186,7 +197,7 @@ function ReviewLoad({ load }: { load: Team['reviewLoad'] }) {
           </span>
           <span className="text-right font-mono text-[12px] text-fg tabular-nums">
             {item.pending}
-            <span className="sr-only"> {item.pending === 1 ? 'review' : 'reviews'}</span>
+            <span className="sr-only"> {item.pending === 1 ? t('review') : t('reviews')}</span>
           </span>
         </li>
       ))}
@@ -196,7 +207,7 @@ function ReviewLoad({ load }: { load: Team['reviewLoad'] }) {
 
 function QueueSkeleton({ rows = 5 }: { rows?: number }) {
   return (
-    <div aria-busy="true" aria-label="Carregando" className="space-y-3 px-4 py-3">
+    <div aria-busy="true" aria-label={t('Carregando')} className="space-y-3 px-4 py-3">
       {Array.from({ length: rows }, (_, index) => (
         <Skeleton key={index} className="h-8" />
       ))}

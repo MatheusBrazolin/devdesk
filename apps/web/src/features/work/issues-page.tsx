@@ -12,6 +12,7 @@ import { DashboardError, ListSkeleton } from './list-states'
 import { ListToolbar, type ToolbarValue } from './list-toolbar'
 import { dashboardQuery } from './queries'
 import { SyncStatus } from './sync-status'
+import { t } from '@/lib/i18n'
 
 const route = getRouteApi('/app/issues')
 
@@ -30,7 +31,8 @@ export function IssuesPage() {
       <PageHeader
         section="/issues"
         subtitle={
-          dashboard.data && `${dashboard.data.summary.assignedIssues} abertas e atribuídas a você`
+          dashboard.data &&
+          t('{n} abertas e atribuídas a você', { n: dashboard.data.summary.assignedIssues })
         }
         actions={<SyncStatus />}
       />
@@ -57,8 +59,10 @@ export function IssuesPage() {
         <Card>
           <EmptyState
             icon={CircleDot}
-            title="Nenhuma issue atribuída"
-            description="Issues abertas atribuídas a você aparecem aqui, agrupadas por repositório."
+            title={t('Nenhuma issue atribuída')}
+            description={t(
+              'Issues abertas atribuídas a você aparecem aqui, agrupadas por repositório.',
+            )}
             className="py-10"
           />
         </Card>
@@ -66,8 +70,8 @@ export function IssuesPage() {
         <Card>
           <EmptyState
             icon={SearchX}
-            title="Nada com esse filtro"
-            description="Tente outra busca ou mostre todas as organizações."
+            title={t('Nada com esse filtro')}
+            description={t('Tente outra busca ou mostre todas as organizações.')}
             className="py-10"
           />
         </Card>

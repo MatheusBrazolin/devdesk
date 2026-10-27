@@ -1,4 +1,5 @@
 import type { PullRequest } from '@devdesk/shared'
+import { t } from '@/lib/i18n'
 import { daysSince } from './list-filters'
 
 /**
@@ -14,13 +15,18 @@ export function reminderMessage(
   now: Date = new Date(),
 ): string {
   const days = daysSince(pr.updatedAt, now)
-  const who = pr.pendingReviewers.length
-    ? pr.pendingReviewers.map((name) => `@${name}`).join(', ')
-    : 'pessoal'
-  const since = days === 1 ? 'há 1 dia' : `há ${days} dias`
-  return [
-    `Oi, ${who}! Quando der, consegue dar uma olhada no ${pr.repository}#${pr.number}?`,
-    `"${pr.title}" está parado ${since}, esperando review.`,
-    pr.url,
-  ].join('\n')
+  const reference = `${pr.repository}#${pr.number}`
+  const greeting = pr.pendingReviewers.length
+    ? t('Oi, {quem}! Quando der, consegue dar uma olhada no {pr}?', {
+        quem: pr.pendingReviewers.map((name) => `@${name}`).join(', '),
+        pr: reference,
+      })
+    : t('Oi, pessoal! Quando der, consegue dar uma olhada no {pr}?', { pr: reference })
+  const waiting = t(
+    days === 1
+      ? '"{titulo}" está parado há {n} dia, esperando review.'
+      : '"{titulo}" está parado há {n} dias, esperando review.',
+    { titulo: pr.title, n: days },
+  )
+  return [greeting, waiting, pr.url].join('\n')
 }

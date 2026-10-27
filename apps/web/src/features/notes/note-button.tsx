@@ -4,6 +4,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { Loader2, NotebookPen } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/cn'
+import { plural, t } from '@/lib/i18n'
 import { notesQuery, useCreateNote } from './queries'
 
 /**
@@ -20,8 +21,11 @@ export function NoteButton({ item }: { item: NoteLink }) {
     notes.data?.filter((note) => note.links.some((link) => link.url === item.url)) ?? []
   const label =
     linked.length > 0
-      ? `${linked.length} ${linked.length === 1 ? 'nota' : 'notas'} sobre ${item.repository}#${item.number}`
-      : `Anotar sobre ${item.repository}#${item.number}`
+      ? t('{notas} sobre {item}', {
+          notas: plural(linked.length, '{n} nota', '{n} notas'),
+          item: `${item.repository}#${item.number}`,
+        })
+      : t('Anotar sobre {item}', { item: `${item.repository}#${item.number}` })
 
   const open = () => {
     const [latest] = linked
@@ -31,7 +35,7 @@ export function NoteButton({ item }: { item: NoteLink }) {
       {
         onSuccess: (note) => void navigate({ to: '/notas', search: { nota: note.id } }),
         onError: (error) =>
-          toast.error('Não foi possível criar a nota', { description: error.message }),
+          toast.error(t('Não foi possível criar a nota'), { description: error.message }),
       },
     )
   }

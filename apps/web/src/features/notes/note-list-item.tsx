@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { Link2, Pin } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { formatRelative } from '@/lib/time'
+import { t } from '@/lib/i18n'
 import { excerpt } from './excerpt'
 
 export function NoteListItem({ note, active }: { note: Note; active: boolean }) {
@@ -21,7 +22,7 @@ export function NoteListItem({ note, active }: { note: Note; active: boolean }) 
         )}
       >
         <span className="flex items-center gap-1.5">
-          {note.pinned && <Pin aria-label="fixada" className="size-3 shrink-0 text-accent" />}
+          {note.pinned && <Pin aria-label={t('fixada')} className="size-3 shrink-0 text-accent" />}
           <span className="truncate text-[13px] font-medium">{note.displayTitle}</span>
         </span>
         {preview && (
@@ -30,7 +31,7 @@ export function NoteListItem({ note, active }: { note: Note; active: boolean }) 
         <span className="mt-1 flex items-center gap-2 text-[11px] text-fg-subtle">
           {formatRelative(new Date(note.updatedAt))}
           {note.links.length > 0 && (
-            <span className="flex items-center gap-0.5" title="Vinculada a PR ou issue">
+            <span className="flex items-center gap-0.5" title={t('Vinculada a PR ou issue')}>
               <Link2 className="size-3" />
               {note.links.length}
             </span>

@@ -34,6 +34,7 @@ const lazy = {
   notes: lazyRouteComponent(() => import('@/features/notes/notes-page'), 'NotesPage'),
   calendar: lazyRouteComponent(() => import('@/features/calendar/calendar-page'), 'CalendarPage'),
   standup: lazyRouteComponent(() => import('@/features/standup/standup-page'), 'StandupPage'),
+  week: lazyRouteComponent(() => import('@/features/week/week-page'), 'WeekPage'),
   metrics: lazyRouteComponent(() => import('@/features/metrics/metrics-page'), 'MetricsPage'),
   team: lazyRouteComponent(() => import('@/features/team/team-page'), 'TeamPage'),
   settings: lazyRouteComponent(() => import('@/features/settings/settings-page'), 'SettingsPage'),
@@ -164,6 +165,21 @@ const standupRoute = createRoute({
   component: lazy.standup,
 })
 
+const weekRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/semana',
+  validateSearch: (search: Record<string, unknown>): { semana?: string } => {
+    const semana = text(search.semana)
+    return {
+      semana:
+        semana && /^\d{4}-\d{2}-\d{2}$/.test(semana) && dateKey(fromKey(semana)) === semana
+          ? semana
+          : undefined,
+    }
+  },
+  component: lazy.week,
+})
+
 const issuesRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/issues',
@@ -189,6 +205,7 @@ const routeTree = rootRoute.addChildren([
     notesRoute,
     calendarRoute,
     standupRoute,
+    weekRoute,
   ]),
 ])
 

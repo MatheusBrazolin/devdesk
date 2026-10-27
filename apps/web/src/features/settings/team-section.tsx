@@ -5,6 +5,7 @@ import { type FormEvent, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { dashboardQuery } from '@/features/work/queries'
+import { t } from '@/lib/i18n'
 import { useSaveSettings } from './queries'
 
 /**
@@ -28,7 +29,7 @@ export function TeamSection({ settings }: { settings: Settings }) {
   const saveRepositories = (repositories: string[] | null) =>
     save.mutate(
       { ...settings, teamRepositories: repositories },
-      { onError: (e) => toast.error('Não salvou', { description: e.message }) },
+      { onError: (e) => toast.error(t('Não salvou'), { description: e.message }) },
     )
 
   const toggle = (repository: string, on: boolean) => {
@@ -39,9 +40,9 @@ export function TeamSection({ settings }: { settings: Settings }) {
   const add = (event: FormEvent) => {
     event.preventDefault()
     const parsed = repositoryNameSchema.safeParse(draft)
-    if (!parsed.success) return setError('Use o formato dono/repositorio.')
+    if (!parsed.success) return setError(t('Use o formato dono/repositorio.'))
     if ((chosen?.length ?? 0) >= MAX_TEAM_REPOSITORIES) {
-      return setError(`Dá para escolher até ${MAX_TEAM_REPOSITORIES} repositórios.`)
+      return setError(t('Dá para escolher até {max} repositórios.', { max: MAX_TEAM_REPOSITORIES }))
     }
     setError(null)
     setDraft('')
@@ -50,10 +51,14 @@ export function TeamSection({ settings }: { settings: Settings }) {
 
   return (
     <div className="space-y-3 px-4 py-3">
-      <div role="radiogroup" aria-label="Como escolher os repositórios" className="flex gap-1.5">
+      <div
+        role="radiogroup"
+        aria-label={t('Como escolher os repositórios')}
+        className="flex gap-1.5"
+      >
         {[
-          { auto: true, label: 'Automático' },
-          { auto: false, label: 'Escolher' },
+          { auto: true, label: t('Automático') },
+          { auto: false, label: t('Escolher') },
         ].map((option) => {
           const active = option.auto === (chosen === null)
           return (
@@ -80,12 +85,13 @@ export function TeamSection({ settings }: { settings: Settings }) {
 
       {chosen === null ? (
         <p className="text-[13px] text-fg-muted">
-          O time sai dos repositórios em que você abre, revisa ou mergeia PRs, do mais frequente ao
-          menos.
+          {t(
+            'O time sai dos repositórios em que você abre, revisa ou mergeia PRs, do mais frequente ao menos.',
+          )}
         </p>
       ) : (
         <>
-          <ul aria-label="Repositórios" className="grid gap-0.5 sm:grid-cols-2">
+          <ul aria-label={t('Repositórios')} className="grid gap-0.5 sm:grid-cols-2">
             {candidates.map((repository) => (
               <li key={repository}>
                 <label className="flex cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5 font-mono text-[12px] hover:bg-elevated/60">
@@ -106,19 +112,19 @@ export function TeamSection({ settings }: { settings: Settings }) {
           </ul>
           <form onSubmit={add} className="flex gap-2">
             <label className="sr-only" htmlFor="novo-repositorio">
-              Adicionar repositório
+              {t('Adicionar repositório')}
             </label>
             <input
               id="novo-repositorio"
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
-              placeholder="dono/repositorio"
+              placeholder={t('dono/repositorio')}
               spellCheck={false}
               autoComplete="off"
               className="h-8 min-w-0 flex-1 rounded-md border border-border bg-bg px-2.5 font-mono text-[12px] focus:border-border-strong focus:outline-none"
             />
             <Button type="submit" variant="outline" disabled={!draft.trim() || save.isPending}>
-              <Plus /> Adicionar
+              <Plus /> {t('Adicionar')}
             </Button>
           </form>
           {error && (
@@ -127,8 +133,10 @@ export function TeamSection({ settings }: { settings: Settings }) {
             </p>
           )}
           <p className="text-[12px] text-fg-subtle">
-            {chosen.length} de {MAX_TEAM_REPOSITORIES}. Só leitura: o DevDesk só olha os PRs abertos
-            desses repositórios.
+            {t(
+              '{count} de {max}. Só leitura: o DevDesk só olha os PRs abertos desses repositórios.',
+              { count: chosen.length, max: MAX_TEAM_REPOSITORIES },
+            )}
           </p>
         </>
       )}

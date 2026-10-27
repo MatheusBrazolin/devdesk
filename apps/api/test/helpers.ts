@@ -1,5 +1,9 @@
 import type { ActivitySource } from '../src/application/ports/activity-source.js'
 import type { GitHubOAuth } from '../src/application/ports/github-oauth.js'
+import type {
+  GitHubAccount,
+  GitHubAccountSnapshot,
+} from '../src/application/ports/github-account.js'
 import type { GitHubProfiles } from '../src/application/ports/github-profiles.js'
 import type {
   GitHubTokenInspector,
@@ -139,6 +143,22 @@ export class FakeGitHubProfiles implements GitHubProfiles, GitHubTokenInspector 
   }
 }
 
+/** Conta falsa do GitHub: só tokens conhecidos passam, e conta quantas vezes foi lida. */
+export class FakeGitHubAccount implements GitHubAccount {
+  calls: string[] = []
+  expiresAt: Date | null = null
+
+  async snapshot(accessToken: string): Promise<GitHubAccountSnapshot> {
+    this.calls.push(accessToken)
+    if (accessToken.includes('revogado')) throw githubReconnect('O GitHub recusou o token.')
+    return {
+      expiresAt: this.expiresAt,
+      organizations: [{ login: 'acme', avatarUrl: null }],
+      rateLimit: { remaining: 4990, limit: 5000, resetAt: new Date('2026-10-23T13:00:00Z') },
+    }
+  }
+}
+
 /** Atividade falsa do GitHub: registra os períodos pedidos. */
 export class FakeActivitySource implements ActivitySource {
   readonly calls: { login: string; from: Date; to: Date }[] = []
@@ -226,6 +246,7 @@ export function createTestContext(
   const oauth = new FakeGitHubOAuth(clock, options.tokenExpiresInMs ?? null)
   const githubTokens = new GitHubTokenProvider(users, oauth, cipher, clock)
   const profiles = new FakeGitHubProfiles()
+  const githubAccount = new FakeGitHubAccount()
   const notes = new InMemoryNoteRepository()
   const events = new InMemoryEventRepository()
   const snapshotCache = new InMemorySnapshotCache()
@@ -332,11 +353,13 @@ export function createTestContext(
       settings,
       account: new Account(users, notes, events, externalCalendars, settings, clock),
       getStandup,
-      personalGitHubToken: new PersonalGitHubToken(profiles, githubTokens, [
-        getMetrics,
-        getTeam,
-        getStandup,
-      ]),
+      personalGitHubToken: new PersonalGitHubToken(
+        profiles,
+        githubAccount,
+        githubTokens,
+        [getMetrics, getTeam, getStandup],
+        clock,
+      ),
     },
   }
 
@@ -352,6 +375,7 @@ export function createTestContext(
     oauth,
     githubTokens,
     profiles,
+    githubAccount,
     notes,
     events,
     snapshotCache,

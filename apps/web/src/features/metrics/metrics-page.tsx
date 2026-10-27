@@ -12,8 +12,7 @@ import { DashboardError } from '@/features/work/list-states'
 import { cn } from '@/lib/cn'
 import { formatHours, weekLabel } from './format'
 import { metricsQuery } from './queries'
-
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
+import { plural, t } from '@/lib/i18n'
 
 /**
  * Minhas métricas: as últimas oito semanas de entrega e de review, para
@@ -30,8 +29,10 @@ export function MetricsPage() {
       <div className="space-y-5">
         <PageHeader
           section="/metricas"
-          subtitle="Suas últimas 8 semanas no GitHub: entrega, espera e reviews feitas para o time."
-          actions={data?.isSample && <Badge tone="accent">dados de exemplo</Badge>}
+          subtitle={t(
+            'Suas últimas 8 semanas no GitHub: entrega, espera e reviews feitas para o time.',
+          )}
+          actions={data?.isSample && <Badge tone="accent">{t('dados de exemplo')}</Badge>}
         />
 
         {metrics.isError ? (
@@ -44,35 +45,35 @@ export function MetricsPage() {
               <MetricTile
                 icon={GitMerge}
                 tone="merged"
-                label="PRs mergeados"
+                label={t('PRs mergeados')}
                 value={data ? String(data.totals.merged) : null}
-                hint="nas 8 semanas"
+                hint={t('nas 8 semanas')}
               />
               <MetricTile
                 icon={Clock3}
                 tone="accent"
-                label="Até o merge"
+                label={t('Até o merge')}
                 value={data ? formatHours(data.totals.medianHoursToMerge) : null}
-                hint="mediana, da abertura"
+                hint={t('mediana, da abertura')}
               />
               <MetricTile
                 icon={MessageSquare}
                 tone="info"
-                label="Até a 1ª review"
+                label={t('Até a 1ª review')}
                 value={data ? formatHours(data.totals.medianHoursToFirstReview) : null}
-                hint="mediana, de outra pessoa"
+                hint={t('mediana, de outra pessoa')}
               />
               <MetricTile
                 icon={Eye}
                 tone="success"
-                label="Reviews feitas"
+                label={t('Reviews feitas')}
                 value={data ? String(data.totals.reviews) : null}
-                hint="para o time"
+                hint={t('para o time')}
               />
               <MetricTile
                 icon={FileDiff}
-                tone="merged"
-                label="Tamanho típico"
+                tone="info"
+                label={t('Tamanho típico')}
                 value={
                   data
                     ? data.totals.medianLines === null
@@ -80,12 +81,12 @@ export function MetricsPage() {
                       : `${Math.round(data.totals.medianLines)}`
                     : null
                 }
-                hint="linhas por PR (mediana)"
+                hint={t('linhas por PR (mediana)')}
               />
             </Reveal>
 
             <Reveal delay={0.08} className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-              <ChartCard title="Mergeados por semana" icon={GitMerge} iconClass="text-merged">
+              <ChartCard title={t('Mergeados por semana')} icon={GitMerge} iconClass="text-merged">
                 {data ? (
                   <ColumnChart
                     tone="merged"
@@ -93,20 +94,21 @@ export function MetricsPage() {
                     columns={weeks.map((week) => ({
                       key: week.weekStart,
                       label: weekLabel(week.weekStart),
-                      fullLabel: `semana de ${weekLabel(week.weekStart)}`,
+                      fullLabel: t('semana de {semana}', { semana: weekLabel(week.weekStart) }),
                       value: week.merged,
                     }))}
-                    unit={(n) => plural(n, 'PR mergeado', 'PRs mergeados')}
+                    unit={(n) => plural(n, '{n} PR mergeado', '{n} PRs mergeados')}
                   />
                 ) : (
                   <Skeleton className="h-40" />
                 )}
               </ChartCard>
-              <ChartCard title="Reviews feitas por semana" icon={Eye} iconClass="text-success">
+              <ChartCard title={t('Reviews feitas por semana')} icon={Eye} iconClass="text-success">
                 {data && data.totals.reviews === 0 ? (
                   <p className="grid h-full place-items-center text-center text-[13px] text-fg-muted">
-                    Nenhuma review enviada nestas 8 semanas. Quando você revisar PRs do time, elas
-                    aparecem aqui.
+                    {t(
+                      'Nenhuma review enviada nestas 8 semanas. Quando você revisar PRs do time, elas aparecem aqui.',
+                    )}
                   </p>
                 ) : data ? (
                   <ColumnChart
@@ -114,27 +116,33 @@ export function MetricsPage() {
                     columns={weeks.map((week) => ({
                       key: week.weekStart,
                       label: weekLabel(week.weekStart),
-                      fullLabel: `semana de ${weekLabel(week.weekStart)}`,
+                      fullLabel: t('semana de {semana}', { semana: weekLabel(week.weekStart) }),
                       value: week.reviews,
                     }))}
-                    unit={(n) => plural(n, 'review feita', 'reviews feitas')}
+                    unit={(n) => plural(n, '{n} review feita', '{n} reviews feitas')}
                   />
                 ) : (
                   <Skeleton className="h-40" />
                 )}
               </ChartCard>
-              <ChartCard title="Tempo até o merge (horas)" icon={Clock3} iconClass="text-accent">
+              <ChartCard
+                title={t('Tempo até o merge (horas)')}
+                icon={Clock3}
+                iconClass="text-accent"
+              >
                 {data ? (
                   <ColumnChart
                     highlightKey={current}
                     columns={weeks.map((week) => ({
                       key: week.weekStart,
                       label: weekLabel(week.weekStart),
-                      fullLabel: `semana de ${weekLabel(week.weekStart)}`,
+                      fullLabel: t('semana de {semana}', { semana: weekLabel(week.weekStart) }),
                       value: Math.round(week.medianHoursToMerge ?? 0),
                     }))}
                     // O número da coluna (horas) aparece no nome: quem usa voz fala o que vê.
-                    unit={(n) => `${n} h de mediana até o merge (${formatHours(n)})`}
+                    unit={(n) =>
+                      t('{n} h de mediana até o merge ({tempo})', { n, tempo: formatHours(n) })
+                    }
                   />
                 ) : (
                   <Skeleton className="h-40" />
@@ -144,9 +152,9 @@ export function MetricsPage() {
 
             <Reveal delay={0.12}>
               <p className="text-[13px] leading-relaxed text-fg-muted">
-                Os números vêm dos PRs que você mergeou e das reviews que você enviou. A semana
-                começa na segunda-feira; a atual ainda está em andamento. Mediana é o valor do meio:
-                um PR que demorou muito não distorce o resultado.
+                {t(
+                  'Os números vêm dos PRs que você mergeou e das reviews que você enviou. A semana começa na segunda-feira; a atual ainda está em andamento. Mediana é o valor do meio: um PR que demorou muito não distorce o resultado.',
+                )}
               </p>
             </Reveal>
           </>

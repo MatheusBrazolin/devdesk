@@ -1,6 +1,7 @@
 import { CircleDot, GitMerge, GitPullRequest } from 'lucide-react'
 import { motion } from 'motion/react'
 import { cn } from '@/lib/cn'
+import { plural, t } from '@/lib/i18n'
 
 /**
  * Ilustração estática do painel "Hoje", só para a tela de login.
@@ -12,46 +13,48 @@ const ROWS = [
     tone: 'text-success',
     repo: 'checkout-api',
     number: 482,
-    title: 'Retentativa com backoff no webhook de pagamento',
-    meta: 'review pedida a você',
-    status: 'aguardando você',
+    title: t('Retentativa com backoff no webhook de pagamento'),
+    meta: t('review pedida a você'),
+    status: t('aguardando você'),
   },
   {
     icon: GitPullRequest,
     tone: 'text-success',
     repo: 'web-app',
     number: 1290,
-    title: 'Migra a tabela de pedidos para paginação por cursor',
-    meta: 'seu PR · 2 aprovações',
-    status: 'CI passou',
+    title: t('Migra a tabela de pedidos para paginação por cursor'),
+    meta: t('seu PR · 2 aprovações'),
+    status: t('CI passou'),
   },
   {
     icon: CircleDot,
     tone: 'text-accent',
     repo: 'web-app',
     number: 1301,
-    title: 'Filtro de data some ao voltar da página de detalhes',
-    meta: 'atribuída a você',
-    status: 'bug',
+    title: t('Filtro de data some ao voltar da página de detalhes'),
+    meta: t('atribuída a você'),
+    status: t('bug'),
   },
   {
     icon: GitMerge,
     tone: 'text-fg-subtle',
     repo: 'infra',
     number: 77,
-    title: 'Atualiza o Postgres do staging para a 17',
-    meta: 'mergeado ontem',
-    status: 'mergeado',
+    title: t('Atualiza o Postgres do staging para a 17'),
+    meta: t('mergeado ontem'),
+    status: t('mergeado'),
   },
 ]
 
 export function ProductPreview() {
   return (
     <figure className="w-full max-w-xl">
-      <div className="overflow-hidden rounded-lg border border-border-strong bg-surface shadow-pop">
-        <div className="flex h-10 items-center justify-between border-b border-border px-4">
-          <span className="text-[13px] font-semibold">Precisa da sua atenção</span>
-          <span className="font-mono text-[11px] text-fg-subtle">4 itens</span>
+      <div className="overflow-hidden rounded-q-panel border border-border bg-surface">
+        <div className="flex h-12 items-center justify-between border-b border-border px-4">
+          <span className="text-[15px] font-semibold">{t('Precisa da sua atenção')}</span>
+          <span className="font-mono text-[11px] text-fg-subtle">
+            {plural(ROWS.length, '{n} item', '{n} itens')}
+          </span>
         </div>
         <ul className="divide-y divide-border">
           {ROWS.map((row, index) => (
@@ -69,7 +72,7 @@ export function ProductPreview() {
                   {row.repo}#{row.number} · {row.meta}
                 </p>
               </div>
-              <span className="shrink-0 rounded border border-border px-1.5 py-0.5 font-mono text-[11px] text-fg-muted">
+              <span className="inline-flex h-6 shrink-0 items-center rounded-full border border-border-strong px-2.5 text-[12px] font-semibold text-fg-muted">
                 {row.status}
               </span>
             </motion.li>
@@ -77,7 +80,7 @@ export function ProductPreview() {
         </ul>
       </div>
       <figcaption className="mt-3 text-[12px] text-fg-subtle">
-        Exemplo ilustrativo do painel. Com a sua conta, a lista vem dos seus repositórios.
+        {t('Exemplo ilustrativo do painel. Com a sua conta, a lista vem dos seus repositórios.')}
       </figcaption>
     </figure>
   )

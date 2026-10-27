@@ -1,4 +1,5 @@
 import type { CalendarEvent } from '@devdesk/shared'
+import { LOCALE } from '@/lib/i18n'
 
 /**
  * Datas de calendário como "AAAA-MM-DD", sempre no fuso de quem está olhando.
@@ -82,7 +83,7 @@ export function occursOn(event: CalendarEvent, day: string): boolean {
   return first <= day && day <= last
 }
 
-const timeFormat = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' })
+const timeFormat = new Intl.DateTimeFormat(LOCALE, { hour: '2-digit', minute: '2-digit' })
 export const formatTime = (iso: string) => timeFormat.format(new Date(iso))
 
 /** Dia inteiro antes, depois pelo horário, depois pelo título. */

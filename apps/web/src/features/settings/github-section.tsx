@@ -4,9 +4,12 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { meQuery } from '@/features/auth/queries'
 import { githubTokenQuery, useSaveGitHubToken } from './queries'
+import { HealthDetails } from './health-details'
+import { TokenAlertNotice } from './token-alert'
 import { TokenConnectForm, TokenSteps } from './token-connect'
+import { LOCALE, t } from '@/lib/i18n'
 
-const savedFormat = new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long' })
+const savedFormat = new Intl.DateTimeFormat(LOCALE, { day: 'numeric', month: 'long' })
 
 /**
  * De onde vêm os dados do GitHub. O login pelo OAuth não enxerga as
@@ -21,8 +24,9 @@ export function GitHubSection() {
   if (user.isDemo) {
     return (
       <p className="px-4 py-3 text-[13px] text-fg-muted">
-        No modo demonstração os dados são de exemplo. Entrando com o GitHub, aqui você liga um token
-        pessoal para ver os repositórios da sua empresa.
+        {t(
+          'No modo demonstração os dados são de exemplo. Entrando com o GitHub, aqui você liga um token pessoal para ver os repositórios da sua empresa.',
+        )}
       </p>
     )
   }
@@ -30,44 +34,53 @@ export function GitHubSection() {
   const disconnect = () =>
     save.mutate(null, {
       onSuccess: () =>
-        toast.success('Token removido', { description: 'Voltou para o login do GitHub.' }),
-      onError: (e) => toast.error('Não removeu', { description: e.message }),
+        toast.success(t('Token removido'), { description: t('Voltou para o login do GitHub.') }),
+      onError: (e) => toast.error(t('Não removeu'), { description: e.message }),
     })
 
   if (status.data?.connected) {
     return (
-      <div className="flex flex-wrap items-center gap-3 px-4 py-3">
-        <p className="flex min-w-0 flex-1 items-start gap-2 text-[13px] text-fg-muted">
-          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
-          <span>
-            Os dados vêm do seu token pessoal
-            {status.data.savedAt && (
-              <>, conectado em {savedFormat.format(new Date(status.data.savedAt))}</>
-            )}
-            . Ele fica cifrado e nunca volta para o navegador.
-          </span>
-        </p>
-        <Button variant="outline" disabled={save.isPending} onClick={disconnect}>
-          {save.isPending && <Loader2 className="animate-spin" />}
-          Remover token
-        </Button>
-      </div>
+      <>
+        <TokenAlertNotice id="token-pessoal-renovar" className="mx-4 mt-3" />
+        <div className="flex flex-wrap items-center gap-3 px-4 py-3">
+          <p className="flex min-w-0 flex-1 items-start gap-2 text-[13px] text-fg-muted">
+            <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
+            <span>
+              {t('Os dados vêm do seu token pessoal')}
+              {status.data.savedAt &&
+                t(', conectado em {date}', {
+                  date: savedFormat.format(new Date(status.data.savedAt)),
+                })}
+              {t('. Ele fica cifrado e nunca volta para o navegador.')}
+            </span>
+          </p>
+          <Button variant="outline" disabled={save.isPending} onClick={disconnect}>
+            {save.isPending && <Loader2 className="animate-spin" />}
+            {t('Remover token')}
+          </Button>
+        </div>
+        <HealthDetails />
+      </>
     )
   }
 
   return (
-    <div className="space-y-3 px-4 py-3">
-      <p className="text-[13px] leading-relaxed text-fg-muted">
-        Não aparecem os PRs e repositórios da sua empresa? Muitas organizações bloqueiam apps de
-        terceiros, e o login pelo GitHub não enxerga o que é delas. Um token pessoal age como você e
-        mostra o mesmo que o github.com, sem pedir nada à organização.
-      </p>
-      <TokenSteps />
-      <TokenConnectForm id="token-pessoal" />
-      <p className="text-[12px] text-fg-subtle">
-        O token fica cifrado (AES-256-GCM) e só é usado para ler. O DevDesk nunca comenta, aprova
-        nem faz merge, e você pode remover ou revogar o token a qualquer hora.
-      </p>
-    </div>
+    <>
+      <div className="space-y-3 px-4 py-3">
+        <p className="text-[13px] leading-relaxed text-fg-muted">
+          {t(
+            'Não aparecem os PRs e repositórios da sua empresa? Muitas organizações bloqueiam apps de terceiros, e o login pelo GitHub não enxerga o que é delas. Um token pessoal age como você e mostra o mesmo que o github.com, sem pedir nada à organização.',
+          )}
+        </p>
+        <TokenSteps />
+        <TokenConnectForm id="token-pessoal" />
+        <p className="text-[12px] text-fg-subtle">
+          {t(
+            'O token fica cifrado (AES-256-GCM) e só é usado para ler. O DevDesk nunca comenta, aprova nem faz merge, e você pode remover ou revogar o token a qualquer hora.',
+          )}
+        </p>
+      </div>
+      <HealthDetails />
+    </>
   )
 }

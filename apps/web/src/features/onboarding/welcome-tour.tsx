@@ -6,6 +6,7 @@ import { type ReactNode, useState, useSyncExternalStore } from 'react'
 import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/kbd'
 import { cn } from '@/lib/cn'
+import { t } from '@/lib/i18n'
 import { requestCount, subscribeWelcome } from './welcome-store'
 
 /**
@@ -26,48 +27,36 @@ const STEPS: Step[] = [
   {
     icon: Inbox,
     iconClass: 'bg-accent/12 text-accent',
-    title: 'Comece pelo Hoje',
-    body: (
-      <>
-        Em “Precisa da sua atenção” fica o que depende de você: reviews pedidas (as que destravam
-        mais gente primeiro, com o tempo estimado), CI quebrado, conflitos e PRs prontos para merge.
-        Nos seus PRs parados há um lembrete pronto para quem revisa.
-      </>
+    title: t('Comece pelo Hoje'),
+    body: t(
+      'Em “Precisa da sua atenção” fica o que depende de você: reviews pedidas (as que destravam mais gente primeiro, com o tempo estimado), CI quebrado, conflitos e PRs prontos para merge. Nos seus PRs parados há um lembrete pronto para quem revisa.',
     ),
   },
   {
     icon: CalendarDays,
     iconClass: 'bg-info/12 text-info',
-    title: 'Notas, agenda e standup',
-    body: (
-      <>
-        Notas em markdown com modelos prontos (review, deploy, 1:1) e ligadas a PRs e issues. A
-        agenda junta seus eventos e os prazos das milestones, e o Standup monta o “ontem, hoje e
-        bloqueios” sozinho.
-      </>
+    title: t('Notas, agenda e standup'),
+    body: t(
+      'Notas em markdown com modelos prontos (review, deploy, 1:1) e ligadas a PRs e issues. A agenda junta seus eventos e os prazos das milestones, e o Standup monta o “ontem, hoje e bloqueios” sozinho.',
     ),
   },
   {
     icon: Tv,
     iconClass: 'bg-success/12 text-success',
-    title: 'Deixe à vista',
-    body: (
-      <>
-        O modo TV mostra o essencial numa tela grande ou numa coluna ao lado do trabalho, e o modo
-        foco dá um cronômetro para o item mais urgente. Instale o DevDesk como app pelo menu do
-        usuário.
-      </>
+    title: t('Deixe à vista'),
+    body: t(
+      'O modo TV mostra o essencial numa tela grande ou numa coluna ao lado do trabalho, e o modo foco dá um cronômetro para o item mais urgente. Instale o DevDesk como app pelo menu do usuário.',
     ),
   },
   {
     icon: Command,
     iconClass: 'bg-merged/12 text-merged',
-    title: 'Pelo teclado',
+    title: t('Pelo teclado'),
     body: (
       <>
-        <Kbd>⌘</Kbd> <Kbd>K</Kbd> abre a busca de qualquer lugar. <Kbd>g</Kbd> e uma letra navegam:{' '}
-        <Kbd>g</Kbd> <Kbd>p</Kbd> pull requests, <Kbd>g</Kbd> <Kbd>n</Kbd> notas, <Kbd>g</Kbd>{' '}
-        <Kbd>t</Kbd> modo TV.
+        <Kbd>⌘</Kbd> <Kbd>K</Kbd> {t('abre a busca de qualquer lugar.')} <Kbd>g</Kbd>{' '}
+        {t('e uma letra navegam:')} <Kbd>g</Kbd> <Kbd>p</Kbd> {t('pull requests')}, <Kbd>g</Kbd>{' '}
+        <Kbd>n</Kbd> {t('notas')}, <Kbd>g</Kbd> <Kbd>t</Kbd> {t('modo TV')}.
       </>
     ),
   },
@@ -113,10 +102,10 @@ export function WelcomeTour() {
         <Dialog.Content className="fixed top-[14vh] left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 rounded-lg border border-border bg-surface p-6 shadow-pop animate-pop-in">
           <div className="flex items-start justify-between gap-4">
             <p className="font-mono text-[11px] text-fg-subtle">
-              Primeiros passos · {step + 1} de {STEPS.length}
+              {t('Primeiros passos · {step} de {total}', { step: step + 1, total: STEPS.length })}
             </p>
             <Dialog.Close asChild>
-              <Button variant="ghost" size="icon" aria-label="Fechar">
+              <Button variant="ghost" size="icon" aria-label={t('Fechar')}>
                 <X />
               </Button>
             </Dialog.Close>
@@ -155,11 +144,11 @@ export function WelcomeTour() {
             <div className="flex gap-2">
               {!last && (
                 <Button variant="ghost" onClick={close}>
-                  Pular
+                  {t('Pular')}
                 </Button>
               )}
               <Button onClick={() => (last ? close() : setStep(step + 1))}>
-                {last ? 'Começar' : 'Próximo'}
+                {last ? t('Começar') : t('Próximo')}
               </Button>
             </div>
           </div>

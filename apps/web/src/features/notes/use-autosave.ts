@@ -2,6 +2,7 @@ import type { Note, UpdateNoteInput } from '@devdesk/shared'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ApiRequestError } from '@/lib/api'
+import { t } from '@/lib/i18n'
 import { applySavedNote, noteQuery, saveNote } from './queries'
 
 export type SaveState = 'saved' | 'pending' | 'saving' | 'error'
@@ -57,11 +58,11 @@ export function useAutosave(noteId: string) {
       } catch (cause) {
         if (cause instanceof ApiRequestError && cause.code === 'VALIDATION') {
           // Reenviar o mesmo valor daria o mesmo erro: descarta e avisa.
-          setError('Um campo passou do limite e não foi salvo. Ajuste e continue.')
+          setError(t('Um campo passou do limite e não foi salvo. Ajuste e continue.'))
         } else {
           pending.current = { ...changes, ...pending.current }
           unsaved.set(noteId, pending.current)
-          setError('Não salvou. Vou tentar de novo.')
+          setError(t('Não salvou. Vou tentar de novo.'))
           timer.current = setTimeout(() => void sendRef.current(), RETRY_MS)
         }
         setState('error')

@@ -3,10 +3,9 @@ import type { ReactNode } from 'react'
 import { cn } from '@/lib/cn'
 import { fadeUp } from '@/lib/motion'
 import { NAV_ITEMS, type NavItem } from '@/lib/navigation'
-import { TONE_CHIP } from '@/lib/tones'
 
 interface PageHeaderProps {
-  /** Seção da navegação: dá o título, o ícone e a cor. */
+  /** Seção da navegação: dá o título. */
   section: NavItem['to']
   subtitle?: ReactNode
   /** Controles à direita (filtros de data, sincronizar, criar). */
@@ -14,25 +13,19 @@ interface PageHeaderProps {
   className?: string
 }
 
-/** Cabeçalho comum das páginas: o mesmo ícone e a mesma cor da barra lateral. */
+/** Cabeçalho comum das páginas: título grande e subtítulo, como a saudação do Hoje. */
 export function PageHeader({ section, subtitle, actions, className }: PageHeaderProps) {
   const item = NAV_ITEMS.find((nav) => nav.to === section)!
-  const Icon = item.icon
   return (
     <motion.header
       {...fadeUp(0)}
-      className={cn('flex flex-wrap items-center justify-between gap-3', className)}
+      className={cn('flex flex-wrap items-end justify-between gap-x-6 gap-y-4', className)}
     >
-      <div className="flex min-w-0 items-center gap-3">
-        <span
-          className={cn('grid size-9 shrink-0 place-items-center rounded-lg', TONE_CHIP[item.tone])}
-        >
-          <Icon className="size-4.5" strokeWidth={2} />
-        </span>
-        <div className="min-w-0">
-          <h1 className="text-xl leading-tight font-semibold">{item.label}</h1>
-          {subtitle && <p className="mt-0.5 text-[13px] text-fg-muted">{subtitle}</p>}
-        </div>
+      <div className="min-w-0">
+        <h1 className="text-[32px] leading-[1.1] font-semibold tracking-[-0.03em] sm:text-[36px]">
+          {item.label}
+        </h1>
+        {subtitle && <p className="mt-2 max-w-3xl text-[15px] text-fg-muted">{subtitle}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
     </motion.header>

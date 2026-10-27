@@ -108,12 +108,12 @@ src/
   features/      auth, home, focus, work, notes, calendar, standup, commands… cada uma com suas páginas e queries
   components/
     ui/          design system (Button, Card, DropdownMenu…)
-    layout/      shell, sidebar, topbar
+    layout/      shell, barra superior, menu da conta
   lib/           cliente da API, tema, navegação, utilitários
   styles/        tokens de cor e animações
 ```
 
 - **Dados do servidor** ficam no TanStack Query. A rota protegida chama `ensureQueryData(meQuery)` no `beforeLoad`: sem sessão, redireciona para `/login` antes de renderizar.
 - **Cores** são tokens semânticos (`bg-surface`, `text-fg-muted`, `bg-accent`) definidos em `app.css`, com uma versão para cada tema. Nenhum componente usa cor crua.
-- **Navegação** tem uma fonte só (`lib/navigation.ts`), lida pela sidebar, pela paleta ⌘K e pelos atalhos `g + tecla`.
+- **Navegação** tem uma fonte só (`lib/navigation.ts`), lida pela barra superior, pela paleta ⌘K e pelos atalhos `g + tecla`.
 - **Animações** respeitam `prefers-reduced-motion`.

@@ -1,4 +1,5 @@
 import type { AttentionItem, PullRequest } from '@devdesk/shared'
+import { t } from '@/lib/i18n'
 
 /**
  * Fila de review: o que revisar primeiro. Pesa quanto tempo a pessoa está
@@ -48,9 +49,9 @@ export function formatEstimate(minutes: number): string {
 }
 
 export function formatWaiting(hours: number): string {
-  if (hours < 1) return 'pedida agora'
-  if (hours < 24) return `esperando há ${Math.floor(hours)} h`
-  return `esperando há ${Math.floor(hours / 24)} d`
+  if (hours < 1) return t('pedida agora')
+  if (hours < 24) return t('esperando há {n} h', { n: Math.floor(hours) })
+  return t('esperando há {n} d', { n: Math.floor(hours / 24) })
 }
 
 /** Quanto maior, antes na fila. */

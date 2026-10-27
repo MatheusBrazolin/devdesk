@@ -74,3 +74,37 @@ describe('GET /api/standup', () => {
     expect(res.statusCode).toBe(400)
   })
 })
+
+describe('GET /api/week', () => {
+  it('aceita a semana inteira e pede ao GitHub o período todo', async () => {
+    const { app, activity } = await createTestApp({ personalToken: 'ghp_valido' })
+    const login = await app.inject({
+      method: 'POST',
+      url: '/api/auth/personal',
+      headers: { 'content-type': 'application/json' },
+      payload: {},
+    })
+    const week = 'from=2026-10-19T03:00:00Z&to=2026-10-26T03:00:00Z'
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/week?${week}`,
+      headers: { cookie: cookieHeader(login.headers['set-cookie']) },
+    })
+    expect(res.statusCode).toBe(200)
+    expect(activity.calls[0]).toMatchObject({
+      from: new Date('2026-10-19T03:00:00Z'),
+      to: new Date('2026-10-26T03:00:00Z'),
+    })
+  })
+
+  it('recusa mais de oito dias', async () => {
+    const { app } = await createTestApp()
+    const login = await app.inject({ method: 'POST', url: '/api/auth/demo' })
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/week?from=2026-10-01T03:00:00Z&to=2026-10-26T03:00:00Z',
+      headers: { cookie: cookieHeader(login.headers['set-cookie']) },
+    })
+    expect(res.statusCode).toBe(400)
+  })
+})

@@ -50,24 +50,37 @@ test.describe('entrada', () => {
 })
 
 test.describe('painel Hoje', () => {
-  test('mostra os indicadores e a fila de atenção', async ({ page }) => {
+  test('mostra os números do dia e o quadro de PRs por situação', async ({ page }) => {
     await enterDemo(page)
-    const indicators = page.getByRole('region', { name: 'Indicadores' })
-    for (const label of ['Reviews pedidas', 'Seus PRs abertos', 'Issues atribuídas', 'Mergeados'])
-      await expect(indicators.getByText(label)).toBeVisible()
-    await expect(page.getByText('Precisa da sua atenção')).toBeVisible()
-    // O selo existe em duas versões (celular e tela larga): vale a visível.
-    await expect(page.getByText('review pedida').filter({ visible: true }).first()).toBeVisible()
+    for (const label of [
+      'Reviews pedidas',
+      'PRs abertos',
+      'Issues com você',
+      'Mergeados em 7 dias',
+    ])
+      await expect(page.getByText(label, { exact: true })).toBeVisible()
+    for (const column of [
+      'Precisa de você',
+      'Parados há +7 dias',
+      'Em andamento',
+      'Mergeados na semana',
+    ])
+      await expect(page.getByRole('region', { name: column })).toBeVisible()
+    const needsYou = page.getByRole('region', { name: 'Precisa de você' })
+    await expect(needsYou.getByText('Review pedida').first()).toBeVisible()
+    // O card inteiro é o link para o PR no GitHub.
+    await expect(needsYou.getByRole('link').first()).toHaveAttribute('href', /github\.com/)
   })
 
-  test('numa tela de notebook, cabe inteiro sem rolar', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 })
+  test('a navegação em pílula marca o Hoje e leva às outras páginas', async ({ page }) => {
     await enterDemo(page)
-    await expect(page.getByText('Mergeados por dia')).toBeVisible()
-    const overflow = await page.evaluate(
-      () => document.documentElement.scrollHeight - window.innerHeight,
-    )
-    expect(overflow).toBeLessThanOrEqual(0)
+    const nav = page.getByRole('navigation', { name: 'Navegação principal' })
+    await expect(nav.getByRole('link', { name: 'Hoje' })).toHaveAttribute('aria-current', 'page')
+    await nav.getByRole('link', { name: 'Time' }).click()
+    await expect(page).toHaveURL(/\/time/)
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Ir para…' }).click()
+    await expect(page.getByPlaceholder(/Busque PRs/)).toBeFocused()
   })
 
   test('no celular, nenhuma página rola para o lado', async ({ page }) => {
@@ -202,28 +215,14 @@ test.describe('foco e modo TV', () => {
   }
 })
 
-test.describe('tema', () => {
-  test('troca com transição, sem acender a tela de uma vez, e fica salvo', async ({ page }) => {
+test.describe('visual', () => {
+  test('o Quadro é sempre escuro e o menu não oferece outro tema', async ({ page }) => {
     await enterDemo(page)
-    const startedTransition = page.evaluate(
-      () =>
-        new Promise<boolean>((resolve) => {
-          const original = document.startViewTransition.bind(document)
-          document.startViewTransition = (update) => {
-            resolve(true)
-            return original(update)
-          }
-        }),
-    )
-    const wasDark = await page.evaluate(() => document.documentElement.classList.contains('dark'))
-
-    await page.getByRole('button', { name: /Visitante/ }).click()
-    await page.getByRole('menuitemradio', { name: wasDark ? 'Claro' : 'Escuro' }).click()
-
-    expect(await startedTransition).toBe(true)
-    await expect(page.locator('html')).toHaveClass(wasDark ? /^(?!.*\bdark\b)/ : /\bdark\b/)
-    await page.reload()
-    await expect(page.locator('html')).toHaveClass(wasDark ? /^(?!.*\bdark\b)/ : /\bdark\b/)
+    await expect(page.locator('html')).toHaveClass(/\bdark\b/)
+    const background = await page.evaluate(() => getComputedStyle(document.body).backgroundColor)
+    expect(background).toBe('rgb(14, 23, 19)')
+    await page.getByRole('button', { name: /Menu de Visitante/ }).click()
+    await expect(page.getByRole('menuitemradio', { name: 'Claro' })).toHaveCount(0)
   })
 })
 
@@ -364,7 +363,10 @@ test.describe('fila de review', () => {
     await page.goto('/pull-requests?aba=review')
     await expect(page.getByLabel('Ordenar')).toHaveValue('prioridade')
 
-    const rows = page.getByRole('listitem').filter({ has: page.getByRole('link') })
+    const rows = page
+      .getByRole('main')
+      .getByRole('listitem')
+      .filter({ has: page.getByRole('link') })
     // A atrasada (30 h) primeiro, a pequena e recente depois, o rascunho por último.
     await expect(rows.nth(0)).toContainText('Retentativa com backoff')
     await expect(rows.nth(0)).toContainText('esperando há 1 d')
@@ -486,6 +488,66 @@ test.describe('painel do time', () => {
     await expect(queue).not.toContainText('Tokens de cor')
     const load = page.getByRole('list', { name: 'Reviews pendentes por pessoa' })
     await expect(load.getByRole('listitem').first()).toContainText('rafael-lima')
+  })
+})
+
+test.describe('idioma', () => {
+  test('troca para inglês nas configurações e volta para português', async ({ page }) => {
+    await enterDemo(page)
+    await page.goto('/configuracoes')
+    await page.getByRole('radio', { name: 'English' }).click()
+    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+
+    await page.goto('/')
+    await expect(page.getByRole('region', { name: 'Needs you' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Today' }).first()).toBeVisible()
+
+    await page.goto('/configuracoes')
+    await page.getByRole('radio', { name: 'Português' }).click()
+    await expect(page.getByRole('heading', { name: 'Configurações' })).toBeVisible()
+  })
+})
+
+test.describe('resumo da semana', () => {
+  test('conta, lista e monta o texto para o 1:1; volta e avança de semana', async ({ page }) => {
+    await enterDemo(page)
+    await page.keyboard.press('g')
+    await page.keyboard.press('w')
+    await expect(page).toHaveURL(/\/semana/)
+    await expect(page.getByRole('heading', { name: 'Semana' })).toBeVisible()
+    await expect(page.getByText('O que você fez')).toBeVisible()
+    const text = page.getByLabel('Texto do resumo')
+    await expect(text).toHaveValue(/Semana de /)
+    await expect(text).toHaveValue(/Travado agora/)
+
+    await page.getByRole('button', { name: 'Semana anterior' }).click()
+    await expect(page).toHaveURL(/semana=\d{4}-\d{2}-\d{2}/)
+    await expect(page.getByRole('button', { name: 'Semana seguinte' })).toBeEnabled()
+    await page.getByRole('button', { name: 'Esta semana' }).click()
+    await expect(page.getByRole('button', { name: 'Semana seguinte' })).toBeDisabled()
+  })
+})
+
+test.describe('busca', () => {
+  test('"/" abre a busca e acha PRs, eventos e páginas', async ({ page }) => {
+    await enterDemo(page)
+    await page.keyboard.press('/')
+    const input = page.getByPlaceholder(/Busque PRs/)
+    await expect(input).toBeFocused()
+
+    await input.fill('fuso')
+    const palette = page.getByRole('dialog')
+    await expect(palette.getByText('Pull requests')).toBeVisible()
+    await expect(palette.getByText('Corrige o fuso horário no relatório de vendas')).toBeVisible()
+
+    await input.fill('daily')
+    await expect(palette.getByText('Agenda')).toBeVisible()
+    await palette
+      .getByRole('option', { name: /Daily do time/ })
+      .first()
+      .click()
+    await expect(page).toHaveURL(/\/calendario\?mes=/)
   })
 })
 

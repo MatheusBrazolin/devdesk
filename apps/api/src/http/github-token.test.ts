@@ -1,4 +1,4 @@
-import { gitHubTokenStatusSchema } from '@devdesk/shared'
+import { gitHubHealthSchema, gitHubTokenStatusSchema } from '@devdesk/shared'
 import { describe, expect, it } from 'vitest'
 import { cookieHeader, createTestApp } from '../../test/helpers.js'
 
@@ -92,6 +92,67 @@ describe('token pessoal do GitHub', () => {
     const headers = { cookie: cookieHeader(login.headers['set-cookie']) }
     const res = await app.inject({ ...put('ghp_valido'), headers })
     expect(res.statusCode).toBe(403)
+  })
+})
+
+describe('saúde do acesso ao GitHub', () => {
+  it('diz de onde vêm os dados, as organizações, a cota e quando o token vence', async () => {
+    const { app, headers, githubAccount, clock } = await signedInWithOAuth()
+    const viaOAuth = gitHubHealthSchema.parse(
+      (await app.inject({ url: '/api/github/health', headers })).json().health,
+    )
+    expect(viaOAuth).toMatchObject({ ok: true, source: 'oauth', expiresAt: null })
+
+    githubAccount.expiresAt = new Date('2026-11-01T12:00:00Z')
+    await app.inject({ ...put('ghp_valido'), headers })
+    const viaToken = (await app.inject({ url: '/api/github/health', headers })).json().health
+    expect(viaToken).toMatchObject({
+      ok: true,
+      source: 'personal',
+      expiresAt: '2026-11-01T12:00:00.000Z',
+      organizations: [{ login: 'acme' }],
+      rateLimit: { remaining: 4990, limit: 5000 },
+    })
+
+    // Guardado por dez minutos: abrir páginas não gasta a cota do GitHub.
+    const calls = githubAccount.calls.length
+    await app.inject({ url: '/api/github/health', headers })
+    expect(githubAccount.calls.length).toBe(calls)
+    clock.advance(11 * 60 * 1000)
+    await app.inject({ url: '/api/github/health', headers })
+    expect(githubAccount.calls.length).toBe(calls + 1)
+  })
+
+  it('token recusado aparece como recusado, sem derrubar a página', async () => {
+    const { app, headers, githubTokens, users } = await signedInWithOAuth()
+    const [userId] = [...users.items.keys()]
+    await githubTokens.savePersonal(userId!, 'ghp_revogado')
+    const res = await app.inject({ url: '/api/github/health', headers })
+    expect(res.statusCode).toBe(200)
+    expect(res.json().health).toEqual({ ok: false, source: 'personal' })
+  })
+
+  it('o token do servidor (o dono) aparece como tal', async () => {
+    const { app, users, githubTokens } = await createTestApp()
+    const login = await app.inject({ method: 'POST', url: '/api/auth/demo' })
+    const demoHeaders = { cookie: cookieHeader(login.headers['set-cookie']) }
+    expect((await app.inject({ url: '/api/github/health', headers: demoHeaders })).json()).toEqual({
+      health: null,
+    })
+
+    const owner = await users.upsertFromGitHub({
+      githubId: 1,
+      login: 'dono',
+      name: null,
+      avatarUrl: null,
+    })
+    await githubTokens.save(owner.id, {
+      accessToken: 'ghp_do_servidor',
+      accessTokenExpiresAt: null,
+      refreshToken: null,
+      refreshTokenExpiresAt: null,
+    })
+    expect(await githubTokens.source(owner.id)).toBe('server')
   })
 })
 

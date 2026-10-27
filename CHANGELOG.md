@@ -2,12 +2,25 @@
 
 Mudanças que valem a pena saber, versão a versão. O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e as versões seguem o [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
-## [Não lançado]
+## [1.1.0] - 2026-10-27
+
+Agora para o time todo: cada pessoa conecta o GitHub da empresa sem pedir nada à organização, o app fala inglês e ganhou um visual novo, o Quadro.
 
 ### Adicionado
 
 - **Token pessoal para cada pessoa** em Configurações → Acesso ao GitHub. Quem trabalha numa organização que bloqueia apps de terceiros entrava pelo GitHub e via o painel vazio; com o token, os repositórios da empresa aparecem sem pedir nada à organização. O token é conferido com o GitHub (mesma conta e escopos), fica cifrado e nunca volta para o navegador ([ADR 0012](docs/adr/0012-token-pessoal-de-cada-pessoa.md)).
 - **Passo guiado no Hoje**: quando o painel vem todo zerado, o próprio Hoje mostra como gerar o token (o link do GitHub já vem com nome e permissões) e o campo para colar. Colar já conecta e recarrega o painel, sem apertar nada.
+- **Saúde do acesso ao GitHub** em Configurações: de onde vêm os dados (seu token, o do servidor ou o login), até quando o token vale, quais organizações aparecem e quanto resta da cota da API.
+- **Aviso antes do token vencer**: na última semana, o Hoje avisa e já traz o campo para colar o novo. Token recusado (vencido ou revogado) mostra o mesmo caminho, em vez de mandar entrar de novo.
+- **Busca única**: <kbd>/</kbd> (ou <kbd>⌘</kbd> <kbd>K</kbd>) acha PRs, issues, notas e eventos da agenda, além das páginas.
+- **Resumo da semana** (<kbd>g</kbd> <kbd>w</kbd>): mergeados, reviews feitas, PRs abertos e issues fechadas, o que está travado e um texto pronto para o 1:1, de segunda a domingo.
+- **Visual Quadro** em todas as telas: escuro verde-floresta com acento lima, barra superior com navegação em pílula no lugar da barra lateral, painéis com raio 22, cards com raio 14, controles em pílula e as fontes Bricolage Grotesque e DM Mono. O Hoje virou um quadro de PRs por situação (precisa de você, parados, em andamento, mergeados na semana). Coral marca o que pede ação e amarelo o que está parado ([ADR 0014](docs/adr/0014-visual-quadro.md)).
+- **App em inglês**: escolha o idioma nas Configurações, no login ou pelo <kbd>⌘</kbd> <kbd>K</kbd>. Datas, números e os textos de standup e da semana mudam junto ([ADR 0013](docs/adr/0013-idiomas.md)).
+
+### Mudado
+
+- O tema claro saiu: o Quadro foi desenhado escuro, e todas as telas seguem a mesma paleta, testada para contraste AA.
+- O Hoje não cabe mais numa tela só: o quadro e os painéis rolam junto com a página.
 
 ## [1.0.0] - 2026-10-27
 
@@ -59,5 +72,5 @@ Primeira versão publicada do DevDesk: o painel inteiro, no ar em [devdesk-tklq.
 - CodeQL, Dependabot e [política de segurança](SECURITY.md).
 - Uma imagem Docker só, publicada no Render com o banco no Neon ([guia](docs/DEPLOY.md)).
 
-[Não lançado]: https://github.com/MatheusBrazolin/devdesk/compare/v1.0.0...HEAD
+[1.1.0]: https://github.com/MatheusBrazolin/devdesk/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/MatheusBrazolin/devdesk/releases/tag/v1.0.0

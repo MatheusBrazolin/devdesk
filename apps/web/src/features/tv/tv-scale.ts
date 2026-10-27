@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import { t } from '@/lib/i18n'
 
 /**
  * O modo TV tem um arranjo para cada formato de janela, cada um desenhado
@@ -10,11 +11,11 @@ export type TvLayout = 'grade' | 'coluna' | 'faixa' | 'mini'
 export type TvLayoutChoice = TvLayout | 'auto'
 
 export const TV_LAYOUTS: { value: TvLayoutChoice; label: string; hint: string }[] = [
-  { value: 'auto', label: 'Automático', hint: 'segue o formato da janela' },
-  { value: 'grade', label: 'Grade', hint: 'tela cheia ou TV' },
-  { value: 'coluna', label: 'Coluna', hint: 'janela estreita ao lado' },
-  { value: 'faixa', label: 'Faixa', hint: 'tira larga em cima ou embaixo' },
-  { value: 'mini', label: 'Mini', hint: 'janelinha no canto' },
+  { value: 'auto', label: t('Automático'), hint: t('segue o formato da janela') },
+  { value: 'grade', label: t('Grade'), hint: t('tela cheia ou TV') },
+  { value: 'coluna', label: t('Coluna'), hint: t('janela estreita ao lado') },
+  { value: 'faixa', label: t('Faixa'), hint: t('tira larga em cima ou embaixo') },
+  { value: 'mini', label: t('Mini'), hint: t('janelinha no canto') },
 ]
 
 /** Quadro de referência de cada arranjo, em px de CSS. */
@@ -101,7 +102,7 @@ const CORNER = { width: 520, height: 340 }
 export const WINDOW_PRESETS: WindowPreset[] = [
   {
     id: 'coluna-direita',
-    label: 'Coluna à direita',
+    label: t('Coluna à direita'),
     layout: 'coluna',
     place: (a) => ({
       left: a.left + a.width - COLUMN_WIDTH,
@@ -112,13 +113,13 @@ export const WINDOW_PRESETS: WindowPreset[] = [
   },
   {
     id: 'coluna-esquerda',
-    label: 'Coluna à esquerda',
+    label: t('Coluna à esquerda'),
     layout: 'coluna',
     place: (a) => ({ left: a.left, top: a.top, width: COLUMN_WIDTH, height: a.height }),
   },
   {
     id: 'faixa-embaixo',
-    label: 'Faixa embaixo',
+    label: t('Faixa embaixo'),
     layout: 'faixa',
     place: (a) => ({
       left: a.left,
@@ -129,7 +130,7 @@ export const WINDOW_PRESETS: WindowPreset[] = [
   },
   {
     id: 'canto',
-    label: 'Canto inferior direito',
+    label: t('Canto inferior direito'),
     layout: 'mini',
     place: (a) => ({
       left: a.left + a.width - CORNER.width,
@@ -139,7 +140,7 @@ export const WINDOW_PRESETS: WindowPreset[] = [
   },
   {
     id: 'tela-toda',
-    label: 'Tela toda',
+    label: t('Tela toda'),
     layout: 'grade',
     place: (a) => ({ ...a }),
   },

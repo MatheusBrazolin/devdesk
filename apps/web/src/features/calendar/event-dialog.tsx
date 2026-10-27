@@ -5,6 +5,7 @@ import { type FormEvent, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/cn'
 import { addDaysToKey, dateKey } from '@/lib/calendar-dates'
+import { t } from '@/lib/i18n'
 import { useDeleteEvent, useSaveEvent } from './queries'
 
 const pad = (n: number) => String(n).padStart(2, '0')
@@ -134,10 +135,10 @@ function EventForm({
     <form onSubmit={submit}>
       <header className="flex items-center justify-between border-b border-border px-4 py-3">
         <Dialog.Title className="text-sm font-semibold">
-          {event ? 'Editar evento' : 'Novo evento'}
+          {event ? t('Editar evento') : t('Novo evento')}
         </Dialog.Title>
         <Dialog.Close asChild>
-          <Button variant="ghost" size="icon" aria-label="Fechar">
+          <Button variant="ghost" size="icon" aria-label={t('Fechar')}>
             <X />
           </Button>
         </Dialog.Close>
@@ -145,24 +146,24 @@ function EventForm({
 
       <div className="space-y-4 px-4 py-4">
         <Dialog.Description className="sr-only">
-          Título, data e horário do evento
+          {t('Título, data e horário do evento')}
         </Dialog.Description>
         <input
           autoFocus
           required
           value={draft.title}
           onChange={(e) => set('title', e.target.value)}
-          placeholder="Título"
-          aria-label="Título"
+          placeholder={t('Título')}
+          aria-label={t('Título')}
           maxLength={200}
           className="w-full bg-transparent text-[15px] font-medium placeholder:text-fg-subtle focus:outline-none"
         />
 
-        <div role="radiogroup" aria-label="Tipo" className="flex gap-1.5">
+        <div role="radiogroup" aria-label={t('Tipo')} className="flex gap-1.5">
           {(
             [
-              ['event', 'Evento', CalendarDays],
-              ['reminder', 'Lembrete', Bell],
+              ['event', t('Evento'), CalendarDays],
+              ['reminder', t('Lembrete'), Bell],
             ] as const
           ).map(([value, label, Icon]) => (
             <button
@@ -191,13 +192,13 @@ function EventForm({
             onChange={(e) => set('allDay', e.target.checked)}
             className="accent-[var(--accent)]"
           />
-          Dia inteiro
+          {t('Dia inteiro')}
         </label>
 
         <div className="grid grid-cols-2 gap-3">
           <label className="space-y-1">
             <span className="text-[12px] text-fg-muted">
-              {draft.allDay ? 'Primeiro dia' : 'Dia'}
+              {draft.allDay ? t('Primeiro dia') : t('Dia')}
             </span>
             <input
               type="date"
@@ -209,7 +210,7 @@ function EventForm({
           </label>
           {draft.allDay ? (
             <label className="space-y-1">
-              <span className="text-[12px] text-fg-muted">Último dia (opcional)</span>
+              <span className="text-[12px] text-fg-muted">{t('Último dia (opcional)')}</span>
               <input
                 type="date"
                 min={draft.date}
@@ -221,7 +222,7 @@ function EventForm({
           ) : (
             <div className="grid grid-cols-2 gap-2">
               <label className="space-y-1">
-                <span className="text-[12px] text-fg-muted">Início</span>
+                <span className="text-[12px] text-fg-muted">{t('Início')}</span>
                 <input
                   type="time"
                   required
@@ -231,7 +232,7 @@ function EventForm({
                 />
               </label>
               <label className="space-y-1">
-                <span className="text-[12px] text-fg-muted">Fim</span>
+                <span className="text-[12px] text-fg-muted">{t('Fim')}</span>
                 <input
                   type="time"
                   value={draft.endTime}
@@ -246,8 +247,8 @@ function EventForm({
         <textarea
           value={draft.description}
           onChange={(e) => set('description', e.target.value)}
-          placeholder="Descrição (opcional)"
-          aria-label="Descrição"
+          placeholder={t('Descrição (opcional)')}
+          aria-label={t('Descrição')}
           rows={3}
           maxLength={5000}
           className="w-full resize-none rounded-md border border-border bg-bg px-2.5 py-2 text-[13px] placeholder:text-fg-subtle focus:border-border-strong focus:outline-none"
@@ -289,16 +290,16 @@ function EventForm({
             onBlur={() => setConfirmingDelete(false)}
           >
             {remove.isPending ? <Loader2 className="animate-spin" /> : <Trash2 />}
-            {confirmingDelete ? 'Confirmar: apagar' : 'Apagar'}
+            {confirmingDelete ? t('Confirmar: apagar') : t('Apagar')}
           </Button>
         )}
         <div className="ml-auto flex gap-2">
           <Dialog.Close asChild>
-            <Button variant="outline">Cancelar</Button>
+            <Button variant="outline">{t('Cancelar')}</Button>
           </Dialog.Close>
           <Button type="submit" disabled={save.isPending}>
             {save.isPending && <Loader2 className="animate-spin" />}
-            Salvar
+            {t('Salvar')}
           </Button>
         </div>
       </footer>

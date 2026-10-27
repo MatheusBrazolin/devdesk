@@ -20,6 +20,7 @@ import {
   LayeredSnapshotCache,
   PostgresSnapshotCache,
 } from './infrastructure/cache/postgres-snapshot-cache.js'
+import { GitHubAccountClient } from './infrastructure/github/github-account-client.js'
 import { GitHubProfileClient } from './infrastructure/github/github-profile-client.js'
 import { GitHubActivitySource } from './infrastructure/github/github-activity-source.js'
 import { GitHubOAuthClient } from './infrastructure/github/github-oauth-client.js'
@@ -175,11 +176,13 @@ export function createContainer(env: Env, db: Database): AppDependencies {
       settings,
       account: new Account(users, notes, events, externalCalendars, settings, systemClock),
       getStandup,
-      personalGitHubToken: new PersonalGitHubToken(new GitHubProfileClient(), githubTokens, [
-        getMetrics,
-        getTeam,
-        getStandup,
-      ]),
+      personalGitHubToken: new PersonalGitHubToken(
+        new GitHubProfileClient(),
+        new GitHubAccountClient(),
+        githubTokens,
+        [getMetrics, getTeam, getStandup],
+        systemClock,
+      ),
     },
   }
 }

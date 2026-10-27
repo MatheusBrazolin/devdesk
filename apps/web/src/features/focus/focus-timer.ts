@@ -1,4 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
+import { t } from '@/lib/i18n'
 import { holdNonUrgentWhile, notify, releaseHeld } from '@/lib/notifications'
 
 /**
@@ -122,8 +123,8 @@ export function useFocusAlarm(): void {
       () => {
         setTimer(reset(timer))
         notify({
-          title: 'Fim do bloco de foco',
-          body: `${timer.minutes} minutos concluídos. Hora de uma pausa.`,
+          title: t('Fim do bloco de foco'),
+          body: t('{n} minutos concluídos. Hora de uma pausa.', { n: timer.minutes }),
           tag: 'foco',
           urgent: true,
         })

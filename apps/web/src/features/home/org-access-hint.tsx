@@ -5,6 +5,7 @@ import { KeyRound, X } from 'lucide-react'
 import { useState } from 'react'
 import { githubTokenQuery } from '@/features/settings/queries'
 import { TokenConnectForm, TokenSteps } from '@/features/settings/token-connect'
+import { t } from '@/lib/i18n'
 
 const DISMISSED = 'devdesk:dica-token'
 
@@ -43,21 +44,21 @@ export function OrgAccessHint({ data, isDemo }: { data: Dashboard | undefined; i
 
   return (
     <aside
-      aria-label="Conectar o GitHub da empresa"
+      aria-label={t('Conectar o GitHub da empresa')}
       className="shrink-0 space-y-3 rounded-lg border border-accent/30 bg-accent/8 px-4 py-3"
     >
       <div className="flex items-start gap-3">
         <KeyRound className="mt-0.5 size-4 shrink-0 text-accent" />
         <p className="min-w-0 flex-1 text-[13px] leading-relaxed text-fg-muted">
-          <span className="font-medium text-fg">Não veio nada do seu GitHub?</span> Se o seu
-          trabalho fica numa organização que bloqueia apps de terceiros, o login sozinho não enxerga
-          o que é dela. Com um token pessoal, tudo aparece aqui, sem pedir nada à organização. Leva
-          um minuto, uma vez só.
+          <span className="font-medium text-fg">{t('Não veio nada do seu GitHub?')}</span>{' '}
+          {t(
+            'Se o seu trabalho fica numa organização que bloqueia apps de terceiros, o login sozinho não enxerga o que é dela. Com um token pessoal, tudo aparece aqui, sem pedir nada à organização. Leva um minuto, uma vez só.',
+          )}
         </p>
         <button
           type="button"
           onClick={dismiss}
-          aria-label="Fechar"
+          aria-label={t('Fechar')}
           className="rounded p-0.5 text-fg-subtle hover:text-fg"
         >
           <X className="size-4" />
@@ -67,9 +68,9 @@ export function OrgAccessHint({ data, isDemo }: { data: Dashboard | undefined; i
         <TokenSteps />
         <TokenConnectForm id="token-pessoal-hoje" />
         <p className="text-[12px] text-fg-subtle">
-          Fica cifrado e só serve para ler. Dá para remover em{' '}
+          {t('Fica cifrado e só serve para ler. Dá para remover em')}{' '}
           <Link to="/configuracoes" className="underline underline-offset-2 hover:text-fg-muted">
-            Configurações
+            {t('Configurações')}
           </Link>
           .
         </p>

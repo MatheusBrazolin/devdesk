@@ -10,9 +10,9 @@
 
 A work dashboard for developers: what needs your attention on GitHub, your notes and your calendar, in one place.
 
-**[Try the live demo →](https://devdesk-tklq.onrender.com)** (demo mode with sample data; the first visit may take a few seconds while the server wakes up). The interface is in Brazilian Portuguese.
+**[Try the live demo →](https://devdesk-tklq.onrender.com)** (demo mode with sample data; the first visit may take a few seconds while the server wakes up). The interface is available in English and Portuguese.
 
-> **Version 1.0.0.** What changed in each version is in the [CHANGELOG](CHANGELOG.md) (in Portuguese).
+> **Version 1.1.0.** What changed in each version is in the [CHANGELOG](CHANGELOG.md) (in Portuguese).
 
 ![A tour of DevDesk: entering the demo, the Today dashboard, ⌘K search, focus mode, the Team page, the calendar and TV mode](docs/screenshots/tour.gif)
 
@@ -43,16 +43,16 @@ A work dashboard for developers: what needs your attention on GitHub, your notes
 
 ## Features
 
-- **Today**, a dashboard that fits on one screen: counters (review requests, open PRs, issues, merged), what needs your attention ordered by urgency, merged-per-day chart, the age of your PRs and load per organization, stale PRs, this week's agenda and pinned notes
+- **Today**, in the Quadro look: a greeting with the day's numbers (review requests, open PRs, issues, merged), your PRs on a board by status (needs you, stale for 7+ days, in progress, merged this week with a per-day chart) and panels for PR age, load per organization, agenda and pinned notes
 - **Smart review queue**: reviews requested from you are ordered by priority (how long they have waited, size and CI), with the waiting time, a reading estimate ("~15 min") and a warning once they pass 24 hours
 - **Ready-made nudge** for a stale PR of yours: one click copies a polite message that already mentions who still has to review, for Slack or Teams
 - **Team**: open PRs in the repositories you work on, who has been waiting longest for review, how many have no review or are stale, and whose review queue is piling up
 - **My metrics** for the last 8 weeks: merged PRs, time to merge and to first review, reviews you did and the typical size of your PRs, week by week
-- **Focus mode**: the most urgent item up front, the queue below, a 25 or 50 minute timer and your next appointment, without the sidebar. While the timer runs, non-urgent notifications wait and arrive as a summary when the block ends. With a connected calendar it shows the free time before your next meeting and the focus block that fits in it
+- **Focus mode**: the most urgent item up front, the queue below, a 25 or 50 minute timer and your next appointment, without the navigation. While the timer runs, non-urgent notifications wait and arrive as a summary when the block ends. With a connected calendar it shows the free time before your next meeting and the focus block that fits in it
 - **Getting started**: a short tour on the first visit (and again from the user menu) and note templates for PR review, deploy, 1:1 and bug investigation
 - **TV mode**: the dashboard to keep open on a TV or in a window next to your work. Four layouts that follow the window's shape (or that you pick): **grid** for full screen, **column** for a narrow side window, **strip** for a wide band at the top or bottom and **mini** for a corner. "Open in window" places it in the right spot. Nothing scrolls: each layout scales to fit, and on a 4K TV everything is three times larger. Full screen with <kbd>F</kbd>, screen kept awake and the cursor hidden when idle
 - **Installable app (PWA)**: Dock icon and its own window. Icon shortcuts for TV mode, focus and standup. Open tabs and windows stay in sync and announce new versions
-- **Responsive** from 320 px to 4K: pages stack on phones; from 1280 px up, Today fits on one screen
+- **Responsive** from 320 px to 4K: pages and board columns stack on phones, with no sideways scrolling
 - **Notifications** (optional, turned on from the user menu): new review request, broken CI, changes requested, merge conflict, PR ready to merge, reminders and end of a focus block. Each item notifies only once. With the server configured, they also arrive with the app closed (Web Push), in a round every 10 minutes triggered by a free GitHub Actions schedule
 - **Pull requests**: requested from you, your open ones (with CI and approvals) and the ones merged this week
 - **Issues** assigned to you, grouped by repository, with labels
@@ -63,11 +63,15 @@ A work dashboard for developers: what needs your attention on GitHub, your notes
 - **Works with organizations that block third-party apps**: anyone who signs in with GitHub and sees an empty dashboard finds, right on Today, the step to connect a personal token: the link opens GitHub with everything filled in and pasting the token connects on its own (also in Settings → GitHub access). The token acts as that person, so the company's repositories show up without asking the organization for anything. It is encrypted and only used to read
 - **Settings**: which notifications to get (review requested, CI, conflict, meetings…) and which repositories make up the team
 - **Your data (LGPD, Brazil's GDPR)**: a [privacy page](https://devdesk-tklq.onrender.com/privacidade) saying what is stored and for how long, "Download my data" as JSON and "Delete my account", which takes everything with it
+- **One search**: <kbd>/</kbd> finds PRs, issues, notes and calendar events
+- **Weekly summary**: what you shipped, reviewed and opened, what is blocked, and a text ready for your 1:1
+- **Portuguese and English**: pick the language in Settings, on the login page or with <kbd>⌘</kbd> <kbd>K</kbd>
+- **Token health**: where your data comes from, visible organizations, API quota and a warning a week before the token expires
 - **Shortcuts**: <kbd>?</kbd> lists them all
 - **Read-only on GitHub:** DevDesk never comments, approves, edits or merges; a guard in the code rejects any write
 - GitHub login (OAuth) and a **demo mode** for anyone who wants to look around without connecting an account
 - Cookie session (`httpOnly`), stored only as a hash; the GitHub token is encrypted (AES-256-GCM)
-- Animated sidebar, drawer on phones, light/dark/system theme
+- **Quadro look** on every screen: dark forest green with a lime accent, a top bar with pill navigation, rounded panels and cards, Bricolage Grotesque and DM Mono ([ADR 0014](docs/adr/0014-visual-quadro.md))
 - Command palette (<kbd>⌘</kbd> <kbd>K</kbd>) and GitHub-style shortcuts (<kbd>g</kbd> <kbd>p</kbd> goes to pull requests)
 
 ## Roadmap

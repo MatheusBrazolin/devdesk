@@ -2,15 +2,17 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import type { ComponentProps } from 'react'
 import { cn } from '@/lib/cn'
 
+/** Etiqueta de situação do Quadro: pílula com borda e texto na cor do estado. */
 const badgeVariants = cva(
-  'inline-flex h-5 items-center gap-1 rounded px-1.5 font-mono text-[11px] leading-none',
+  'inline-flex h-6 shrink-0 items-center gap-1 rounded-full border px-2.5 text-[12px] leading-none font-semibold whitespace-nowrap',
   {
     variants: {
       tone: {
-        neutral: 'border border-border text-fg-muted',
-        accent: 'bg-accent-soft text-accent',
-        success: 'bg-success/10 text-success',
-        danger: 'bg-danger/10 text-danger',
+        neutral: 'border-border-strong text-fg-muted',
+        accent: 'border-accent text-accent',
+        success: 'border-success text-success',
+        danger: 'border-danger text-danger',
+        warning: 'border-warning text-warning',
       },
     },
     defaultVariants: { tone: 'neutral' },

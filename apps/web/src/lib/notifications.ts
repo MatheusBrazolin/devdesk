@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { toast } from 'sonner'
+import { plural, t } from './i18n'
 
 /**
  * Avisos do DevDesk. Sempre aparecem dentro da página; com as notificações
@@ -100,10 +101,11 @@ export function releaseHeld() {
   const notices = held.splice(0)
   emitHeld()
   notify({
-    title:
-      notices.length === 1
-        ? 'Enquanto você focava: 1 aviso'
-        : `Enquanto você focava: ${notices.length} avisos`,
+    title: plural(
+      notices.length,
+      'Enquanto você focava: {n} aviso',
+      'Enquanto você focava: {n} avisos',
+    ),
     body: notices.map((notice) => notice.title).join(' · '),
     tag: 'foco-resumo',
     urgent: true,
@@ -132,7 +134,7 @@ export function notify(notice: Notice) {
   toast(title, {
     description: body,
     duration: 15_000,
-    ...(url && { action: { label: 'Abrir', onClick: () => window.open(url, '_blank') } }),
+    ...(url && { action: { label: t('Abrir'), onClick: () => window.open(url, '_blank') } }),
   })
   if (!notificationsEnabled() || document.visibilityState === 'visible') return
   try {

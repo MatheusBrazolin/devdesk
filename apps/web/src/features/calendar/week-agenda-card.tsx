@@ -8,6 +8,7 @@ import { AgendaList, AgendaSkeleton } from './agenda-list'
 import { deadlinesQuery } from './queries'
 import { useCalendarEvents } from './use-calendar-events'
 import { useToday } from '@/lib/use-today'
+import { t } from '@/lib/i18n'
 
 const DAYS = 7
 
@@ -23,10 +24,10 @@ export function WeekAgendaCard({ className }: { className?: string }) {
       <CardHeader>
         <CardTitle className="flex min-w-0 items-center gap-2 whitespace-nowrap">
           <CalendarDays className="size-3.5 shrink-0 text-info" strokeWidth={2} />
-          Agenda da semana
+          {t('Agenda da semana')}
         </CardTitle>
         <Link to="/calendario" className="shrink-0 text-[12px] text-fg-muted hover:text-fg">
-          Abrir
+          {t('Abrir')}
         </Link>
       </CardHeader>
       <CardBody>
@@ -36,7 +37,7 @@ export function WeekAgendaCard({ className }: { className?: string }) {
             days={DAYS}
             events={events.data.events}
             deadlines={deadlines.data?.deadlines ?? []}
-            empty="Nada marcado nos próximos 7 dias."
+            empty={t('Nada marcado nos próximos 7 dias.')}
           />
         ) : (
           <AgendaSkeleton />

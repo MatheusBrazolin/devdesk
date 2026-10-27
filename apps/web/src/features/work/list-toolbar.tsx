@@ -3,6 +3,7 @@ import { type ReactNode, useEffect, useRef } from 'react'
 import { Kbd } from '@/components/ui/kbd'
 import { OwnerAvatar } from '@/components/ui/owner-avatar'
 import { cn } from '@/lib/cn'
+import { t } from '@/lib/i18n'
 import type { ListFilter, SortOrder } from './list-filters'
 
 export interface ToolbarValue extends ListFilter {
@@ -22,10 +23,10 @@ interface ListToolbarProps {
 }
 
 const SORT_LABELS: Record<SortOrder, string> = {
-  prioridade: 'Prioridade de review',
-  recentes: 'Atualizados recentemente',
-  antigos: 'Parados há mais tempo',
-  repositorio: 'Por repositório',
+  prioridade: t('Prioridade de review'),
+  recentes: t('Atualizados recentemente'),
+  antigos: t('Parados há mais tempo'),
+  repositorio: t('Por repositório'),
 }
 
 /** Busca, filtro por organização e ordenação. O estado vive na URL. */
@@ -62,20 +63,20 @@ export function ListToolbar({
       <div className="flex flex-col gap-2 sm:flex-row">
         <label className="relative flex h-8 flex-1 items-center">
           <Search className="pointer-events-none absolute left-2.5 size-3.5 text-fg-subtle" />
-          <span className="sr-only">Buscar</span>
+          <span className="sr-only">{t('Buscar')}</span>
           <input
             ref={input}
             type="search"
             value={value.q ?? ''}
             onChange={(event) => onChange({ q: event.target.value || undefined })}
             onKeyDown={(event) => event.key === 'Escape' && onChange({ q: undefined })}
-            placeholder="Buscar por título, repositório ou número"
+            placeholder={t('Buscar por título, repositório ou número')}
             className="h-full w-full rounded-md border border-border bg-surface pr-8 pl-8 text-[13px] placeholder:text-fg-subtle focus:border-border-strong focus:outline-none [&::-webkit-search-cancel-button]:hidden"
           />
           {value.q ? (
             <button
               type="button"
-              aria-label="Limpar busca"
+              aria-label={t('Limpar busca')}
               onClick={() => onChange({ q: undefined })}
               className="absolute right-2 grid size-5 place-items-center rounded text-fg-subtle hover:text-fg"
             >
@@ -88,7 +89,7 @@ export function ListToolbar({
 
         {sortable && (
           <label className="flex h-8 items-center">
-            <span className="sr-only">Ordenar</span>
+            <span className="sr-only">{t('Ordenar')}</span>
             <select
               value={value.ordem ?? defaultOrder}
               onChange={(event) =>
@@ -112,9 +113,13 @@ export function ListToolbar({
       </div>
 
       {owners.length > 1 && (
-        <div role="group" aria-label="Filtrar por organização" className="flex flex-wrap gap-1.5">
+        <div
+          role="group"
+          aria-label={t('Filtrar por organização')}
+          className="flex flex-wrap gap-1.5"
+        >
           <OwnerChip active={!value.org} onClick={() => onChange({ org: undefined })} count={total}>
-            Todas
+            {t('Todas')}
           </OwnerChip>
           {owners.map(({ owner, count }) => (
             <OwnerChip

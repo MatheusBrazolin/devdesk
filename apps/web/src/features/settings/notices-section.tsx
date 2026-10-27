@@ -1,6 +1,7 @@
 import { NOTICE_KINDS, type Settings } from '@devdesk/shared'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { t } from '@/lib/i18n'
 import { useNotificationsSetting } from '@/lib/notifications'
 import { NOTICE_LABELS, useSaveSettings } from './queries'
 
@@ -21,7 +22,7 @@ export function NoticesSection({ settings }: { settings: Settings }) {
       {
         onError: (error) => {
           setNotifications(previous)
-          toast.error('Não salvou', { description: error.message })
+          toast.error(t('Não salvou'), { description: error.message })
         },
       },
     )
@@ -31,8 +32,10 @@ export function NoticesSection({ settings }: { settings: Settings }) {
     <div className="px-4 py-3">
       <p className="mb-3 text-[13px] text-fg-muted">
         {browser.enabled
-          ? 'As notificações do navegador estão ligadas. Escolha quais avisos chegam:'
-          : 'As notificações do navegador estão desligadas (ligue no menu do usuário). Os avisos dentro da página seguem estas escolhas:'}
+          ? t('As notificações do navegador estão ligadas. Escolha quais avisos chegam:')
+          : t(
+              'As notificações do navegador estão desligadas (ligue no menu do usuário). Os avisos dentro da página seguem estas escolhas:',
+            )}
       </p>
       <ul className="grid gap-1 sm:grid-cols-2">
         {NOTICE_KINDS.map((kind) => (

@@ -1,4 +1,8 @@
-import { connectGitHubTokenInputSchema, type GitHubTokenStatus } from '@devdesk/shared'
+import {
+  connectGitHubTokenInputSchema,
+  type GitHubHealth,
+  type GitHubTokenStatus,
+} from '@devdesk/shared'
 import type { FastifyInstance, FastifyRequest } from 'fastify'
 import type { PersonalTokenStatus } from '../../application/use-cases/personal-github-token.js'
 import type { AppDependencies } from '../dependencies.js'
@@ -25,6 +29,21 @@ export async function githubTokenRoutes(
     const user = await currentUser(request)
     const { token } = connectGitHubTokenInputSchema.parse(request.body)
     return present(await personalGitHubToken.connect(user, token))
+  })
+
+  app.get('/github/health', async (request): Promise<{ health: GitHubHealth | null }> => {
+    const health = await personalGitHubToken.health(await currentUser(request))
+    if (!health?.ok) return { health }
+    return {
+      health: {
+        ...health,
+        expiresAt: health.expiresAt?.toISOString() ?? null,
+        rateLimit: health.rateLimit && {
+          ...health.rateLimit,
+          resetAt: health.rateLimit.resetAt.toISOString(),
+        },
+      },
+    }
   })
 
   app.delete('/github/token', async (request) =>

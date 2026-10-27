@@ -11,16 +11,17 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/cn'
 import type { AgendaEvent } from './use-calendar-events'
+import { LOCALE, plural, t } from '@/lib/i18n'
 
-const dayFormat = new Intl.DateTimeFormat('pt-BR', {
+const dayFormat = new Intl.DateTimeFormat(LOCALE, {
   weekday: 'short',
   day: 'numeric',
   month: 'short',
 })
 
 function dayLabel(day: string, today = dateKey(new Date())): string {
-  if (day === today) return 'Hoje'
-  if (day === addDaysToKey(today, 1)) return 'Amanhã'
+  if (day === today) return t('Hoje')
+  if (day === addDaysToKey(today, 1)) return t('Amanhã')
   return dayFormat.format(fromKey(day))
 }
 
@@ -71,13 +72,15 @@ export function AgendaList({
                   rel="noreferrer"
                   className="flex items-start gap-2 rounded-md px-1.5 py-1 hover:bg-elevated/60"
                 >
-                  <span className={TIME_COLUMN}>prazo</span>
-                  <Flag className="mt-0.5 size-3.5 shrink-0 text-accent" />
+                  <span className={TIME_COLUMN}>{t('prazo')}</span>
+                  <Flag className="mt-0.5 size-3.5 shrink-0 text-warning" />
                   <span className="min-w-0">
-                    <span className="block truncate text-[13px]">Prazo: {deadline.title}</span>
+                    <span className="block truncate text-[13px]">
+                      {t('Prazo: {titulo}', { titulo: deadline.title })}
+                    </span>
                     <span className="block truncate font-mono text-[11px] text-fg-subtle">
-                      {deadline.repository} · {deadline.items}{' '}
-                      {deadline.items === 1 ? 'item seu' : 'itens seus'}
+                      {deadline.repository} ·{' '}
+                      {plural(deadline.items, '{n} item seu', '{n} itens seus')}
                     </span>
                   </span>
                 </a>
@@ -94,11 +97,14 @@ export function AgendaList({
                   )}
                 >
                   <span className={TIME_COLUMN}>
-                    {event.allDay ? 'dia todo' : formatTime(event.startsAt)}
+                    {event.allDay ? t('dia todo') : formatTime(event.startsAt)}
                   </span>
                   {/* Ícone sempre no mesmo lugar: os títulos ficam alinhados. */}
                   {event.kind === 'reminder' ? (
-                    <Bell aria-label="lembrete" className="mt-0.5 size-3.5 shrink-0 text-accent" />
+                    <Bell
+                      aria-label={t('lembrete')}
+                      className="mt-0.5 size-3.5 shrink-0 text-accent"
+                    />
                   ) : (
                     <span aria-hidden className="grid size-3.5 shrink-0 place-items-center pt-1">
                       {/* Agenda assinada: anel vazado; evento do DevDesk: ponto cheio. */}
@@ -113,7 +119,9 @@ export function AgendaList({
                   <span className="min-w-0 truncate text-[13px]">
                     {event.title}
                     {event.external && (
-                      <span className="sr-only">, da agenda {event.external.calendar}</span>
+                      <span className="sr-only">
+                        {t(', da agenda {agenda}', { agenda: event.external.calendar })}
+                      </span>
                     )}
                   </span>
                 </button>
@@ -129,7 +137,7 @@ export function AgendaList({
 /** Esqueleto com a mesma forma da agenda: rótulo do dia e linhas de evento. */
 export function AgendaSkeleton({ days = 3 }: { days?: number }) {
   return (
-    <div aria-busy="true" aria-label="Carregando" className="divide-y divide-border">
+    <div aria-busy="true" aria-label={t('Carregando')} className="divide-y divide-border">
       {Array.from({ length: days }, (_, index) => (
         <div key={index} className="space-y-2 px-4 py-3">
           <Skeleton className="h-2.5 w-20" />

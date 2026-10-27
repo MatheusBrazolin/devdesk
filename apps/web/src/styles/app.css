@@ -1,83 +1,81 @@
 @import 'tailwindcss';
-@import '@fontsource-variable/ibm-plex-sans';
-@import '@fontsource/ibm-plex-mono/400.css';
-@import '@fontsource/ibm-plex-mono/500.css';
+@import '@fontsource-variable/bricolage-grotesque';
+@import '@fontsource/dm-mono/400.css';
+@import '@fontsource/dm-mono/500.css';
 
 @plugin '@tailwindcss/typography';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Tokens semânticos. Os componentes nunca usam cor crua, só estes nomes.
- * Paleta neutra e quente; o acento (âmbar) aparece só em estado ativo e foco.
+ * Tokens semânticos, na direção visual "Quadro": escuro verde-floresta com
+ * acento lima, o mesmo em todo o app (não há tema claro). Os componentes
+ * nunca usam cor crua, só estes nomes. Contraste medido contra o fundo das
+ * colunas (#14211b): texto fraco 6,0:1, lima 12,9:1, coral 7,8:1, sol 10,5:1.
  */
-:root {
-  /* Controles nativos (checkbox, select, scroll) seguem o tema do app, não o do sistema. */
-  color-scheme: light;
-  --bg: #fafaf9;
-  --surface: #ffffff;
-  --elevated: #f4f4f2;
-  --border: #e7e6e3;
-  --border-strong: #d6d4d0;
-  --fg: #1c1b19;
-  --fg-muted: #5b5954;
-  --fg-subtle: #706e69;
-  /* Texto e destaque: 4,6:1 sobre o fundo âmbar claro e o branco (WCAG AA). */
-  --accent: #9c5f0d;
-  --accent-soft: #fbf1e1;
-  --primary: #1c1b19;
-  --primary-fg: #fafaf9;
-  --success: #197b49;
-  --danger: #c4352b;
-  --ring: #9c5f0d;
-  /*
-   * Cores dos gráficos, validadas com o script do skill de dataviz:
-   * destaque x contexto ΔE 26,6 (visão normal) e 25,4 (deuteranopia).
-   * O cinza de contexto tem pouco contraste de propósito: toda barra leva o
-   * valor escrito e cada gráfico tem uma tabela equivalente.
-   */
-  --chart-accent: #b8700f;
-  --chart-muted: #cfccc6;
-  --chart-ink: #5b5954;
-  /*
-   * Cores de identidade do painel: mergeado (roxo, como no GitHub) e
-   * organizações (azul-petróleo). Com o âmbar, o trio passa no validador:
-   * ΔE mínimo 11,6 (deuteranopia) e 20,3 (normal), contraste >= 3:1.
-   */
-  --merged: #8250df;
-  --info: #0082a0;
-}
-
+:root,
 .dark {
   color-scheme: dark;
-  --bg: #121211;
-  --surface: #181817;
-  --elevated: #20201e;
-  --border: #2a2927;
-  --border-strong: #3a3936;
-  --fg: #ecebe8;
-  --fg-muted: #a6a39d;
-  /* 4,6:1 até sobre o fundo elevado (WCAG AA). */
-  --fg-subtle: #8a8883;
-  --accent: #e8a13a;
-  --accent-soft: #2b2216;
-  --primary: #ecebe8;
-  --primary-fg: #121211;
-  --success: #4cb782;
-  --danger: #ef6a5f;
-  --ring: #e8a13a;
-  /* Destaque x contexto ΔE 22,5 (normal) e 19,1 (protanopia), validado. */
-  --chart-accent: #c07f24;
-  --chart-muted: #5a5752;
-  --chart-ink: #a6a39d;
-  /* Trio no escuro: ΔE mínimo 9,4 (deuteranopia) e 20,0 (normal). */
-  --merged: #9673e0;
-  --info: #00a3ae;
+  --bg: #0e1713;
+  --surface: #14211b;
+  --elevated: #1b2c24;
+  --border: rgb(234 242 230 / 0.1);
+  --border-strong: rgb(234 242 230 / 0.18);
+  --fg: #eaf2e6;
+  --fg-muted: #b4c3b0;
+  --fg-subtle: #8fa18b;
+  /* Lima: ativo, foco e o que é bom. Texto sobre lima usa o fundo da página. */
+  --accent: #c7f26b;
+  --accent-soft: rgb(199 242 107 / 0.12);
+  --primary: #c7f26b;
+  --primary-fg: #0e1713;
+  --success: #c7f26b;
+  /* Coral: o que pede ação. Sol: o que está parado. */
+  --danger: #ff9484;
+  --warning: #f2c94c;
+  --ring: #c7f26b;
+  /* Gráficos: destaque lima, contexto lima a 30%, como no quadro do Hoje. */
+  --chart-accent: #c7f26b;
+  --chart-muted: rgb(199 242 107 / 0.3);
+  --chart-ink: #b4c3b0;
+  /* Mergeado fica lima (o que entrou); organizações e informação, no verde-acinzentado. */
+  --merged: #c7f26b;
+  --info: #b4c3b0;
+}
+
+/*
+ * Os mesmos valores com nome próprio (q-*), para quando a intenção é a cor do
+ * Quadro e não o papel semântico. Raios: painéis 22, cards 14, controles em
+ * pílula; rounded-md e rounded-lg do Tailwind passam a seguir a mesma régua.
+ */
+@theme {
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 22px;
+
+  --color-q-bg: #0e1713;
+  --color-q-col: #14211b;
+  --color-q-card: #1b2c24;
+  --color-q-line: rgb(234 242 230 / 0.1);
+  --color-q-text: #eaf2e6;
+  --color-q-text2: #b4c3b0;
+  --color-q-text3: #8fa18b;
+  --color-q-lime: #c7f26b;
+  --color-q-on-lime: #0e1713;
+  --color-q-coral: #ff9484;
+  --color-q-sun: #f2c94c;
+
+  --radius-q-panel: 22px;
+  --radius-q-card: 14px;
+  --radius-q-logo: 9px;
+
+  --font-quadro: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-quadro-mono: 'DM Mono', ui-monospace, monospace;
 }
 
 @theme inline {
-  --font-sans: 'IBM Plex Sans Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-sans: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, monospace;
 
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -93,6 +91,7 @@
   --color-primary-fg: var(--primary-fg);
   --color-success: var(--success);
   --color-danger: var(--danger);
+  --color-warning: var(--warning);
   --color-ring: var(--ring);
   --color-chart-accent: var(--chart-accent);
   --color-chart-muted: var(--chart-muted);
@@ -203,6 +202,7 @@
 
   body {
     @apply bg-bg text-fg font-sans;
+    font-variant-numeric: tabular-nums;
   }
 
   ::selection {
@@ -211,7 +211,7 @@
 
   :focus-visible {
     outline: 2px solid var(--ring);
-    outline-offset: 1px;
+    outline-offset: 2px;
   }
 }
 
@@ -245,4 +245,11 @@
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Transições curtas, só em hover e foco (120-150 ms). */
+.q-ease {
+  transition-property: color, background-color, border-color;
+  transition-duration: 140ms;
+  transition-timing-function: ease-out;
 }

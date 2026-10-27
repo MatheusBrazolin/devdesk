@@ -1,4 +1,3 @@
-import type { StandupItem } from '@devdesk/shared'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import {
@@ -6,19 +5,13 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
-  CircleDot,
+  ClipboardCopy,
   Copy,
-  Eye,
-  GitMerge,
-  GitPullRequest,
-  Hourglass,
+  ListChecks,
   NotebookPen,
   RotateCcw,
-  type LucideIcon,
-  ClipboardCopy,
-  ListChecks,
 } from 'lucide-react'
-import { type ReactNode, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -31,10 +24,12 @@ import { addDaysToKey, compareEvents, dateKey, fromKey, occursOn } from '@/lib/c
 import { cn } from '@/lib/cn'
 import { formatStandup, type StandupFormat } from './format'
 import { standupQuery } from './queries'
+import { StandupSection as Section } from './standup-section'
 import { previousWorkday, windowForDay } from './standup-window'
+import { LOCALE, t } from '@/lib/i18n'
 
 const route = getRouteApi('/app/standup')
-const dayFormat = new Intl.DateTimeFormat('pt-BR', {
+const dayFormat = new Intl.DateTimeFormat(LOCALE, {
   weekday: 'short',
   day: 'numeric',
   month: 'short',
@@ -43,21 +38,8 @@ const dayFormat = new Intl.DateTimeFormat('pt-BR', {
 const FORMATS: { value: StandupFormat; label: string }[] = [
   { value: 'slack', label: 'Slack' },
   { value: 'markdown', label: 'Markdown' },
-  { value: 'texto', label: 'Texto' },
+  { value: 'texto', label: t('Texto') },
 ]
-
-const ICONS: Record<StandupItem['kind'], LucideIcon> = {
-  merged: GitMerge,
-  opened: GitPullRequest,
-  reviewed: Eye,
-  closed_issue: CircleDot,
-  review_requested: Eye,
-  changes_requested: GitPullRequest,
-  ci_failed: GitPullRequest,
-  conflict: GitPullRequest,
-  ready_to_merge: GitMerge,
-  waiting_review: Hourglass,
-}
 
 export function StandupPage() {
   const { dia } = route.useSearch()
@@ -67,7 +49,10 @@ export function StandupPage() {
   const sinceLabel =
     window.first === window.last
       ? dayFormat.format(fromKey(window.first))
-      : `${dayFormat.format(fromKey(window.first))} a ${dayFormat.format(fromKey(window.last))}`
+      : t('{inicio} a {fim}', {
+          inicio: dayFormat.format(fromKey(window.first)),
+          fim: dayFormat.format(fromKey(window.last)),
+        })
 
   const standup = useQuery(standupQuery(window.from, window.to))
   const calendar = useCalendarEvents({ from: today, to: today })
@@ -93,16 +78,16 @@ export function StandupPage() {
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(text)
-      toast.success('Standup copiado')
+      toast.success(t('Standup copiado'))
     } catch {
       // Sem acesso à área de transferência: deixa o texto selecionado para um ⌘C.
       const field = document.querySelector<HTMLTextAreaElement>(
-        'textarea[aria-label="Texto do standup"]',
+        `textarea[aria-label="${t('Texto do standup')}"]`,
       )
       field?.focus()
       field?.select()
-      toast.error('Não deu para copiar sozinho', {
-        description: 'O texto está selecionado: aperte ⌘C.',
+      toast.error(t('Não deu para copiar sozinho'), {
+        description: t('O texto está selecionado: aperte ⌘C.'),
       })
     }
   }
@@ -111,24 +96,26 @@ export function StandupPage() {
     <div className="space-y-5">
       <PageHeader
         section="/standup"
-        subtitle="O que você fez, o que vem hoje e o que está travado, a partir do GitHub e da agenda."
+        subtitle={t(
+          'O que você fez, o que vem hoje e o que está travado, a partir do GitHub e da agenda.',
+        )}
         actions={
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
               size="icon"
-              aria-label="Dia anterior"
+              aria-label={t('Dia anterior')}
               onClick={() => goToDay(addDaysToKey(window.first, -1))}
             >
               <ChevronLeft />
             </Button>
             <span className="min-w-40 text-center text-[13px] font-medium first-letter:uppercase">
-              Ontem: {sinceLabel}
+              {t('Ontem: {data}', { data: sinceLabel })}
             </span>
             <Button
               variant="ghost"
               size="icon"
-              aria-label="Dia seguinte"
+              aria-label={t('Dia seguinte')}
               disabled={window.last >= addDaysToKey(today, -1)}
               onClick={() => goToDay(addDaysToKey(window.last, 1))}
             >
@@ -136,7 +123,7 @@ export function StandupPage() {
             </Button>
             {dia && (
               <Button variant="outline" size="sm" onClick={() => goToDay(undefined)}>
-                Dia útil anterior
+                {t('Dia útil anterior')}
               </Button>
             )}
           </div>
@@ -145,7 +132,7 @@ export function StandupPage() {
 
       {standup.data?.isSample && (
         <Badge tone="accent" className="w-fit">
-          dados de exemplo
+          {t('dados de exemplo')}
         </Badge>
       )}
 
@@ -157,7 +144,7 @@ export function StandupPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ListChecks className="size-3.5 shrink-0 text-success" strokeWidth={2} />
-              Resumo
+              {t('Resumo')}
             </CardTitle>
           </CardHeader>
           {standup.isPending ? (
@@ -167,21 +154,21 @@ export function StandupPage() {
           ) : (
             <div className="divide-y divide-border">
               <Section
-                title={`Ontem (${sinceLabel})`}
+                title={t('Ontem ({data})', { data: sinceLabel })}
                 items={standup.data.done}
-                empty="Nada registrado no GitHub."
+                empty={t('Nada registrado no GitHub.')}
               />
               <Section
-                title="Hoje"
+                title={t('Hoje')}
                 items={standup.data.today}
-                empty={events.length ? null : 'Sem pendências no GitHub nem eventos na agenda.'}
+                empty={events.length ? null : t('Sem pendências no GitHub nem eventos na agenda.')}
                 extra={events.map((event) => (
                   <li key={event.id} className="flex items-center gap-2 text-[13px]">
                     <CalendarDays className="size-3.5 shrink-0 text-fg-subtle" />
                     <span className="font-mono text-[11px] text-fg-subtle">
                       {event.allDay
-                        ? 'dia todo'
-                        : new Date(event.startsAt).toLocaleTimeString('pt-BR', {
+                        ? t('dia todo')
+                        : new Date(event.startsAt).toLocaleTimeString(LOCALE, {
                             hour: '2-digit',
                             minute: '2-digit',
                           })}
@@ -190,7 +177,7 @@ export function StandupPage() {
                   </li>
                 ))}
               />
-              <Section title="Bloqueios" items={standup.data.blockers} empty="Nenhum." />
+              <Section title={t('Bloqueios')} items={standup.data.blockers} empty={t('Nenhum.')} />
             </div>
           )}
         </Card>
@@ -199,11 +186,11 @@ export function StandupPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ClipboardCopy className="size-3.5 shrink-0 text-accent" strokeWidth={2} />
-              Texto para colar
+              {t('Texto para colar')}
             </CardTitle>
             <div
               role="radiogroup"
-              aria-label="Formato"
+              aria-label={t('Formato')}
               className="flex rounded-md border border-border p-0.5"
             >
               {FORMATS.map(({ value, label }) => (
@@ -231,13 +218,13 @@ export function StandupPage() {
           <textarea
             value={text}
             onChange={(event) => setDraft(event.target.value)}
-            aria-label="Texto do standup"
+            aria-label={t('Texto do standup')}
             spellCheck={false}
             className="min-h-72 flex-1 resize-none bg-transparent px-4 py-3 font-mono text-[12px] leading-relaxed focus:outline-none"
           />
           <footer className="flex flex-wrap items-center gap-2 border-t border-border px-4 py-3">
             <Button onClick={() => void copy()} disabled={!text}>
-              <Copy /> Copiar
+              <Copy /> {t('Copiar')}
             </Button>
             <Button
               variant="outline"
@@ -245,76 +232,27 @@ export function StandupPage() {
               onClick={() =>
                 createNote.mutate(
                   {
-                    title: `Standup de ${dayFormat.format(new Date())}`,
+                    title: t('Standup de {data}', { data: dayFormat.format(new Date()) }),
                     body: text,
                     tags: ['standup'],
                   },
                   {
                     onSuccess: () =>
-                      toast.success('Salvo nas notas', { icon: <Check className="size-4" /> }),
+                      toast.success(t('Salvo nas notas'), { icon: <Check className="size-4" /> }),
                   },
                 )
               }
             >
-              <NotebookPen /> Salvar como nota
+              <NotebookPen /> {t('Salvar como nota')}
             </Button>
             {edited && (
               <Button variant="ghost" onClick={() => setDraft(null)} className="ml-auto">
-                <RotateCcw /> Gerar de novo
+                <RotateCcw /> {t('Gerar de novo')}
               </Button>
             )}
           </footer>
         </Card>
       </Reveal>
     </div>
-  )
-}
-
-function Section({
-  title,
-  items,
-  empty,
-  extra,
-}: {
-  title: string
-  items: StandupItem[]
-  empty: string | null
-  extra?: ReactNode[]
-}) {
-  return (
-    <section className="px-4 py-3">
-      <h2 className="mb-2 text-[12px] font-semibold text-fg-muted first-letter:uppercase">
-        {title}
-      </h2>
-      <ul className="space-y-1.5">
-        {extra}
-        {items.map((item) => {
-          const Icon = ICONS[item.kind]
-          return (
-            <li key={`${item.kind}-${item.url}`} className="flex items-start gap-2 text-[13px]">
-              <Icon className="mt-0.5 size-3.5 shrink-0 text-fg-subtle" strokeWidth={1.75} />
-              <a
-                href={item.url}
-                target="_blank"
-                rel="noreferrer"
-                className="min-w-0 hover:underline"
-              >
-                <span className="font-mono text-[11px] text-fg-subtle">
-                  {item.repository}#{item.number}
-                </span>{' '}
-                {item.title}
-                {item.detail && <span className="text-fg-subtle"> · {item.detail}</span>}
-              </a>
-            </li>
-          )
-        })}
-        {items.length === 0 && !extra && empty && (
-          <li className="text-[13px] text-fg-subtle">{empty}</li>
-        )}
-        {items.length === 0 && extra && Array.isArray(extra) && extra.length === 0 && empty && (
-          <li className="text-[13px] text-fg-subtle">{empty}</li>
-        )}
-      </ul>
-    </section>
   )
 }

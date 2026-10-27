@@ -8,10 +8,8 @@ import { useDashboardSync } from '@/features/work/dashboard-sync'
 import { useWorkNotifications } from '@/features/work/use-work-notifications'
 import { WelcomeTour } from '@/features/onboarding/welcome-tour'
 import { ShortcutsHelp } from '@/features/commands/shortcuts-help'
-import { cn } from '@/lib/cn'
 import { useUpdateCheck } from '@/lib/update-check'
-import { Sidebar } from './sidebar'
-import { Topbar } from './topbar'
+import { TopBar } from './top-bar'
 
 export function AppShell() {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
@@ -21,10 +19,9 @@ export function AppShell() {
   useFocusAlarm()
   useUpdateCheck()
   useDashboardSync()
-  // No foco, a barra lateral sai da frente: a saída é o botão da própria página.
   const focus = pathname === '/foco'
 
-  // No modo TV a página ocupa a tela inteira: sem barra lateral nem topo.
+  // No modo TV a página ocupa a tela inteira: sem barra nem margens.
   // Os avisos continuam valendo (os hooks acima rodam em qualquer rota).
   if (pathname === '/tv') {
     return (
@@ -36,27 +33,20 @@ export function AppShell() {
 
   return (
     <CommandPaletteProvider>
-      <div className="flex min-h-dvh">
-        {!focus && <Sidebar />}
-        <div className="flex min-w-0 flex-1 flex-col">
-          <Topbar />
-          <motion.main
-            key={pathname}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-            className={cn(
-              'mx-auto w-full flex-1 px-4 py-6 sm:px-6 lg:px-8',
-              // O painel Hoje usa a tela toda; as listas ficam numa largura de leitura.
-              pathname === '/' ? 'max-w-[160rem]' : 'max-w-6xl',
-            )}
-          >
-            <Outlet />
-          </motion.main>
-          <WelcomeTour />
-          <ShortcutsHelp />
-        </div>
+      <div className="mx-auto flex min-h-dvh w-full max-w-[1440px] flex-col gap-8 px-4 py-6 sm:px-10 sm:py-8">
+        <TopBar focus={focus} />
+        <motion.main
+          key={pathname}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.15, ease: 'easeOut' }}
+          className="min-w-0 flex-1"
+        >
+          <Outlet />
+        </motion.main>
       </div>
+      <WelcomeTour />
+      <ShortcutsHelp />
     </CommandPaletteProvider>
   )
 }

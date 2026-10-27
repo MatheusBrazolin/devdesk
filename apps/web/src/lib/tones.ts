@@ -4,12 +4,12 @@
  */
 export type Tone = 'accent' | 'success' | 'info' | 'merged'
 
-/** Ícone sobre um fundo suave da mesma cor. */
+/** Ícone na cor do assunto, sem quadrado de fundo (o Quadro não usa ícone em quadrado). */
 export const TONE_CHIP: Record<Tone, string> = {
-  accent: 'bg-accent/12 text-accent',
-  success: 'bg-success/12 text-success',
-  info: 'bg-info/12 text-info',
-  merged: 'bg-merged/12 text-merged',
+  accent: 'text-accent',
+  success: 'text-success',
+  info: 'text-info',
+  merged: 'text-merged',
 }
 
 export const TONE_TEXT: Record<Tone, string> = {

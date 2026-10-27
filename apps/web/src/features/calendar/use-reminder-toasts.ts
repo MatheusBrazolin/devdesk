@@ -5,6 +5,7 @@ import { notify } from '@/lib/notifications'
 import { calendarQuery } from './queries'
 import { noticeEnabled, settingsQuery } from '@/features/settings/queries'
 import { useToday } from '@/lib/use-today'
+import { t } from '@/lib/i18n'
 
 /** Só agenda avisos para as próximas 24 horas; o resto entra quando a página recarregar. */
 const HORIZON_MS = 24 * 60 * 60 * 1000
@@ -35,7 +36,7 @@ export function useReminderToasts(): void {
         setTimeout(
           () =>
             notify({
-              title: `Lembrete: ${event.title}`,
+              title: t('Lembrete: {titulo}', { titulo: event.title }),
               body: event.description || undefined,
               tag: `lembrete:${event.id}`,
               // Compromisso não espera o fim do foco.

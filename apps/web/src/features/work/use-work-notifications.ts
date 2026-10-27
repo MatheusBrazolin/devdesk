@@ -1,6 +1,7 @@
 import type { AttentionItem } from '@devdesk/shared'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
+import { t } from '@/lib/i18n'
 import { notificationsEnabled, notify } from '@/lib/notifications'
 import { attentionKey, attentionNotice, newAttention } from './attention-notices'
 import { dashboardQuery } from './queries'
@@ -56,7 +57,7 @@ export function useWorkNotifications(): void {
     )) {
       const pr = item.pullRequest
       notify({
-        title: `Review esperando há mais de 24 h: ${pr.repository}#${pr.number}`,
+        title: t('Review esperando há mais de 24 h: {pr}', { pr: `${pr.repository}#${pr.number}` }),
         body: pr.title,
         url: pr.url,
         tag: overdueKey(item),
@@ -68,7 +69,7 @@ export function useWorkNotifications(): void {
     )
     if (fresh.length > MAX_SEPARATE) {
       notify({
-        title: `${fresh.length} itens novos pedem sua atenção`,
+        title: t('{n} itens novos pedem sua atenção', { n: fresh.length }),
         body: fresh.map((item) => attentionNotice(item).title).join(' · '),
         tag: 'atencao',
       })

@@ -36,10 +36,11 @@ import { deadlinesQuery, ICS_URL } from './queries'
 import { SubscriptionsDialog } from './subscriptions-dialog'
 import { type AgendaEvent, isExternal, useCalendarEvents } from './use-calendar-events'
 import { useToday } from '@/lib/use-today'
+import { LOCALE, plural, t } from '@/lib/i18n'
 
 const route = getRouteApi('/app/calendario')
-const WEEKDAYS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
-const monthFormat = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' })
+const WEEKDAYS = [t('dom'), t('seg'), t('ter'), t('qua'), t('qui'), t('sex'), t('sáb')]
+const monthFormat = new Intl.DateTimeFormat(LOCALE, { month: 'long', year: 'numeric' })
 const MAX_CHIPS = 3
 const AGENDA_DAYS = 14
 
@@ -78,21 +79,21 @@ export function CalendarPage() {
     <div className="space-y-5">
       <PageHeader
         section="/calendario"
-        subtitle="Eventos, lembretes e prazos das milestones do GitHub."
+        subtitle={t('Eventos, lembretes e prazos das milestones do GitHub.')}
         actions={
           <>
             <Button variant="outline" onClick={() => setConnecting(true)}>
-              <CalendarSync /> Conectar agenda
+              <CalendarSync /> {t('Conectar agenda')}
             </Button>
             <a
               href={ICS_URL}
               download
               className="inline-flex h-8 items-center gap-2 rounded-md border border-border-strong bg-surface px-3 text-[13px] font-medium hover:bg-elevated"
             >
-              <Download className="size-4" /> Exportar .ics
+              <Download className="size-4" /> {t('Exportar .ics')}
             </a>
             <Button onClick={() => setDialog({ event: null, day: today })}>
-              <Plus /> Novo evento
+              <Plus /> {t('Novo evento')}
             </Button>
           </>
         }
@@ -102,7 +103,7 @@ export function CalendarPage() {
         <Button
           variant="ghost"
           size="icon"
-          aria-label="Mês anterior"
+          aria-label={t('Mês anterior')}
           onClick={() => goTo(year, month - 1)}
         >
           <ChevronLeft />
@@ -110,7 +111,7 @@ export function CalendarPage() {
         <Button
           variant="ghost"
           size="icon"
-          aria-label="Próximo mês"
+          aria-label={t('Próximo mês')}
           onClick={() => goTo(year, month + 1)}
         >
           <ChevronRight />
@@ -123,7 +124,7 @@ export function CalendarPage() {
           size="sm"
           onClick={() => void navigate({ search: {}, replace: true })}
         >
-          Hoje
+          {t('Hoje')}
         </Button>
       </Reveal>
 
@@ -132,8 +133,9 @@ export function CalendarPage() {
           role="status"
           className="rounded-md border border-border bg-elevated/50 px-3 py-2 text-[13px] text-fg-muted"
         >
-          Os prazos das milestones não carregaram (o GitHub não respondeu). Seus eventos estão todos
-          aqui.
+          {t(
+            'Os prazos das milestones não carregaram (o GitHub não respondeu). Seus eventos estão todos aqui.',
+          )}
         </p>
       )}
 
@@ -142,11 +144,16 @@ export function CalendarPage() {
           role="status"
           className="rounded-md border border-border bg-elevated/50 px-3 py-2 text-[13px] text-fg-muted"
         >
-          {calendar.unavailable.join(', ')} não respondeu agora. Os outros eventos estão todos aqui.
+          {t('{agendas} não respondeu agora. Os outros eventos estão todos aqui.', {
+            agendas: calendar.unavailable.join(', '),
+          })}
         </p>
       )}
 
-      <Reveal delay={0.08} className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
+      <Reveal
+        delay={0.08}
+        className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]"
+      >
         <Card className="overflow-hidden">
           <div className="grid grid-cols-7 border-b border-border">
             {WEEKDAYS.map((weekday) => (
@@ -189,7 +196,7 @@ export function CalendarPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CalendarClock className="size-3.5 shrink-0 text-info" strokeWidth={2} />
-              Próximos {AGENDA_DAYS} dias
+              {t('Próximos {dias} dias', { dias: AGENDA_DAYS })}
             </CardTitle>
           </CardHeader>
           {agenda.data ? (
@@ -199,7 +206,7 @@ export function CalendarPage() {
               events={agenda.data.events}
               deadlines={agendaDeadlines.data?.deadlines ?? []}
               onSelectEvent={(event) => select(event, today)}
-              empty="Nada nos próximos dias. Clique num dia do calendário para marcar algo."
+              empty={t('Nada nos próximos dias. Clique num dia do calendário para marcar algo.')}
             />
           ) : (
             <AgendaSkeleton />
@@ -298,7 +305,7 @@ function DayCell({
       {/* Telas pequenas: só pontos. */}
       {items > 0 && (
         <span className="pointer-events-none relative mt-1 flex gap-0.5 sm:hidden">
-          {deadlines.length > 0 && <span className="size-1.5 rounded-full bg-accent" />}
+          {deadlines.length > 0 && <span className="size-1.5 rounded-full bg-warning" />}
           {events.slice(0, 3).map((event) => (
             <span key={event.id} className="size-1.5 rounded-full bg-fg-muted" />
           ))}
@@ -312,8 +319,11 @@ function DayCell({
               href={deadline.url}
               target="_blank"
               rel="noreferrer"
-              title={`Prazo da milestone ${deadline.title} (${deadline.repository})`}
-              className="flex items-center gap-1 truncate rounded bg-accent-soft px-1 py-0.5 text-[11px] text-accent hover:brightness-95"
+              title={t('Prazo da milestone {titulo} ({repositorio})', {
+                titulo: deadline.title,
+                repositorio: deadline.repository,
+              })}
+              className="flex items-center gap-1 truncate rounded-full border border-warning/50 px-1.5 py-0.5 text-[11px] text-warning hover:bg-warning/10"
             >
               <Flag className="size-3 shrink-0" />
               <span className="truncate">{deadline.title}</span>
@@ -341,7 +351,9 @@ function DayCell({
             </button>
           </li>
         ))}
-        {hidden > 0 && <li className="px-1 text-[11px] text-fg-subtle">+{hidden} mais</li>}
+        {hidden > 0 && (
+          <li className="px-1 text-[11px] text-fg-subtle">{t('+{n} mais', { n: hidden })}</li>
+        )}
       </ul>
     </div>
   )
@@ -369,13 +381,15 @@ function DaySheet({
         <Dialog.Content className="fixed inset-x-0 bottom-0 z-50 max-h-[70vh] overflow-y-auto rounded-t-xl border-t border-border bg-surface p-4 shadow-pop animate-pop-in">
           <Dialog.Title className="text-sm font-semibold first-letter:uppercase">
             {day &&
-              fromKey(day).toLocaleDateString('pt-BR', {
+              fromKey(day).toLocaleDateString(LOCALE, {
                 weekday: 'long',
                 day: 'numeric',
                 month: 'long',
               })}
           </Dialog.Title>
-          <Dialog.Description className="sr-only">Eventos e prazos do dia</Dialog.Description>
+          <Dialog.Description className="sr-only">
+            {t('Eventos e prazos do dia')}
+          </Dialog.Description>
           <ul className="mt-3 space-y-1">
             {deadlines.map((deadline) => (
               <li key={deadline.id}>
@@ -385,8 +399,8 @@ function DaySheet({
                   rel="noreferrer"
                   className="flex items-center gap-2 rounded-md px-2 py-2 text-[13px] hover:bg-elevated"
                 >
-                  <Flag className="size-4 shrink-0 text-accent" />
-                  Prazo: {deadline.title}
+                  <Flag className="size-4 shrink-0 text-warning" />
+                  {t('Prazo: {titulo}', { titulo: deadline.title })}
                 </a>
               </li>
             ))}
@@ -398,10 +412,10 @@ function DaySheet({
                   className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-[13px] hover:bg-elevated"
                 >
                   {event.kind === 'reminder' ? (
-                    <Bell aria-label="lembrete" className="size-4 shrink-0 text-accent" />
+                    <Bell aria-label={t('lembrete')} className="size-4 shrink-0 text-accent" />
                   ) : (
                     <span className="w-11 shrink-0 font-mono text-[11px] text-fg-subtle">
-                      {event.allDay ? 'dia todo' : formatTime(event.startsAt)}
+                      {event.allDay ? t('dia todo') : formatTime(event.startsAt)}
                     </span>
                   )}
                   <span className="truncate">{event.title}</span>
@@ -410,7 +424,7 @@ function DaySheet({
             ))}
           </ul>
           <Button variant="outline" className="mt-3 w-full" onClick={onCreate}>
-            <Plus /> Novo evento neste dia
+            <Plus /> {t('Novo evento neste dia')}
           </Button>
         </Dialog.Content>
       </Dialog.Portal>
@@ -420,7 +434,7 @@ function DaySheet({
 
 /** O que o botão do dia faz, dito do jeito que acontece: criar ou ver a lista. */
 function dayLabel(day: string, listed: number): string {
-  const date = fromKey(day).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' })
-  if (listed === 0) return `Novo evento em ${date}`
-  return `${date}: ver ${listed === 1 ? '1 item' : `${listed} itens`}`
+  const date = fromKey(day).toLocaleDateString(LOCALE, { day: 'numeric', month: 'long' })
+  if (listed === 0) return t('Novo evento em {data}', { data: date })
+  return t('{data}: ver {itens}', { data: date, itens: plural(listed, '{n} item', '{n} itens') })
 }

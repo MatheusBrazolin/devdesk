@@ -3,6 +3,7 @@ import { ExternalLink, KeyRound, Loader2 } from 'lucide-react'
 import { type ClipboardEvent, type FormEvent, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { t } from '@/lib/i18n'
 import { NEW_TOKEN_URL, useSaveGitHubToken } from './queries'
 
 /** Os passos para gerar o token no GitHub. O link já abre com os escopos marcados. */
@@ -16,16 +17,18 @@ export function TokenSteps() {
           rel="noreferrer"
           className="inline-flex items-center gap-1 font-medium text-fg underline underline-offset-2"
         >
-          Abra o GitHub <ExternalLink className="size-3" />
+          {t('Abra o GitHub')} <ExternalLink className="size-3" />
         </a>
-        : nome e permissões (<code className="font-mono text-[12px]">repo</code>,{' '}
-        <code className="font-mono text-[12px]">read:org</code>) já vêm preenchidos. Clique em
-        &quot;Generate token&quot; e copie.
+        {t(': nome e permissões (')}
+        <code className="font-mono text-[12px]">repo</code>,{' '}
+        <code className="font-mono text-[12px]">read:org</code>
+        {t(') já vêm preenchidos. Clique em "Generate token" e copie.')}
       </li>
-      <li>Volte aqui e cole o token no campo abaixo: ele conecta sozinho.</li>
+      <li>{t('Volte aqui e cole o token no campo abaixo: ele conecta sozinho.')}</li>
       <li className="text-fg-subtle">
-        Se a empresa usa SSO, clique em &quot;Configure SSO&quot; ao lado do token no GitHub e
-        autorize.
+        {t(
+          'Se a empresa usa SSO, clique em "Configure SSO" ao lado do token no GitHub e autorize.',
+        )}
       </li>
     </ol>
   )
@@ -42,12 +45,12 @@ export function TokenConnectForm({ id, onConnected }: { id: string; onConnected?
 
   const connect = (value: string) => {
     const parsed = connectGitHubTokenInputSchema.safeParse({ token: value })
-    if (!parsed.success) return setError('Cole um token que comece com ghp_ ou github_pat_.')
+    if (!parsed.success) return setError(t('Cole um token que comece com ghp_ ou github_pat_.'))
     setError(null)
     save.mutate(parsed.data.token, {
       onSuccess: () => {
         setDraft('')
-        toast.success('GitHub conectado', { description: 'Buscando tudo de novo.' })
+        toast.success(t('GitHub conectado'), { description: t('Buscando tudo de novo.') })
         onConnected?.()
       },
       onError: (e) => setError(e.message),
@@ -71,7 +74,7 @@ export function TokenConnectForm({ id, onConnected }: { id: string; onConnected?
     <div className="space-y-2">
       <form onSubmit={submit} className="flex gap-2">
         <label className="sr-only" htmlFor={id}>
-          Token pessoal do GitHub
+          {t('Token pessoal do GitHub')}
         </label>
         <input
           id={id}
@@ -79,7 +82,7 @@ export function TokenConnectForm({ id, onConnected }: { id: string; onConnected?
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           onPaste={paste}
-          placeholder="Cole o token aqui (ghp_…)"
+          placeholder={t('Cole o token aqui (ghp_…)')}
           spellCheck={false}
           autoComplete="off"
           disabled={save.isPending}
@@ -87,7 +90,7 @@ export function TokenConnectForm({ id, onConnected }: { id: string; onConnected?
         />
         <Button type="submit" disabled={!draft.trim() || save.isPending}>
           {save.isPending ? <Loader2 className="animate-spin" /> : <KeyRound />}
-          {save.isPending ? 'Conectando' : 'Conectar'}
+          {save.isPending ? t('Conectando') : t('Conectar')}
         </Button>
       </form>
       {error && (

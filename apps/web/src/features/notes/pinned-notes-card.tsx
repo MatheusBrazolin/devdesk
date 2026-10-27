@@ -6,6 +6,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { ListSkeleton } from '@/features/work/list-states'
 import { cn } from '@/lib/cn'
 import { formatRelative } from '@/lib/time'
+import { t } from '@/lib/i18n'
 import { excerpt } from './excerpt'
 import { notesQuery } from './queries'
 
@@ -21,10 +22,10 @@ export function PinnedNotesCard({ className }: { className?: string }) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Pin className="size-3.5 shrink-0 text-accent" strokeWidth={2} />
-          Notas fixadas
+          {t('Notas fixadas')}
         </CardTitle>
         <Link to="/notas" className="text-[12px] text-fg-muted hover:text-fg">
-          Ver todas
+          {t('Ver todas')}
         </Link>
       </CardHeader>
       <CardBody>
@@ -33,8 +34,8 @@ export function PinnedNotesCard({ className }: { className?: string }) {
         ) : pinned.length === 0 ? (
           <EmptyState
             icon={NotebookPen}
-            title="Nenhuma nota fixada"
-            description="Fixe uma nota (ícone de alfinete no editor) para ela aparecer aqui."
+            title={t('Nenhuma nota fixada')}
+            description={t('Fixe uma nota (ícone de alfinete no editor) para ela aparecer aqui.')}
           />
         ) : (
           <ul className="divide-y divide-border">

@@ -16,6 +16,7 @@ import { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/cn'
 import { formatRelative } from '@/lib/time'
+import { t } from '@/lib/i18n'
 import { Markdown } from './markdown'
 import { useDeleteNote } from './queries'
 import { TagInput } from './tag-input'
@@ -58,7 +59,7 @@ export function NoteEditor({ note, onBack, onDeleted }: NoteEditorProps) {
           variant="ghost"
           size="icon"
           className="lg:hidden"
-          aria-label="Voltar para a lista"
+          aria-label={t('Voltar para a lista')}
           onClick={onBack}
         >
           <ArrowLeft />
@@ -70,8 +71,8 @@ export function NoteEditor({ note, onBack, onDeleted }: NoteEditorProps) {
             variant="ghost"
             size="icon"
             aria-pressed={pinned}
-            aria-label={pinned ? 'Desafixar' : 'Fixar no painel Hoje'}
-            title={pinned ? 'Desafixar' : 'Fixar no painel Hoje'}
+            aria-label={pinned ? t('Desafixar') : t('Fixar no painel Hoje')}
+            title={pinned ? t('Desafixar') : t('Fixar no painel Hoje')}
             onClick={() => {
               setPinned(!pinned)
               schedule({ pinned: !pinned })
@@ -93,8 +94,8 @@ export function NoteEditor({ note, onBack, onDeleted }: NoteEditorProps) {
               setTitle(event.target.value)
               schedule({ title: event.target.value })
             }}
-            placeholder={note.displayTitle === 'Sem título' ? 'Sem título' : note.displayTitle}
-            aria-label="Título"
+            placeholder={note.displayTitle === 'Sem título' ? t('Sem título') : note.displayTitle}
+            aria-label={t('Título')}
             maxLength={200}
             rows={1}
             onKeyDown={(event) => {
@@ -137,8 +138,8 @@ export function NoteEditor({ note, onBack, onDeleted }: NoteEditorProps) {
               }}
               onBlur={flush}
               autoFocus={!note.body}
-              placeholder={'Escreva em markdown: # títulos, - listas, [ ] tarefas, `código`…'}
-              aria-label="Conteúdo da nota"
+              placeholder={t('Escreva em markdown: # títulos, - listas, [ ] tarefas, `código`…')}
+              aria-label={t('Conteúdo da nota')}
               className="min-h-[50vh] w-full resize-none bg-transparent font-mono text-[13px] leading-relaxed [field-sizing:content] placeholder:text-fg-subtle focus:outline-none"
             />
           ) : body.trim() ? (
@@ -150,11 +151,11 @@ export function NoteEditor({ note, onBack, onDeleted }: NoteEditorProps) {
                 onClick={focusBody}
                 className="absolute -top-1 right-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
               >
-                Editar
+                {t('Editar')}
               </Button>
               <div
                 onDoubleClick={focusBody}
-                title="Clique duas vezes para editar"
+                title={t('Clique duas vezes para editar')}
                 className="cursor-text"
               >
                 <Markdown>{body}</Markdown>
@@ -162,9 +163,9 @@ export function NoteEditor({ note, onBack, onDeleted }: NoteEditorProps) {
             </div>
           ) : (
             <p className="text-[13px] text-fg-subtle">
-              Nota vazia.{' '}
+              {t('Nota vazia.')}{' '}
               <button type="button" className="underline" onClick={focusBody}>
-                Começar a escrever
+                {t('Começar a escrever')}
               </button>
             </p>
           )}
@@ -176,7 +177,11 @@ export function NoteEditor({ note, onBack, onDeleted }: NoteEditorProps) {
 
 function ModeSwitch({ mode, onChange }: { mode: Mode; onChange: (mode: Mode) => void }) {
   return (
-    <div role="tablist" aria-label="Modo" className="flex rounded-md border border-border p-0.5">
+    <div
+      role="tablist"
+      aria-label={t('Modo')}
+      className="flex rounded-md border border-border p-0.5"
+    >
       {(['escrever', 'visualizar'] as const).map((value) => (
         <button
           key={value}
@@ -189,7 +194,7 @@ function ModeSwitch({ mode, onChange }: { mode: Mode; onChange: (mode: Mode) => 
             mode === value ? 'bg-elevated font-medium text-fg' : 'text-fg-muted hover:text-fg',
           )}
         >
-          {value}
+          {value === 'escrever' ? t('escrever') : t('visualizar')}
         </button>
       ))}
     </div>
@@ -215,7 +220,7 @@ function SaveIndicator({
         className="flex items-center gap-1 text-[12px] text-danger"
       >
         <CloudAlert className="size-3.5 shrink-0" />
-        <span className="truncate">{error ?? 'Não salvou. Tentar de novo'}</span>
+        <span className="truncate">{error ?? t('Não salvou. Tentar de novo')}</span>
       </button>
     )
   }
@@ -228,15 +233,15 @@ function SaveIndicator({
         <>
           <Check className="size-3.5 shrink-0" />
           <span className="hidden truncate sm:inline">
-            Salvo {formatRelative(new Date(updatedAt))}
+            {t('Salvo {quando}', { quando: formatRelative(new Date(updatedAt)) })}
           </span>
-          <span className="sr-only sm:hidden">Salvo</span>
+          <span className="sr-only sm:hidden">{t('Salvo')}</span>
         </>
       ) : (
         <>
           <Loader2 className="size-3.5 shrink-0 animate-spin" />
-          <span className="hidden sm:inline">Salvando…</span>
-          <span className="sr-only sm:hidden">Salvando</span>
+          <span className="hidden sm:inline">{t('Salvando…')}</span>
+          <span className="sr-only sm:hidden">{t('Salvando')}</span>
         </>
       )}
     </span>
@@ -267,7 +272,7 @@ function LinkList({ links, onRemove }: { links: NoteLink[]; onRemove: (url: stri
             </a>
             <button
               type="button"
-              aria-label={`Desvincular ${link.repository}#${link.number}`}
+              aria-label={t('Desvincular {item}', { item: `${link.repository}#${link.number}` })}
               onClick={() => onRemove(link.url)}
               className="grid size-5 place-items-center rounded text-fg-subtle opacity-0 group-hover:opacity-100 hover:text-fg focus-visible:opacity-100"
             >
@@ -295,20 +300,22 @@ function DeleteButton({
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Apagar nota" title="Apagar nota">
+        <Button variant="ghost" size="icon" aria-label={t('Apagar nota')} title={t('Apagar nota')}>
           <Trash2 />
         </Button>
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/30 animate-overlay-in" />
         <Dialog.Content className="fixed top-1/3 left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-lg border border-border bg-surface p-5 shadow-pop animate-pop-in">
-          <Dialog.Title className="text-sm font-semibold">Apagar “{title}”?</Dialog.Title>
+          <Dialog.Title className="text-sm font-semibold">
+            {t('Apagar “{titulo}”?', { titulo: title })}
+          </Dialog.Title>
           <Dialog.Description className="mt-1.5 text-[13px] text-fg-muted">
-            A nota some de vez. Os PRs e issues vinculados não são afetados.
+            {t('A nota some de vez. Os PRs e issues vinculados não são afetados.')}
           </Dialog.Description>
           <div className="mt-5 flex justify-end gap-2">
             <Dialog.Close asChild>
-              <Button variant="outline">Cancelar</Button>
+              <Button variant="outline">{t('Cancelar')}</Button>
             </Dialog.Close>
             <Button
               className="bg-danger text-white hover:bg-danger/90"
@@ -323,7 +330,7 @@ function DeleteButton({
               }
             >
               {remove.isPending && <Loader2 className="animate-spin" />}
-              Apagar
+              {t('Apagar')}
             </Button>
           </div>
         </Dialog.Content>

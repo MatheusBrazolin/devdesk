@@ -4,6 +4,7 @@ import { RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { Logo } from '@/components/ui/logo'
+import { t } from '@/lib/i18n'
 
 function Frame({ code, title, children }: { code: string; title: string; children: ReactNode }) {
   return (
@@ -22,12 +23,12 @@ function Frame({ code, title, children }: { code: string; title: string; childre
 export function RouteError({ error }: ErrorComponentProps) {
   const router = useRouter()
   return (
-    <Frame code="erro" title="Não foi possível abrir esta página">
+    <Frame code={t('erro')} title={t('Não foi possível abrir esta página')}>
       <p className="mt-2 text-sm leading-relaxed text-fg-muted">
-        {error instanceof Error ? error.message : 'Erro desconhecido.'}
+        {error instanceof Error ? error.message : t('Erro desconhecido.')}
       </p>
       <Button variant="outline" className="mt-6" onClick={() => void router.invalidate()}>
-        <RefreshCw /> Tentar de novo
+        <RefreshCw /> {t('Tentar de novo')}
       </Button>
     </Frame>
   )
@@ -35,12 +36,12 @@ export function RouteError({ error }: ErrorComponentProps) {
 
 export function NotFound() {
   return (
-    <Frame code="404" title="Página não encontrada">
+    <Frame code="404" title={t('Página não encontrada')}>
       <p className="mt-2 text-sm leading-relaxed text-fg-muted">
-        O endereço pode estar errado ou a página mudou de lugar.
+        {t('O endereço pode estar errado ou a página mudou de lugar.')}
       </p>
       <Link to="/" className={buttonVariants({ variant: 'outline', className: 'mt-6' })}>
-        Voltar para Hoje
+        {t('Voltar para Hoje')}
       </Link>
     </Frame>
   )

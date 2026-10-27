@@ -1,12 +1,21 @@
 import { AppError, forbidden } from '../../domain/errors.js'
 import type { User } from '../../domain/user.js'
+import type { GitHubAccount, GitHubAccountSnapshot } from '../ports/github-account.js'
 import type { GitHubTokenInspector } from '../ports/github-token-inspector.js'
-import type { GitHubTokenProvider } from '../services/github-token-provider.js'
+import type { Clock } from '../ports/security.js'
+import type { GitHubTokenProvider, TokenSource } from '../services/github-token-provider.js'
 
 export interface PersonalTokenStatus {
   connected: boolean
   savedAt: Date | null
 }
+
+/** Saúde do acesso ao GitHub. Recusado: o token venceu ou foi revogado. */
+export type GitHubHealth =
+  ({ source: TokenSource; ok: true } & GitHubAccountSnapshot) | { source: TokenSource; ok: false }
+
+/** A saúde muda devagar; dez minutos poupam três chamadas ao GitHub por página aberta. */
+export const HEALTH_TTL_MS = 10 * 60 * 1000
 
 /** Escopos de um token classic que o painel precisa para ler repositórios privados e organizações. */
 export const REQUIRED_SCOPES = ['repo', 'read:org'] as const
@@ -23,11 +32,42 @@ interface PerUserCache {
  * pedir nada à organização. Só leitura, como todo o DevDesk.
  */
 export class PersonalGitHubToken {
+  private readonly healthCache = new Map<string, { at: number; health: GitHubHealth }>()
+
   constructor(
     private readonly inspector: GitHubTokenInspector,
+    private readonly account: GitHubAccount,
     private readonly tokens: GitHubTokenProvider,
     private readonly caches: PerUserCache[],
+    private readonly clock: Clock,
   ) {}
+
+  /** Nulo no modo demonstração, que não tem GitHub. */
+  async health(user: User): Promise<GitHubHealth | null> {
+    if (user.isDemo) return null
+    const now = this.clock.now().getTime()
+    const cached = this.healthCache.get(user.id)
+    if (cached && now - cached.at < HEALTH_TTL_MS) return cached.health
+
+    let health: GitHubHealth
+    try {
+      const source = await this.tokens.source(user.id)
+      try {
+        const snapshot = await this.account.snapshot(await this.tokens.getAccessToken(user.id))
+        health = { source, ok: true, ...snapshot }
+      } catch (error) {
+        if (!(error instanceof AppError && error.code === 'GITHUB_RECONNECT')) throw error
+        health = { source, ok: false }
+      }
+    } catch (error) {
+      // Sem token nenhum guardado: o login precisa ser refeito.
+      if (!(error instanceof AppError && error.code === 'GITHUB_RECONNECT')) throw error
+      health = { source: 'oauth', ok: false }
+    }
+    this.healthCache.set(user.id, { at: now, health })
+    if (this.healthCache.size > 500) this.healthCache.delete(this.healthCache.keys().next().value!)
+    return health
+  }
 
   async status(user: User): Promise<PersonalTokenStatus> {
     if (user.isDemo) return { connected: false, savedAt: null }
@@ -77,6 +117,7 @@ export class PersonalGitHubToken {
   }
 
   private forget(userId: string): void {
+    this.healthCache.delete(userId)
     for (const cache of this.caches) cache.forget(userId)
   }
 }

@@ -13,6 +13,7 @@ import { PullRequestRow } from './pull-request-row'
 import { orderReviewQueue } from './review-queue'
 import { dashboardQuery } from './queries'
 import { SyncStatus } from './sync-status'
+import { t } from '@/lib/i18n'
 
 export type PullRequestTab = 'review' | 'meus' | 'mergeados'
 
@@ -21,18 +22,18 @@ const route = getRouteApi('/app/pull-requests')
 const EMPTY = {
   review: {
     icon: Eye,
-    title: 'Nenhuma review pedida',
-    description: 'Quando alguém pedir a sua review, o PR aparece aqui.',
+    title: t('Nenhuma review pedida'),
+    description: t('Quando alguém pedir a sua review, o PR aparece aqui.'),
   },
   meus: {
     icon: GitPullRequest,
-    title: 'Nenhum PR aberto',
-    description: 'Seus pull requests abertos aparecem aqui, com CI e aprovações.',
+    title: t('Nenhum PR aberto'),
+    description: t('Seus pull requests abertos aparecem aqui, com CI e aprovações.'),
   },
   mergeados: {
     icon: GitMerge,
-    title: 'Nada mergeado nesta semana',
-    description: 'PRs seus mergeados nos últimos 7 dias aparecem aqui.',
+    title: t('Nada mergeado nesta semana'),
+    description: t('PRs seus mergeados nos últimos 7 dias aparecem aqui.'),
   },
 }
 
@@ -74,13 +75,17 @@ export function PullRequestsPage() {
           items={[
             {
               value: 'review',
-              label: 'Pedidas a você',
+              label: t('Pedidas a você'),
               count: dashboard.data?.summary.reviewRequested,
             },
-            { value: 'meus', label: 'Seus PRs', count: dashboard.data?.summary.openPullRequests },
+            {
+              value: 'meus',
+              label: t('Seus PRs'),
+              count: dashboard.data?.summary.openPullRequests,
+            },
             {
               value: 'mergeados',
-              label: 'Mergeados (7 dias)',
+              label: t('Mergeados (7 dias)'),
               count: dashboard.data?.summary.mergedThisWeek,
             },
           ]}
@@ -118,8 +123,8 @@ export function PullRequestsPage() {
           ) : visible.length === 0 ? (
             <EmptyState
               icon={SearchX}
-              title="Nada com esse filtro"
-              description="Tente outra busca ou mostre todas as organizações."
+              title={t('Nada com esse filtro')}
+              description={t('Tente outra busca ou mostre todas as organizações.')}
               className="py-10"
             />
           ) : (
@@ -151,10 +156,10 @@ function summary(items: PullRequest[]): string | undefined {
   const failing = items.filter((pr) => pr.ciStatus === 'failure').length
 
   const parts = [
-    `${items.length} abertos`,
-    approved > 0 && `${approved} com aprovação`,
-    failing > 0 && `${failing} com CI falhando`,
-    stale > 0 && `${stale} parados há mais de 7 dias`,
+    t('{n} abertos', { n: items.length }),
+    approved > 0 && t('{n} com aprovação', { n: approved }),
+    failing > 0 && t('{n} com CI falhando', { n: failing }),
+    stale > 0 && t('{n} parados há mais de 7 dias', { n: stale }),
   ].filter(Boolean)
 
   return parts.join(' · ')

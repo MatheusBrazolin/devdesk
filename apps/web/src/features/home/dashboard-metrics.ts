@@ -1,6 +1,7 @@
 import type { Issue, PullRequest } from '@devdesk/shared'
 import { addDaysToKey, dateKey } from '@/lib/calendar-dates'
 import { daysSince, ownerOf, STALE_AFTER_DAYS } from '@/features/work/list-filters'
+import { t } from '@/lib/i18n'
 
 export interface DayCount {
   day: string
@@ -30,11 +31,11 @@ export interface AgeBucket {
 
 /** Dias inteiros sem atividade; acima de STALE_AFTER_DAYS é "parado", como em isStale. */
 const BUCKETS: { label: string; maxDays: number; stale: boolean }[] = [
-  { label: 'até 1 dia', maxDays: 1, stale: false },
-  { label: '2 a 3 dias', maxDays: 3, stale: false },
-  { label: '4 a 7 dias', maxDays: STALE_AFTER_DAYS, stale: false },
-  { label: '8 a 14 dias', maxDays: 14, stale: true },
-  { label: 'mais de 14 dias', maxDays: Infinity, stale: true },
+  { label: t('até 1 dia'), maxDays: 1, stale: false },
+  { label: t('2 a 3 dias'), maxDays: 3, stale: false },
+  { label: t('4 a 7 dias'), maxDays: STALE_AFTER_DAYS, stale: false },
+  { label: t('8 a 14 dias'), maxDays: 14, stale: true },
+  { label: t('mais de 14 dias'), maxDays: Infinity, stale: true },
 ]
 
 /**

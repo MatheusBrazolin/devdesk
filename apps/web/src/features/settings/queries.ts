@@ -1,6 +1,7 @@
-import type { GitHubTokenStatus, NoticeKind, Settings } from '@devdesk/shared'
+import type { GitHubHealth, GitHubTokenStatus, NoticeKind, Settings } from '@devdesk/shared'
 import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
+import { t } from '@/lib/i18n'
 
 export const settingsQuery = queryOptions({
   queryKey: ['settings'],
@@ -41,6 +42,13 @@ export const githubTokenQuery = queryOptions({
   staleTime: Infinity,
 })
 
+/** Saúde do acesso: o servidor guarda por dez minutos, aqui vale o mesmo. */
+export const githubHealthQuery = queryOptions({
+  queryKey: ['github-health'],
+  queryFn: () => api<{ health: GitHubHealth | null }>('/github/health').then((r) => r.health),
+  staleTime: 10 * 60 * 1000,
+})
+
 /** Guarda (texto) ou remove (null) o token pessoal; os dados do GitHub vêm de novo. */
 export function useSaveGitHubToken() {
   const queryClient = useQueryClient()
@@ -55,7 +63,7 @@ export function useSaveGitHubToken() {
           }),
     onSuccess: (status) => {
       queryClient.setQueryData(githubTokenQuery.queryKey, status)
-      for (const key of ['dashboard', 'team', 'metrics', 'standup', 'calendar'])
+      for (const key of ['dashboard', 'team', 'metrics', 'standup', 'calendar', 'github-health'])
         void queryClient.invalidateQueries({ queryKey: [key] })
     },
   })
@@ -80,13 +88,16 @@ export function useDeleteAccount() {
 export const EXPORT_URL = '/api/me/export'
 
 export const NOTICE_LABELS: Record<NoticeKind, { title: string; hint: string }> = {
-  review_requested: { title: 'Review pedida', hint: 'alguém pediu a sua review' },
-  overdue_review: { title: 'Review atrasada', hint: 'pedida a você há mais de 24 h' },
-  changes_requested: { title: 'Mudanças pedidas', hint: 'num PR seu' },
-  ci_failed: { title: 'CI falhou', hint: 'num PR seu' },
-  conflict: { title: 'Conflito', hint: 'num PR seu, com a branch de destino' },
-  ready_to_merge: { title: 'Pronto para merge', hint: 'aprovado e com CI verde' },
-  agenda: { title: 'Lembretes e reuniões', hint: 'na hora dos lembretes e antes das reuniões' },
+  review_requested: { title: t('Review pedida'), hint: t('alguém pediu a sua review') },
+  overdue_review: { title: t('Review atrasada'), hint: t('pedida a você há mais de 24 h') },
+  changes_requested: { title: t('Mudanças pedidas'), hint: t('num PR seu') },
+  ci_failed: { title: t('CI falhou'), hint: t('num PR seu') },
+  conflict: { title: t('Conflito'), hint: t('num PR seu, com a branch de destino') },
+  ready_to_merge: { title: t('Pronto para merge'), hint: t('aprovado e com CI verde') },
+  agenda: {
+    title: t('Lembretes e reuniões'),
+    hint: t('na hora dos lembretes e antes das reuniões'),
+  },
 }
 
 /** Ligado até as configurações carregarem: melhor um aviso a mais que um perdido. */

@@ -1,4 +1,4 @@
-import { type Standup, standupQuerySchema } from '@devdesk/shared'
+import { type Standup, standupQuerySchema, weekQuerySchema } from '@devdesk/shared'
 import type { FastifyInstance } from 'fastify'
 import type { AppDependencies } from '../dependencies.js'
 import { readSessionToken } from '../session-cookie.js'
@@ -10,6 +10,13 @@ export async function standupRoutes(app: FastifyInstance, deps: AppDependencies)
   app.get('/standup', async (request): Promise<Standup> => {
     const user = await getCurrentUser.execute(readSessionToken(request))
     const { from, to } = standupQuerySchema.parse(request.query)
+    return getStandup.execute(user, new Date(from), new Date(to))
+  })
+
+  /** Resumo da semana: o mesmo do standup, num período de até oito dias. */
+  app.get('/week', async (request): Promise<Standup> => {
+    const user = await getCurrentUser.execute(readSessionToken(request))
+    const { from, to } = weekQuerySchema.parse(request.query)
     return getStandup.execute(user, new Date(from), new Date(to))
   })
 }

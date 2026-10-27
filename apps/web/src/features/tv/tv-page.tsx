@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/cn'
+import { t } from '@/lib/i18n'
 import { TvBoard } from './tv-board'
 import {
   type ScreenArea,
@@ -74,7 +75,7 @@ export function TvPage() {
       </div>
 
       <motion.nav
-        aria-label="Controles do modo TV"
+        aria-label={t('Controles do modo TV')}
         animate={{ opacity: hidden ? 0 : 1 }}
         transition={{ duration: 0.3 }}
         className={cn(
@@ -91,7 +92,7 @@ export function TvPage() {
             </span>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="end" className="w-60">
-            <DropdownMenuLabel>Arranjo</DropdownMenuLabel>
+            <DropdownMenuLabel>{t('Arranjo')}</DropdownMenuLabel>
             {TV_LAYOUTS.map((option) => (
               <DropdownMenuItem key={option.value} onSelect={() => choose(option.value)}>
                 <Check className={cn(option.value !== choice && 'invisible')} />
@@ -99,7 +100,11 @@ export function TvPage() {
                   <span>{option.label}</span>
                   <span className="text-[11px] text-fg-subtle">
                     {option.value === 'auto' && choice === 'auto'
-                      ? `agora: ${TV_LAYOUTS.find((o) => o.value === frame.layout)?.label.toLowerCase()}`
+                      ? t('agora: {arranjo}', {
+                          arranjo:
+                            TV_LAYOUTS.find((o) => o.value === frame.layout)?.label.toLowerCase() ??
+                            '',
+                        })
                       : option.hint}
                   </span>
                 </span>
@@ -111,10 +116,10 @@ export function TvPage() {
         <DropdownMenu onOpenChange={setMenuOpen}>
           <DropdownMenuTrigger className={CONTROL}>
             <AppWindow className="size-4" />
-            <span className="hidden sm:inline">Abrir em janela</span>
+            <span className="hidden sm:inline">{t('Abrir em janela')}</span>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="end" className="w-60">
-            <DropdownMenuLabel>Janela à parte, já no lugar</DropdownMenuLabel>
+            <DropdownMenuLabel>{t('Janela à parte, já no lugar')}</DropdownMenuLabel>
             {WINDOW_PRESETS.map((preset) => (
               <DropdownMenuItem key={preset.id} onSelect={() => openWindow(preset)}>
                 {preset.label}
@@ -122,7 +127,7 @@ export function TvPage() {
             ))}
             <DropdownMenuSeparator />
             <p className="px-2 pb-1.5 text-[11px] leading-snug text-fg-subtle">
-              Depois de aberta, arraste e redimensione à vontade: o arranjo acompanha.
+              {t('Depois de aberta, arraste e redimensione à vontade: o arranjo acompanha.')}
             </p>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -131,14 +136,14 @@ export function TvPage() {
           <button type="button" onClick={fullscreen.toggle} className={CONTROL}>
             {fullscreen.on ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
             <span className="hidden sm:inline">
-              {fullscreen.on ? 'Sair da tela cheia' : 'Tela cheia'}
+              {fullscreen.on ? t('Sair da tela cheia') : t('Tela cheia')}
             </span>
             <kbd className="hidden font-mono text-[11px] text-fg-subtle sm:inline">F</kbd>
           </button>
         )}
         <Link
           to="/"
-          aria-label="Sair do modo TV"
+          aria-label={t('Sair do modo TV')}
           className={cn(CONTROL, 'px-0 w-9 justify-center')}
         >
           <X className="size-4" />
@@ -171,8 +176,8 @@ function openWindow(preset: WindowPreset) {
   const features = `popup=yes,left=${place.left},top=${place.top},width=${place.width},height=${place.height}`
   const win = window.open(`/tv?layout=${preset.layout}`, 'devdesk-tv', features)
   if (!win) {
-    toast.error('O navegador bloqueou a janela', {
-      description: 'Libere as janelas pop-up deste site e tente de novo.',
+    toast.error(t('O navegador bloqueou a janela'), {
+      description: t('Libere as janelas pop-up deste site e tente de novo.'),
     })
     return
   }

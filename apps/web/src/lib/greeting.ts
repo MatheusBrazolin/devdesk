@@ -1,12 +1,14 @@
+import { LOCALE, t } from './i18n'
+
 /** Saudação pela hora local: madrugada conta como "boa noite". */
 export function greetingFor(date: Date): string {
   const hour = date.getHours()
-  if (hour >= 5 && hour < 12) return 'Bom dia'
-  if (hour >= 12 && hour < 18) return 'Boa tarde'
-  return 'Boa noite'
+  if (hour >= 5 && hour < 12) return t('Bom dia')
+  if (hour >= 12 && hour < 18) return t('Boa tarde')
+  return t('Boa noite')
 }
 
-const longDate = new Intl.DateTimeFormat('pt-BR', {
+const longDate = new Intl.DateTimeFormat(LOCALE, {
   weekday: 'long',
   day: 'numeric',
   month: 'long',

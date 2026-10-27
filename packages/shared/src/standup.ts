@@ -10,6 +10,15 @@ export const standupQuerySchema = z
     'período longo demais',
   )
 
+/** Período do resumo da semana: até oito dias, para caber de segunda a segunda no fuso de quem pede. */
+export const weekQuerySchema = z
+  .object({ from: instantSchema, to: instantSchema })
+  .refine(({ from, to }) => Date.parse(from) < Date.parse(to), 'from depois de to')
+  .refine(
+    ({ from, to }) => Date.parse(to) - Date.parse(from) <= 8 * 86_400_000,
+    'período longo demais',
+  )
+
 export const standupItemSchema = z.object({
   kind: z.enum([
     // o que foi feito

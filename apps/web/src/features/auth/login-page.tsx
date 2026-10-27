@@ -4,16 +4,18 @@ import { ArrowRight, Loader2 } from 'lucide-react'
 import { motion } from 'motion/react'
 import { Button } from '@/components/ui/button'
 import { GitHubIcon } from '@/components/ui/github-icon'
+import { LanguageSwitch } from '@/components/ui/language-switch'
 import { Logo } from '@/components/ui/logo'
+import { t, tx } from '@/lib/i18n'
 import { ProductPreview } from './product-preview'
 import { GITHUB_LOGIN_URL, configQuery, useDemoLogin, usePersonalLogin } from './queries'
 
 const route = getRouteApi('/login')
 
 const ERROR_MESSAGES: Record<string, string> = {
-  cancelado: 'O login foi cancelado no GitHub.',
-  'estado-invalido': 'A tentativa de login expirou. Tente de novo.',
-  github: 'O GitHub não confirmou o login. Tente de novo em instantes.',
+  cancelado: t('O login foi cancelado no GitHub.'),
+  'estado-invalido': t('A tentativa de login expirou. Tente de novo.'),
+  github: t('O GitHub não confirmou o login. Tente de novo em instantes.'),
 }
 
 export function LoginPage() {
@@ -21,7 +23,7 @@ export function LoginPage() {
   const config = useQuery(configQuery)
   const demo = useDemoLogin()
   const personal = usePersonalLogin()
-  const errorMessage = erro ? (ERROR_MESSAGES[erro] ?? 'Não foi possível entrar.') : null
+  const errorMessage = erro ? (ERROR_MESSAGES[erro] ?? t('Não foi possível entrar.')) : null
   const githubEnabled = config.data?.githubLoginEnabled ?? false
   const personalLogin = config.data?.personalLogin ?? null
   const personalRejected = config.data?.personalTokenEnabled === true && personalLogin === null
@@ -32,7 +34,10 @@ export function LoginPage() {
   return (
     <main className="grid min-h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
       <section className="flex flex-col px-6 py-6 sm:px-10">
-        <Logo />
+        <div className="flex items-center justify-between gap-3">
+          <Logo />
+          <LanguageSwitch />
+        </div>
 
         <motion.div
           initial={{ opacity: 0, y: 6 }}
@@ -40,9 +45,11 @@ export function LoginPage() {
           transition={{ duration: 0.35, ease: 'easeOut' }}
           className="mx-auto my-auto w-full max-w-sm py-12"
         >
-          <h1 className="text-2xl font-semibold">Entrar no DevDesk</h1>
+          <h1 className="text-2xl font-semibold">{t('Entrar no DevDesk')}</h1>
           <p className="mt-2 text-sm leading-relaxed text-fg-muted">
-            Reviews pendentes, seus pull requests e issues, junto com suas notas e sua agenda.
+            {t(
+              'Reviews pendentes, seus pull requests e issues, junto com suas notas e sua agenda.',
+            )}
           </p>
 
           {errorMessage && (
@@ -59,7 +66,7 @@ export function LoginPage() {
               role="alert"
               className="mt-6 rounded-md border border-danger/30 bg-danger/8 px-3 py-2 text-[13px] text-danger"
             >
-              O GitHub recusou o token pessoal (revogado ou vencido). Gere outro e rode{' '}
+              {t('O GitHub recusou o token pessoal (revogado ou vencido). Gere outro e rode')}{' '}
               <code className="font-mono">npm run setup:github</code>.
             </p>
           )}
@@ -68,7 +75,7 @@ export function LoginPage() {
             {personalLogin && (
               <Button size="lg" disabled={personal.isPending} onClick={() => personal.mutate()}>
                 {personal.isPending ? <Loader2 className="animate-spin" /> : <GitHubIcon />}
-                Entrar como {personalLogin}
+                {t('Entrar como {login}', { login: personalLogin })}
               </Button>
             )}
 
@@ -79,7 +86,7 @@ export function LoginPage() {
                 onClick={() => window.location.assign(GITHUB_LOGIN_URL)}
               >
                 <GitHubIcon />
-                Continuar com GitHub
+                {t('Continuar com GitHub')}
               </Button>
             )}
 
@@ -91,7 +98,7 @@ export function LoginPage() {
                 onClick={() => demo.mutate()}
               >
                 {demo.isPending && <Loader2 className="animate-spin" />}
-                Ver a demonstração
+                {t('Ver a demonstração')}
                 {!demo.isPending && <ArrowRight className="text-fg-subtle" />}
               </Button>
             )}
@@ -110,28 +117,35 @@ export function LoginPage() {
 
           <p className="mt-6 text-[12px] leading-relaxed text-fg-subtle">
             {personalLogin ? (
-              'Modo pessoal: esta instalação usa o seu token do GitHub e só aceita acesso desta máquina.'
+              t(
+                'Modo pessoal: esta instalação usa o seu token do GitHub e só aceita acesso desta máquina.',
+              )
             ) : config.isSuccess && !githubEnabled ? (
               import.meta.env.DEV ? (
                 // Só quem está desenvolvendo vê como ligar; o visitante não.
                 <>
-                  Login com GitHub desligado: defina{' '}
-                  <code className="font-mono text-fg-muted">GITHUB_CLIENT_ID</code> e{' '}
-                  <code className="font-mono text-fg-muted">GITHUB_CLIENT_SECRET</code> no{' '}
-                  <code className="font-mono text-fg-muted">.env</code>.
+                  {tx('Login com GitHub desligado: defina {id} e {secret} no {env}.', {
+                    id: <code className="font-mono text-fg-muted">GITHUB_CLIENT_ID</code>,
+                    secret: <code className="font-mono text-fg-muted">GITHUB_CLIENT_SECRET</code>,
+                    env: <code className="font-mono text-fg-muted">.env</code>,
+                  })}
                 </>
               ) : (
-                'Esta é uma demonstração pública, com dados de exemplo: nada aqui está ligado a uma conta real. Para ver o seu próprio GitHub, rode o DevDesk na sua máquina.'
+                t(
+                  'Esta é uma demonstração pública, com dados de exemplo: nada aqui está ligado a uma conta real. Para ver o seu próprio GitHub, rode o DevDesk na sua máquina.',
+                )
               )
             ) : (
-              'O GitHub vai pedir acesso aos seus repositórios, porque OAuth Apps não têm uma permissão só de leitura. O DevDesk apenas lê: não comenta, não aprova e não faz merge. Se a sua empresa bloqueia apps de terceiros, depois de entrar conecte um token pessoal em Configurações.'
+              t(
+                'O GitHub vai pedir acesso aos seus repositórios, porque OAuth Apps não têm uma permissão só de leitura. O DevDesk apenas lê: não comenta, não aprova e não faz merge. Se a sua empresa bloqueia apps de terceiros, depois de entrar conecte um token pessoal em Configurações.',
+              )
             )}
           </p>
           <Link
             to="/privacidade"
             className="mt-3 inline-block text-[12px] text-fg-subtle underline-offset-2 hover:text-fg-muted hover:underline"
           >
-            Privacidade: o que fica guardado e como apagar
+            {t('Privacidade: o que fica guardado e como apagar')}
           </Link>
         </motion.div>
       </section>
