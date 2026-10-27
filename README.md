@@ -4,23 +4,36 @@
 [![CodeQL](https://github.com/MatheusBrazolin/devdesk/actions/workflows/codeql.yml/badge.svg)](https://github.com/MatheusBrazolin/devdesk/actions/workflows/codeql.yml)
 [![Licença MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-blue.svg)](LICENSE)
 [![Demonstração](https://img.shields.io/badge/demo-online-2ea44f.svg)](https://devdesk-tklq.onrender.com)
+[![Versão](https://img.shields.io/github/v/release/MatheusBrazolin/devdesk?label=vers%C3%A3o)](CHANGELOG.md)
+
+**Português** · [English](README.en.md)
 
 Painel de trabalho para desenvolvedores: o que pede a sua atenção no GitHub, suas notas e sua agenda, num lugar só.
 
 **[Ver a demonstração online →](https://devdesk-tklq.onrender.com)** (modo demonstração, com dados de exemplo; a primeira visita pode levar alguns segundos para o servidor acordar)
 
-> **Estado:** as cinco fases do roteiro concluídas. Pronto para publicar como demonstração (veja [docs/DEPLOY.md](docs/DEPLOY.md)).
+> **Versão 1.0.0.** O que entrou em cada versão está no [CHANGELOG](CHANGELOG.md).
+
+![Uma volta pelo DevDesk: entrada na demonstração, o painel Hoje, a busca com ⌘K, o modo foco, o Time, o calendário e o modo TV](docs/screenshots/tour.gif)
 
 ![Painel Hoje: indicadores, o que pede atenção, gráficos, agenda e notas, numa tela só](docs/screenshots/hoje.png)
 
 <table>
   <tr>
-    <td><img src="docs/screenshots/foco-escuro.png" alt="Modo foco no tema escuro: o item mais urgente, a fila e o cronômetro" /></td>
-    <td><img src="docs/screenshots/standup.png" alt="Standup montado do GitHub e da agenda, pronto para colar" /></td>
+    <td><img src="docs/screenshots/foco-escuro.png" alt="Modo foco no tema escuro: o item mais urgente, a fila, o cronômetro e o tempo livre até a próxima reunião" /></td>
+    <td><img src="docs/screenshots/time.png" alt="Time: PRs abertos nos repositórios do time, quem espera review e com quem as reviews acumulam" /></td>
   </tr>
   <tr>
+    <td><img src="docs/screenshots/metricas.png" alt="Métricas das últimas 8 semanas: mergeados, tempo até o merge e reviews feitas" /></td>
+    <td><img src="docs/screenshots/calendario.png" alt="Calendário do mês com a agenda conectada, lembretes e prazos das milestones" /></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/standup.png" alt="Standup montado do GitHub e da agenda, pronto para colar" /></td>
     <td><img src="docs/screenshots/pull-requests.png" alt="Lista de pull requests com CI, aprovações e filtros" /></td>
-    <td><img src="docs/screenshots/calendario.png" alt="Calendário do mês com eventos, lembretes e prazos" /></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/configuracoes.png" alt="Configurações no tema escuro: avisos, repositórios do time e seus dados" /></td>
+    <td><img src="docs/screenshots/notas.png" alt="Notas em markdown com tags" /></td>
   </tr>
 </table>
 
@@ -58,13 +71,15 @@ Painel de trabalho para desenvolvedores: o que pede a sua atenção no GitHub, s
 
 ## Roteiro
 
-| Fase | Entrega                                                                           |
-| ---- | --------------------------------------------------------------------------------- |
-| 1 ✅ | Fundação: monorepo, CI, login com GitHub, layout, ⌘K                              |
-| 2 ✅ | **Meu dia**: reviews pedidas a você, seus PRs (CI, aprovações), issues, mergeados |
-| 3 ✅ | **Notas** em markdown, com tags e vínculo com PRs e issues                        |
-| 4 ✅ | **Calendário**: eventos, lembretes e prazos de milestones, com exportação `.ics`  |
-| 5 ✅ | Extras: standup gerado do que você fez ontem, modo foco, notificações             |
+| Fase | Entrega                                                                                         |
+| ---- | ----------------------------------------------------------------------------------------------- |
+| 1 ✅ | Fundação: monorepo, CI, login com GitHub, layout, ⌘K                                            |
+| 2 ✅ | **Meu dia**: reviews pedidas a você, seus PRs (CI, aprovações), issues, mergeados               |
+| 3 ✅ | **Notas** em markdown, com tags e vínculo com PRs e issues                                      |
+| 4 ✅ | **Calendário**: eventos, lembretes e prazos de milestones, com exportação `.ics`                |
+| 5 ✅ | Extras: standup gerado do que você fez ontem, modo foco, notificações                           |
+| 6 ✅ | **Time e rotina**: fila de review, métricas, time, agendas conectadas, avisos com o app fechado |
+| 7 ✅ | **Maturidade**: privacidade (LGPD), configurações, CodeQL, Dependabot e a versão 1.0.0          |
 
 ## Stack
 
@@ -108,6 +123,41 @@ Depois de qualquer um dos dois, reinicie a API.
 ### Publicando
 
 Uma imagem Docker só (a API serve também o front), com o modo demonstração e um usuário descartável por visita. O passo a passo, com um blueprint pronto para o Render, está em [docs/DEPLOY.md](docs/DEPLOY.md).
+
+## Arquitetura
+
+```mermaid
+flowchart LR
+  web["Navegador<br/>SPA React e service worker"]
+  cron["GitHub Actions<br/>a cada 10 min"]
+
+  subgraph api["API Fastify, hexagonal"]
+    http["http<br/>rotas e sessão"]
+    app["application<br/>casos de uso"]
+    domain["domain<br/>regras puras"]
+    infra["infrastructure<br/>adaptadores das portas"]
+  end
+
+  gh["GitHub<br/>só leitura"]
+  cal["Google, Outlook, iCloud<br/>link .ics"]
+  pg[("PostgreSQL<br/>Neon")]
+  push["Serviço de push<br/>do navegador"]
+
+  web -- "/api, cookie" --> http
+  cron -- "rodada de avisos" --> http
+  http --> app
+  app --> domain
+  app -- "portas" --> infra
+  infra --> gh
+  infra --> cal
+  infra --> pg
+  infra -- "VAPID" --> push
+  push -. "aviso" .-> web
+```
+
+- **Uma origem só:** em produção a API serve também o front, então o cookie de sessão funciona sem CORS.
+- **A dependência aponta para dentro:** `domain` não conhece banco nem HTTP, e o ESLint quebra se alguém tentar. Os testes trocam os adaptadores por versões em memória e rodam sem banco e sem rede.
+- **Segredos não saem da API:** o token do GitHub e os links das agendas ficam cifrados (AES-256-GCM) e nunca voltam para o navegador.
 
 ## Estrutura
 
