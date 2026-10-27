@@ -16,6 +16,7 @@ import { metricsRoutes } from './routes/metrics.js'
 import { teamRoutes } from './routes/team.js'
 import { pushRoutes } from './routes/push.js'
 import { settingsRoutes } from './routes/settings.js'
+import { githubTokenRoutes } from './routes/github-token.js'
 import { systemRoutes } from './routes/system.js'
 
 interface BuildOptions extends FastifyServerOptions {
@@ -65,6 +66,7 @@ export async function buildApp(deps: AppDependencies, options: BuildOptions = {}
       await teamRoutes(api, deps)
       await pushRoutes(api, deps)
       await settingsRoutes(api, deps)
+      await githubTokenRoutes(api, deps)
     },
     { prefix: '/api' },
   )

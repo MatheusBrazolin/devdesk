@@ -49,6 +49,10 @@ export function PrivacyPage() {
                 qualquer escrita.
               </>,
               <>
+                <b>Token pessoal do GitHub, se você conectar um:</b> cifrado do mesmo jeito, usado
+                só para ler e nunca devolvido ao navegador. Remover em Configurações apaga na hora.
+              </>,
+              <>
                 <b>O que você escreve:</b> notas, eventos, lembretes e configurações.
               </>,
               <>
@@ -106,7 +110,7 @@ export function PrivacyPage() {
                 JSON com notas, eventos, agendas e configurações.
               </>,
               <>
-                <b>Apagar a conta:</b> em Configurações → Seus dados. Leva junto sessões, token,
+                <b>Apagar a conta:</b> em Configurações → Seus dados. Leva junto sessões, tokens,
                 notas, eventos, agendas, avisos e configurações.
               </>,
               <>

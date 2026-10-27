@@ -1,6 +1,10 @@
 import type { ActivitySource } from '../src/application/ports/activity-source.js'
 import type { GitHubOAuth } from '../src/application/ports/github-oauth.js'
 import type { GitHubProfiles } from '../src/application/ports/github-profiles.js'
+import type {
+  GitHubTokenInspector,
+  TokenInspection,
+} from '../src/application/ports/github-token-inspector.js'
 import type { GitHubProfile } from '../src/application/ports/user-repository.js'
 import type { Clock } from '../src/application/ports/security.js'
 import { CompleteGitHubLogin } from '../src/application/use-cases/complete-github-login.js'
@@ -13,6 +17,7 @@ import { Calendar } from '../src/application/use-cases/calendar.js'
 import { GetStandup } from '../src/application/use-cases/get-standup.js'
 import { Notes } from '../src/application/use-cases/notes.js'
 import { Logout } from '../src/application/use-cases/logout.js'
+import { PersonalGitHubToken } from '../src/application/use-cases/personal-github-token.js'
 import { StartPersonalSession } from '../src/application/use-cases/start-personal-session.js'
 import { GetMetrics } from '../src/application/use-cases/get-metrics.js'
 import { GetTeam } from '../src/application/use-cases/get-team.js'
@@ -115,8 +120,14 @@ export class FakeGitHubOAuth implements GitHubOAuth {
 }
 
 /** Perfis falsos: só o token 'ghp_valido' é aceito. */
-export class FakeGitHubProfiles implements GitHubProfiles {
+export class FakeGitHubProfiles implements GitHubProfiles, GitHubTokenInspector {
   calls = 0
+  /** Escopos que o token "tem"; nulo imita um token fine-grained. */
+  scopes: string[] | null = ['repo', 'read:org', 'read:user']
+
+  async inspect(accessToken: string): Promise<TokenInspection> {
+    return { profile: await this.fetchProfile(accessToken), scopes: this.scopes }
+  }
 
   async fetchProfile(accessToken: string): Promise<GitHubProfile> {
     this.calls += 1
@@ -242,6 +253,25 @@ export function createTestContext(
     clock,
   )
 
+  const getMetrics = new GetMetrics(
+    { github: new SampleMetricsSource(clock), sample: new SampleMetricsSource(clock) },
+    githubTokens,
+    clock,
+  )
+  const getTeam = new GetTeam(
+    getDashboard,
+    { github: new SampleTeamSource(clock), sample: new SampleTeamSource(clock) },
+    githubTokens,
+    settings,
+    clock,
+  )
+  const getStandup = new GetStandup(
+    getDashboard,
+    { github: activity, sample: new SampleActivitySource() },
+    githubTokens,
+    clock,
+  )
+
   const deps: AppDependencies = {
     push: {
       notifications: new PushNotifications(
@@ -297,26 +327,16 @@ export function createTestContext(
       notes: new Notes(notes, clock),
       calendar,
       externalCalendars,
-      getMetrics: new GetMetrics(
-        { github: new SampleMetricsSource(clock), sample: new SampleMetricsSource(clock) },
-        githubTokens,
-        clock,
-      ),
-      getTeam: new GetTeam(
-        getDashboard,
-        { github: new SampleTeamSource(clock), sample: new SampleTeamSource(clock) },
-        githubTokens,
-        settings,
-        clock,
-      ),
+      getMetrics,
+      getTeam,
       settings,
       account: new Account(users, notes, events, externalCalendars, settings, clock),
-      getStandup: new GetStandup(
-        getDashboard,
-        { github: activity, sample: new SampleActivitySource() },
-        githubTokens,
-        clock,
-      ),
+      getStandup,
+      personalGitHubToken: new PersonalGitHubToken(profiles, githubTokens, [
+        getMetrics,
+        getTeam,
+        getStandup,
+      ]),
     },
   }
 

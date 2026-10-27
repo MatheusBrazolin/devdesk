@@ -1,4 +1,4 @@
-import type { NoticeKind, Settings } from '@devdesk/shared'
+import type { GitHubTokenStatus, NoticeKind, Settings } from '@devdesk/shared'
 import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 
@@ -34,6 +34,36 @@ export function useSaveSettings() {
     },
   })
 }
+
+export const githubTokenQuery = queryOptions({
+  queryKey: ['github-token'],
+  queryFn: () => api<GitHubTokenStatus>('/github/token'),
+  staleTime: Infinity,
+})
+
+/** Guarda (texto) ou remove (null) o token pessoal; os dados do GitHub vêm de novo. */
+export function useSaveGitHubToken() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (token: string | null) =>
+      token === null
+        ? api<GitHubTokenStatus>('/github/token', { method: 'DELETE' })
+        : api<GitHubTokenStatus>('/github/token', {
+            method: 'PUT',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ token }),
+          }),
+    onSuccess: (status) => {
+      queryClient.setQueryData(githubTokenQuery.queryKey, status)
+      for (const key of ['dashboard', 'team', 'metrics', 'standup', 'calendar'])
+        void queryClient.invalidateQueries({ queryKey: [key] })
+    },
+  })
+}
+
+/** Token classic com os escopos que o painel precisa, já marcados. */
+export const NEW_TOKEN_URL =
+  'https://github.com/settings/tokens/new?scopes=repo,read:org&description=DevDesk'
 
 export function useDeleteAccount() {
   return useMutation({

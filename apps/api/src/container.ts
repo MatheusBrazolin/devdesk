@@ -7,6 +7,7 @@ import { Calendar } from './application/use-cases/calendar.js'
 import { GetStandup } from './application/use-cases/get-standup.js'
 import { Notes } from './application/use-cases/notes.js'
 import { Logout } from './application/use-cases/logout.js'
+import { PersonalGitHubToken } from './application/use-cases/personal-github-token.js'
 import { StartPersonalSession } from './application/use-cases/start-personal-session.js'
 import { StartDemoSession } from './application/use-cases/start-demo-session.js'
 import type { Env } from './config/env.js'
@@ -111,6 +112,25 @@ export function createContainer(env: Env, db: Database): AppDependencies {
         }
       : null
 
+  const getMetrics = new GetMetrics(
+    { github: new GitHubMetricsSource(), sample: new SampleMetricsSource(systemClock) },
+    githubTokens,
+    systemClock,
+  )
+  const getTeam = new GetTeam(
+    getDashboard,
+    { github: new GitHubTeamSource(), sample: new SampleTeamSource(systemClock) },
+    githubTokens,
+    settings,
+    systemClock,
+  )
+  const getStandup = new GetStandup(
+    getDashboard,
+    { github: new GitHubActivitySource(), sample: new SampleActivitySource() },
+    githubTokens,
+    systemClock,
+  )
+
   return {
     push,
     config: {
@@ -150,26 +170,16 @@ export function createContainer(env: Env, db: Database): AppDependencies {
       notes: new Notes(notes, systemClock),
       calendar,
       externalCalendars,
-      getMetrics: new GetMetrics(
-        { github: new GitHubMetricsSource(), sample: new SampleMetricsSource(systemClock) },
-        githubTokens,
-        systemClock,
-      ),
-      getTeam: new GetTeam(
-        getDashboard,
-        { github: new GitHubTeamSource(), sample: new SampleTeamSource(systemClock) },
-        githubTokens,
-        settings,
-        systemClock,
-      ),
+      getMetrics,
+      getTeam,
       settings,
       account: new Account(users, notes, events, externalCalendars, settings, systemClock),
-      getStandup: new GetStandup(
-        getDashboard,
-        { github: new GitHubActivitySource(), sample: new SampleActivitySource() },
-        githubTokens,
-        systemClock,
-      ),
+      getStandup,
+      personalGitHubToken: new PersonalGitHubToken(new GitHubProfileClient(), githubTokens, [
+        getMetrics,
+        getTeam,
+        getStandup,
+      ]),
     },
   }
 }

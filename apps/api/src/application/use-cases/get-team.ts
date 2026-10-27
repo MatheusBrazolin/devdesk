@@ -27,6 +27,11 @@ export class GetTeam {
     private readonly clock: Clock,
   ) {}
 
+  /** Esquece o resultado guardado: o token mudou e o GitHub pode mostrar outra coisa. */
+  forget(userId: string): void {
+    this.cache.delete(userId)
+  }
+
   async execute(user: User): Promise<TeamResult> {
     const now = this.clock.now()
     if (user.isDemo) {

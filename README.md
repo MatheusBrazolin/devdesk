@@ -60,6 +60,7 @@ Painel de trabalho para desenvolvedores: o que pede a sua atenção no GitHub, s
 - **Calendário** com eventos e lembretes (dia inteiro ou com horário), os prazos das milestones dos seus PRs e issues, a agenda da semana no painel Hoje, aviso na hora dos lembretes e exportação `.ics` para Google Agenda, Apple Calendar ou Outlook. **Agendas conectadas**: assine o seu Google Agenda, Outlook ou iCloud pelo link `.ics` e as reuniões (inclusive as que se repetem) aparecem no calendário, no Hoje, no standup, no modo TV e no foco. Só leitura; o link fica cifrado e o servidor só busca em provedores conhecidos
 - **Standup** pronto para colar: o que você mergeou, abriu, revisou e fechou no dia útil anterior (na segunda, desde sexta), o que pede atenção hoje e os PRs travados. Em Slack, Markdown ou texto, editável, com cópia e salvar como nota
 - **Abre na hora:** o painel mostra o último retrato guardado e atualiza por trás; o retrato fica no Postgres, então nem depois de reiniciar a API é preciso esperar o GitHub
+- **Funciona com organizações que bloqueiam apps de terceiros**: quem entra pelo GitHub pode conectar um token pessoal em Configurações → Acesso ao GitHub. O token age como a pessoa, então os repositórios da empresa aparecem sem pedir nada à organização. Fica cifrado e só serve para ler
 - **Configurações**: quais avisos receber (review pedida, CI, conflito, reuniões…) e quais repositórios formam o time
 - **Seus dados (LGPD)**: página de [privacidade](https://devdesk-tklq.onrender.com/privacidade) dizendo o que fica guardado e por quanto tempo, "Baixar meus dados" em JSON e "Apagar minha conta", que leva tudo junto
 - **Atalhos**: <kbd>?</kbd> mostra todos
@@ -116,7 +117,7 @@ Rode `npm run setup:github` e escolha um dos dois modos. O comando confere tudo 
 - Homepage URL: `http://localhost:5173`
 - Authorization callback URL: `http://localhost:5173/api/auth/github/callback`
 
-Gere um Client Secret e informe os dois no setup. O escopo pedido é `read:user read:org repo`: OAuth Apps não têm permissão só de leitura para repositórios privados, então o GitHub mostra acesso de escrita na autorização, embora o DevDesk só faça leituras. Organizações que restringem OAuth Apps precisam liberar o app para os repositórios delas aparecerem.
+Gere um Client Secret e informe os dois no setup. O escopo pedido é `read:user read:org repo`: OAuth Apps não têm permissão só de leitura para repositórios privados, então o GitHub mostra acesso de escrita na autorização, embora o DevDesk só faça leituras. Organizações que restringem OAuth Apps escondem os repositórios delas do login; nesse caso, cada pessoa conecta o próprio token pessoal em Configurações → Acesso ao GitHub ([ADR 0012](docs/adr/0012-token-pessoal-de-cada-pessoa.md)), sem pedir nada à organização.
 
 Depois de qualquer um dos dois, reinicie a API.
 

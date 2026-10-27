@@ -23,6 +23,11 @@ export class GetMetrics {
     private readonly clock: Clock,
   ) {}
 
+  /** Esquece o resultado guardado: o token mudou e o GitHub pode mostrar outra coisa. */
+  forget(userId: string): void {
+    this.cache.delete(userId)
+  }
+
   async execute(user: User): Promise<MetricsResult> {
     const now = this.clock.now()
     const from = metricsStart(now, METRICS_WEEKS)

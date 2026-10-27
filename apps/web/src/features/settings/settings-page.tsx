@@ -3,8 +3,10 @@ import { Link } from '@tanstack/react-router'
 import { Bell, Database, Users } from 'lucide-react'
 import { PageHeader, Reveal } from '@/components/layout/page-header'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
+import { GitHubIcon } from '@/components/ui/github-icon'
 import { Skeleton } from '@/components/ui/skeleton'
 import { DataSection } from './data-section'
+import { GitHubSection } from './github-section'
 import { NoticesSection } from './notices-section'
 import { settingsQuery } from './queries'
 import { TeamSection } from './team-section'
@@ -17,10 +19,21 @@ export function SettingsPage() {
     <div className="mx-auto max-w-3xl space-y-5">
       <PageHeader
         section="/configuracoes"
-        subtitle="Escolha os avisos, os repositórios do time e cuide dos seus dados."
+        subtitle="Escolha de onde vêm os dados do GitHub, os avisos, o time e cuide dos seus dados."
       />
 
       <Reveal delay={0.04}>
+        <Card className="overflow-hidden">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <GitHubIcon className="size-3.5 text-fg-muted" /> Acesso ao GitHub
+            </CardTitle>
+          </CardHeader>
+          <GitHubSection />
+        </Card>
+      </Reveal>
+
+      <Reveal delay={0.08}>
         <Card className="overflow-hidden">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -31,7 +44,7 @@ export function SettingsPage() {
         </Card>
       </Reveal>
 
-      <Reveal delay={0.08}>
+      <Reveal delay={0.12}>
         <Card className="overflow-hidden">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -42,7 +55,7 @@ export function SettingsPage() {
         </Card>
       </Reveal>
 
-      <Reveal delay={0.12}>
+      <Reveal delay={0.16}>
         <Card className="overflow-hidden">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

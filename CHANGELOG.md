@@ -2,6 +2,13 @@
 
 Mudanças que valem a pena saber, versão a versão. O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e as versões seguem o [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [Não lançado]
+
+### Adicionado
+
+- **Token pessoal para cada pessoa** em Configurações → Acesso ao GitHub. Quem trabalha numa organização que bloqueia apps de terceiros entrava pelo GitHub e via o painel vazio; com o token, os repositórios da empresa aparecem sem pedir nada à organização. O token é conferido com o GitHub (mesma conta e escopos), fica cifrado e nunca volta para o navegador ([ADR 0012](docs/adr/0012-token-pessoal-de-cada-pessoa.md)).
+- Dica no Hoje quando o painel vem todo zerado, levando à configuração do token.
+
 ## [1.0.0] - 2026-10-27
 
 Primeira versão publicada do DevDesk: o painel inteiro, no ar em [devdesk-tklq.onrender.com](https://devdesk-tklq.onrender.com).
@@ -52,4 +59,5 @@ Primeira versão publicada do DevDesk: o painel inteiro, no ar em [devdesk-tklq.
 - CodeQL, Dependabot e [política de segurança](SECURITY.md).
 - Uma imagem Docker só, publicada no Render com o banco no Neon ([guia](docs/DEPLOY.md)).
 
+[Não lançado]: https://github.com/MatheusBrazolin/devdesk/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/MatheusBrazolin/devdesk/releases/tag/v1.0.0

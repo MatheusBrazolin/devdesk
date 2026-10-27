@@ -37,6 +37,7 @@ import { cn } from '@/lib/cn'
 import { firstName, formatLongDate, greetingFor } from '@/lib/greeting'
 import { fadeUp } from '@/lib/motion'
 import { ageBuckets, loadByOwner, mergedPerDay } from './dashboard-metrics'
+import { OrgAccessHint } from './org-access-hint'
 
 const weekday = new Intl.DateTimeFormat('pt-BR', { weekday: 'short' })
 const longDay = new Intl.DateTimeFormat('pt-BR', {
@@ -84,6 +85,8 @@ export function HomePage() {
           </div>
           <SyncStatus />
         </motion.header>
+
+        <OrgAccessHint data={data} isDemo={user.isDemo} />
 
         <section
           aria-label="Indicadores"

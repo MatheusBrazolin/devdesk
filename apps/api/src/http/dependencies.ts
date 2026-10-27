@@ -12,6 +12,7 @@ import type { GetTeam } from '../application/use-cases/get-team.js'
 import type { GetStandup } from '../application/use-cases/get-standup.js'
 import type { Notes } from '../application/use-cases/notes.js'
 import type { Logout } from '../application/use-cases/logout.js'
+import type { PersonalGitHubToken } from '../application/use-cases/personal-github-token.js'
 import type { StartPersonalSession } from '../application/use-cases/start-personal-session.js'
 import type { StartDemoSession } from '../application/use-cases/start-demo-session.js'
 
@@ -48,5 +49,6 @@ export interface AppDependencies {
     getTeam: GetTeam
     settings: UserSettings
     account: Account
+    personalGitHubToken: PersonalGitHubToken
   }
 }

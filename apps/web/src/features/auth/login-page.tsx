@@ -124,7 +124,7 @@ export function LoginPage() {
                 'Esta é uma demonstração pública, com dados de exemplo: nada aqui está ligado a uma conta real. Para ver o seu próprio GitHub, rode o DevDesk na sua máquina.'
               )
             ) : (
-              'O GitHub vai pedir acesso aos seus repositórios, porque OAuth Apps não têm uma permissão só de leitura. O DevDesk apenas lê: não comenta, não aprova e não faz merge.'
+              'O GitHub vai pedir acesso aos seus repositórios, porque OAuth Apps não têm uma permissão só de leitura. O DevDesk apenas lê: não comenta, não aprova e não faz merge. Se a sua empresa bloqueia apps de terceiros, depois de entrar conecte um token pessoal em Configurações.'
             )}
           </p>
           <Link

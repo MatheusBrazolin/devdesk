@@ -502,6 +502,9 @@ test.describe('configurações e privacidade', () => {
     await page.keyboard.press('g')
     await page.keyboard.press('o')
     await expect(page).toHaveURL(/\/configuracoes/)
+    // Na demonstração não há conta do GitHub: a seção só explica o token pessoal.
+    await expect(page.getByText('Acesso ao GitHub')).toBeVisible()
+    await expect(page.getByLabel('Token pessoal do GitHub')).toHaveCount(0)
     const ci = page.getByRole('checkbox', { name: /CI falhou/ })
     await expect(ci).toBeChecked()
     await ci.uncheck()

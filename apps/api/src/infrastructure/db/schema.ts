@@ -24,6 +24,9 @@ export const users = pgTable('users', {
   accessTokenExpiresAt: timestamp('access_token_expires_at', { withTimezone: true }),
   refreshTokenEncrypted: text('refresh_token_encrypted'),
   refreshTokenExpiresAt: timestamp('refresh_token_expires_at', { withTimezone: true }),
+  /** Token pessoal que a própria pessoa colou: tem prioridade sobre o do OAuth. */
+  personalTokenEncrypted: text('personal_token_encrypted'),
+  personalTokenSavedAt: timestamp('personal_token_saved_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 })

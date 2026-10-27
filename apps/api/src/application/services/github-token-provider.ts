@@ -6,7 +6,9 @@ import type { UserRepository } from '../ports/user-repository.js'
 
 /**
  * Guarda os tokens do GitHub cifrados e entrega sempre um token válido,
- * renovando antes de expirar.
+ * renovando antes de expirar. Um token pessoal colado pela própria pessoa
+ * vale mais que o do OAuth: é ele que enxerga as organizações que
+ * bloqueiam apps de terceiros.
  */
 export class GitHubTokenProvider {
   /** Leituras em andamento por usuário: o refresh token só vale uma vez. */
@@ -42,7 +44,23 @@ export class GitHubTokenProvider {
     return resolving
   }
 
+  /** Guarda o token pessoal da pessoa; nulo volta para o do OAuth. */
+  async savePersonal(userId: string, token: string | null): Promise<void> {
+    await this.users.savePersonalToken(
+      userId,
+      token === null ? null : { token: this.cipher.encrypt(token), savedAt: this.clock.now() },
+    )
+  }
+
+  /** Quando o token pessoal foi guardado, ou nulo sem token pessoal. */
+  async personalSavedAt(userId: string): Promise<Date | null> {
+    return (await this.users.findPersonalToken(userId))?.savedAt ?? null
+  }
+
   private async resolve(userId: string): Promise<string> {
+    const personal = await this.users.findPersonalToken(userId)
+    if (personal) return this.decrypt(personal.token)
+
     const stored = await this.users.findGitHubTokens(userId)
     if (!stored) throw githubReconnect()
 

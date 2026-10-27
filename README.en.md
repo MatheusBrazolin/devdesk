@@ -60,6 +60,7 @@ A work dashboard for developers: what needs your attention on GitHub, your notes
 - **Calendar** with events and reminders (all-day or timed), milestone due dates from your PRs and issues, this week's agenda on Today, reminder alerts and `.ics` export for Google Calendar, Apple Calendar or Outlook. **Connected calendars**: subscribe to your Google Calendar, Outlook or iCloud by its `.ics` link and your meetings (recurring ones included) show up in the calendar, Today, standup, TV mode and focus. Read-only; the link is encrypted and the server only fetches from known providers
 - **Standup** ready to paste: what you merged, opened, reviewed and closed on the previous working day (on Monday, since Friday), what needs attention today and blocked PRs. In Slack, Markdown or plain text, editable, with copy and save as note
 - **Opens instantly:** the dashboard shows the last stored snapshot and refreshes in the background; the snapshot lives in Postgres, so not even an API restart means waiting for GitHub
+- **Works with organizations that block third-party apps**: anyone who signs in with GitHub can connect a personal token in Settings → GitHub access. The token acts as that person, so the company's repositories show up without asking the organization for anything. It is encrypted and only used to read
 - **Settings**: which notifications to get (review requested, CI, conflict, meetings…) and which repositories make up the team
 - **Your data (LGPD, Brazil's GDPR)**: a [privacy page](https://devdesk-tklq.onrender.com/privacidade) saying what is stored and for how long, "Download my data" as JSON and "Delete my account", which takes everything with it
 - **Shortcuts**: <kbd>?</kbd> lists them all
@@ -116,7 +117,7 @@ Run `npm run setup:github` and pick one of the two modes. The command checks eve
 - Homepage URL: `http://localhost:5173`
 - Authorization callback URL: `http://localhost:5173/api/auth/github/callback`
 
-Generate a Client Secret and enter both in the setup. The requested scope is `read:user read:org repo`: OAuth Apps have no read-only permission for private repositories, so GitHub shows write access on the consent screen, even though DevDesk only reads. Organizations that restrict OAuth Apps need to approve the app for their repositories to show up.
+Generate a Client Secret and enter both in the setup. The requested scope is `read:user read:org repo`: OAuth Apps have no read-only permission for private repositories, so GitHub shows write access on the consent screen, even though DevDesk only reads. Organizations that restrict OAuth Apps hide their repositories from the login; in that case each person connects their own personal token in Settings → GitHub access ([ADR 0012](docs/adr/0012-token-pessoal-de-cada-pessoa.md)), without asking the organization for anything.
 
 After either one, restart the API.
 

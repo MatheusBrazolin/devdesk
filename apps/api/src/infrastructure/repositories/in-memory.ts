@@ -19,6 +19,7 @@ import type {
 } from '../../application/ports/subscription-repository.js'
 import type {
   EncryptedGitHubTokens,
+  EncryptedPersonalToken,
   GitHubProfile,
   UserRepository,
 } from '../../application/ports/user-repository.js'
@@ -33,6 +34,7 @@ import type { User } from '../../domain/user.js'
 export class InMemoryUserRepository implements UserRepository {
   readonly items = new Map<string, User>()
   readonly tokens = new Map<string, EncryptedGitHubTokens>()
+  readonly personalTokens = new Map<string, EncryptedPersonalToken>()
 
   async findById(id: string): Promise<User | null> {
     return this.items.get(id) ?? null
@@ -56,6 +58,15 @@ export class InMemoryUserRepository implements UserRepository {
     this.tokens.set(userId, tokens)
   }
 
+  async findPersonalToken(userId: string): Promise<EncryptedPersonalToken | null> {
+    return this.personalTokens.get(userId) ?? null
+  }
+
+  async savePersonalToken(userId: string, token: EncryptedPersonalToken | null): Promise<void> {
+    if (token) this.personalTokens.set(userId, token)
+    else this.personalTokens.delete(userId)
+  }
+
   async deleteDemosCreatedBefore(date: Date): Promise<number> {
     const old = [...this.items.values()].filter((u) => u.isDemo && u.createdAt < date)
     old.forEach((u) => this.items.delete(u.id))
@@ -65,6 +76,7 @@ export class InMemoryUserRepository implements UserRepository {
   async delete(id: string): Promise<void> {
     this.items.delete(id)
     this.tokens.delete(id)
+    this.personalTokens.delete(id)
   }
 
   async createDemo(now: Date): Promise<User> {

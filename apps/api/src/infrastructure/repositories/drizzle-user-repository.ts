@@ -1,6 +1,7 @@
 import { and, eq, lt } from 'drizzle-orm'
 import type {
   EncryptedGitHubTokens,
+  EncryptedPersonalToken,
   GitHubProfile,
   UserRepository,
 } from '../../application/ports/user-repository.js'
@@ -59,6 +60,27 @@ export class DrizzleUserRepository implements UserRepository {
         accessTokenExpiresAt: tokens.accessTokenExpiresAt,
         refreshTokenEncrypted: tokens.refreshToken,
         refreshTokenExpiresAt: tokens.refreshTokenExpiresAt,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+  }
+
+  async findPersonalToken(userId: string): Promise<EncryptedPersonalToken | null> {
+    const [row] = await this.db
+      .select({ token: users.personalTokenEncrypted, savedAt: users.personalTokenSavedAt })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1)
+    if (!row?.token || !row.savedAt) return null
+    return { token: row.token, savedAt: row.savedAt }
+  }
+
+  async savePersonalToken(userId: string, token: EncryptedPersonalToken | null): Promise<void> {
+    await this.db
+      .update(users)
+      .set({
+        personalTokenEncrypted: token?.token ?? null,
+        personalTokenSavedAt: token?.savedAt ?? null,
         updatedAt: new Date(),
       })
       .where(eq(users.id, userId))

@@ -28,6 +28,11 @@ export class GetStandup {
     private readonly clock: Clock,
   ) {}
 
+  /** Esquece as atividades guardadas: o token mudou e o GitHub pode mostrar outra coisa. */
+  forget(userId: string): void {
+    for (const key of this.cache.keys()) if (key.startsWith(`${userId}:`)) this.cache.delete(key)
+  }
+
   async execute(user: User, from: Date, to: Date): Promise<StandupResult> {
     const [activity, { snapshot }] = await Promise.all([
       this.activity(user, from, to),
