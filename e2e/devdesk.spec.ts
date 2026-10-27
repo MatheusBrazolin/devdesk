@@ -489,6 +489,71 @@ test.describe('painel do time', () => {
   })
 })
 
+test.describe('GitHub da empresa', () => {
+  test('painel vazio mostra o passo do token e colar conecta sozinho', async ({ page }) => {
+    await enterDemo(page)
+    // Imita uma conta comum, recém-entrada pelo GitHub, numa organização que bloqueia apps.
+    // As respostas saem prontas daqui: o app busca de novo depois de conectar, e uma rota
+    // que ainda fosse ao servidor podia terminar depois do teste.
+    const me = await (await page.request.get('/api/me')).json()
+    const dashboard = await (await page.request.get('/api/dashboard')).json()
+    let connected = false
+    await page.route('**/api/me', (route) =>
+      route.fulfill({
+        json: { ...me, user: { ...me.user, isDemo: false, login: 'colega', name: 'Colega' } },
+      }),
+    )
+    await page.route('**/api/dashboard*', (route) =>
+      route.fulfill({
+        json: {
+          ...dashboard,
+          isSample: false,
+          summary: {
+            reviewRequested: 0,
+            openPullRequests: 0,
+            assignedIssues: 0,
+            mergedThisWeek: 0,
+          },
+          attention: [],
+          pullRequests: { reviewRequested: [], authored: [], merged: [] },
+          issues: [],
+        },
+      }),
+    )
+    let saved: string | null = null
+    await page.route('**/api/github/token', async (route) => {
+      if (route.request().method() === 'PUT') {
+        saved = route.request().postDataJSON().token
+        connected = true
+      }
+      await route.fulfill({
+        json: { connected, savedAt: connected ? new Date().toISOString() : null },
+      })
+    })
+
+    await page.goto('/')
+    const card = page.getByRole('complementary', { name: 'Conectar o GitHub da empresa' })
+    await expect(card).toBeVisible()
+    await expect(card.getByRole('link', { name: /Abra o GitHub/ })).toHaveAttribute(
+      'href',
+      /scopes=repo,read:org/,
+    )
+
+    await card.getByLabel('Token pessoal do GitHub').focus()
+    await page.evaluate(() => {
+      const data = new DataTransfer()
+      data.setData('text/plain', 'ghp_tokenDeTesteColado123')
+      document.activeElement?.dispatchEvent(
+        new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }),
+      )
+    })
+    await expect(page.getByText('GitHub conectado')).toBeVisible()
+    await expect(card).toHaveCount(0)
+    expect(saved).toBe('ghp_tokenDeTesteColado123')
+    await page.unrouteAll({ behavior: 'ignoreErrors' })
+  })
+})
+
 test.describe('configurações e privacidade', () => {
   test('a privacidade abre sem entrar e o login aponta para ela', async ({ page }) => {
     await page.goto('/login')

@@ -7,7 +7,7 @@ Mudanças que valem a pena saber, versão a versão. O formato segue o [Keep a C
 ### Adicionado
 
 - **Token pessoal para cada pessoa** em Configurações → Acesso ao GitHub. Quem trabalha numa organização que bloqueia apps de terceiros entrava pelo GitHub e via o painel vazio; com o token, os repositórios da empresa aparecem sem pedir nada à organização. O token é conferido com o GitHub (mesma conta e escopos), fica cifrado e nunca volta para o navegador ([ADR 0012](docs/adr/0012-token-pessoal-de-cada-pessoa.md)).
-- Dica no Hoje quando o painel vem todo zerado, levando à configuração do token.
+- **Passo guiado no Hoje**: quando o painel vem todo zerado, o próprio Hoje mostra como gerar o token (o link do GitHub já vem com nome e permissões) e o campo para colar. Colar já conecta e recarrega o painel, sem apertar nada.
 
 ## [1.0.0] - 2026-10-27
 

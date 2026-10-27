@@ -4,6 +4,7 @@ import { Link } from '@tanstack/react-router'
 import { KeyRound, X } from 'lucide-react'
 import { useState } from 'react'
 import { githubTokenQuery } from '@/features/settings/queries'
+import { TokenConnectForm, TokenSteps } from '@/features/settings/token-connect'
 
 const DISMISSED = 'devdesk:dica-token'
 
@@ -17,8 +18,9 @@ function wasDismissed(): boolean {
 
 /**
  * Painel todo zerado logo depois de entrar pelo GitHub costuma ser uma
- * organização que bloqueia apps de terceiros. A dica leva ao token pessoal,
- * que resolve sem pedir nada à organização.
+ * organização que bloqueia apps de terceiros. O passo para resolver fica aqui
+ * mesmo: gerar o token no GitHub e colar, que conecta sozinho e recarrega o
+ * painel, sem pedir nada à organização.
  */
 export function OrgAccessHint({ data, isDemo }: { data: Dashboard | undefined; isDemo: boolean }) {
   const token = useQuery({ ...githubTokenQuery, enabled: !isDemo })
@@ -41,26 +43,37 @@ export function OrgAccessHint({ data, isDemo }: { data: Dashboard | undefined; i
 
   return (
     <aside
-      aria-label="Dica de acesso ao GitHub"
-      className="flex shrink-0 items-start gap-3 rounded-lg border border-accent/30 bg-accent/8 px-4 py-3"
+      aria-label="Conectar o GitHub da empresa"
+      className="shrink-0 space-y-3 rounded-lg border border-accent/30 bg-accent/8 px-4 py-3"
     >
-      <KeyRound className="mt-0.5 size-4 shrink-0 text-accent" />
-      <p className="min-w-0 flex-1 text-[13px] leading-relaxed text-fg-muted">
-        <span className="font-medium text-fg">Não apareceu nada do seu GitHub?</span> Se o seu
-        trabalho fica numa organização que bloqueia apps de terceiros, conecte um token pessoal em{' '}
-        <Link to="/configuracoes" className="text-fg underline underline-offset-2">
-          Configurações → Acesso ao GitHub
-        </Link>
-        . Leva um minuto e não pede nada à organização.
-      </p>
-      <button
-        type="button"
-        onClick={dismiss}
-        aria-label="Fechar a dica"
-        className="rounded p-0.5 text-fg-subtle hover:text-fg"
-      >
-        <X className="size-4" />
-      </button>
+      <div className="flex items-start gap-3">
+        <KeyRound className="mt-0.5 size-4 shrink-0 text-accent" />
+        <p className="min-w-0 flex-1 text-[13px] leading-relaxed text-fg-muted">
+          <span className="font-medium text-fg">Não veio nada do seu GitHub?</span> Se o seu
+          trabalho fica numa organização que bloqueia apps de terceiros, o login sozinho não enxerga
+          o que é dela. Com um token pessoal, tudo aparece aqui, sem pedir nada à organização. Leva
+          um minuto, uma vez só.
+        </p>
+        <button
+          type="button"
+          onClick={dismiss}
+          aria-label="Fechar"
+          className="rounded p-0.5 text-fg-subtle hover:text-fg"
+        >
+          <X className="size-4" />
+        </button>
+      </div>
+      <div className="space-y-3 pl-7">
+        <TokenSteps />
+        <TokenConnectForm id="token-pessoal-hoje" />
+        <p className="text-[12px] text-fg-subtle">
+          Fica cifrado e só serve para ler. Dá para remover em{' '}
+          <Link to="/configuracoes" className="underline underline-offset-2 hover:text-fg-muted">
+            Configurações
+          </Link>
+          .
+        </p>
+      </div>
     </aside>
   )
 }

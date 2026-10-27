@@ -63,7 +63,7 @@ export function useSaveGitHubToken() {
 
 /** Token classic com os escopos que o painel precisa, já marcados. */
 export const NEW_TOKEN_URL =
-  'https://github.com/settings/tokens/new?scopes=repo,read:org&description=DevDesk'
+  'https://github.com/settings/tokens/new?scopes=repo,read:org&description=DevDesk%20(somente%20leitura)'
 
 export function useDeleteAccount() {
   return useMutation({

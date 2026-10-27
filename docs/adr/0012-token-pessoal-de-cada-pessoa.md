@@ -27,8 +27,12 @@ libere o app está fora de questão.
   quando.
 - Trocar o token esquece os resultados guardados de time, métricas e standup;
   o retrato do painel já é separado por token.
-- Quando o painel vem todo zerado e não há token pessoal, o Hoje mostra uma
-  dica que leva às Configurações.
+- Quando o painel vem todo zerado e não há token pessoal, o próprio Hoje
+  mostra o passo: o link abre o GitHub com nome e permissões preenchidos, e
+  colar o token no campo já conecta e recarrega o painel.
+- Automático de verdade, sem token, só com um administrador da organização
+  aprovando o app; isso fica de fora de propósito, para não pedir nada às
+  organizações. O GitHub também não tem API para criar um token pela pessoa.
 
 ## Consequências
 
