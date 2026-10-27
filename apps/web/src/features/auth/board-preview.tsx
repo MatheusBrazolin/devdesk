@@ -181,9 +181,9 @@ export function BoardPreview() {
 function Column({ title, dot, cards }: { title: string; dot: string; cards: PreviewCard[] }) {
   return (
     <section className="flex min-h-[27rem] flex-col gap-2.5 rounded-q-panel border border-border bg-surface p-3">
-      <h3 className="flex items-center gap-2 px-1 pt-1 text-[13px] font-semibold">
-        <span className={cn('size-2 shrink-0 rounded-full', dot)} />
-        <span className="min-w-0 flex-1 truncate">{title}</span>
+      <h3 className="flex items-start gap-2 px-1 pt-1 text-[13px] font-semibold">
+        <span className={cn('mt-1 size-2 shrink-0 rounded-full', dot)} />
+        <span className="min-w-0 flex-1 leading-tight">{title}</span>
         <motion.span
           key={cards.length}
           initial={{ scale: 0.7, opacity: 0 }}

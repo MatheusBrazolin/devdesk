@@ -253,3 +253,66 @@
   transition-duration: 140ms;
   transition-timing-function: ease-out;
 }
+
+/* Troca de idioma: a tela some (220 ms), recarrega e volta (320 ms). */
+html.lang-leaving #root {
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    opacity 220ms ease-in,
+    transform 220ms ease-in;
+}
+html.lang-entering #root {
+  animation: lang-enter 320ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+@keyframes lang-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Grafo de git do login: o ponto que corre pela main e o pulso de cada merge. */
+.gg-travel {
+  offset-rotate: 0deg;
+  opacity: 0;
+  animation-name: gg-travel;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
+}
+@keyframes gg-travel {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  8%,
+  92% {
+    opacity: 0.9;
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+.gg-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: gg-pulse 2.6s ease-out infinite both;
+}
+@keyframes gg-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  70%,
+  100% {
+    transform: scale(3.4);
+    opacity: 0;
+  }
+}

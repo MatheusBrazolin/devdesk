@@ -1,13 +1,19 @@
-import { LANGUAGE, LANGUAGES, setLanguage } from '@/lib/i18n'
 import { cn } from '@/lib/cn'
+import { LANGUAGE, LANGUAGES, setLanguage } from '@/lib/i18n'
 
-/** Português ou inglês. Trocar recarrega a página, para datas e textos mudarem juntos. */
+/**
+ * Português ou inglês, em pílula como a navegação. Trocar recarrega a página
+ * (datas e textos mudam juntos), com a tela esmaecendo em vez de piscar.
+ */
 export function LanguageSwitch({ className }: { className?: string }) {
   return (
     <div
       role="radiogroup"
       aria-label="Idioma / Language"
-      className={cn('flex w-fit rounded-md border border-border p-0.5', className)}
+      className={cn(
+        'inline-flex w-fit items-center gap-0.5 rounded-full border border-border bg-surface p-1',
+        className,
+      )}
     >
       {LANGUAGES.map((option) => {
         const active = option.value === LANGUAGE
@@ -20,8 +26,10 @@ export function LanguageSwitch({ className }: { className?: string }) {
             lang={option.value}
             onClick={() => !active && setLanguage(option.value)}
             className={cn(
-              'h-7 rounded px-2.5 text-[12px] transition-colors',
-              active ? 'bg-elevated font-medium text-fg' : 'text-fg-muted hover:text-fg',
+              'q-ease inline-flex h-8 items-center rounded-full px-3.5 text-[13px] leading-none',
+              active
+                ? 'bg-elevated font-semibold text-fg'
+                : 'text-fg-muted hover:bg-elevated/60 hover:text-fg',
             )}
           >
             {option.label}

@@ -75,13 +75,31 @@ export function tx(text: string, parts: Record<string, ReactNode>): ReactNode[] 
 export const plural = (count: number, one: string, many: string) =>
   t(count === 1 ? one : many, { n: count })
 
+/** Marca, para a próxima carga, que a página deve entrar esmaecendo (lida no theme-init.js). */
+const SWAP_FLAG = 'devdesk:troca-idioma'
+/** Quanto a tela leva para sumir antes de recarregar (bate com o CSS). */
+const LEAVE_MS = 220
+
+/**
+ * Troca o idioma. A página recarrega para datas e textos mudarem juntos, mas
+ * sem piscar: a tela esmaece, recarrega e volta esmaecendo. Com movimento
+ * reduzido, a troca é direta.
+ */
 export function setLanguage(language: Language): void {
   try {
     localStorage.setItem(STORAGE_KEY, language)
   } catch {
     // Sem armazenamento: vale só até recarregar.
   }
-  window.location.reload()
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (reduce) return window.location.reload()
+  try {
+    sessionStorage.setItem(SWAP_FLAG, '1')
+  } catch {
+    // Sem armazenamento: volta sem esmaecer, só isso.
+  }
+  document.documentElement.classList.add('lang-leaving')
+  window.setTimeout(() => window.location.reload(), LEAVE_MS)
 }
 
 /** Para testes: o dicionário inglês inteiro. */

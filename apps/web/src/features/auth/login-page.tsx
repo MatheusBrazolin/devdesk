@@ -8,6 +8,7 @@ import { LanguageSwitch } from '@/components/ui/language-switch'
 import { Logo } from '@/components/ui/logo'
 import { t, tx } from '@/lib/i18n'
 import { BoardPreview } from './board-preview'
+import { GitGraphBackdrop } from './git-graph-backdrop'
 import { GITHUB_LOGIN_URL, configQuery, useDemoLogin, usePersonalLogin } from './queries'
 
 const route = getRouteApi('/login')
@@ -166,13 +167,14 @@ export function LoginPage() {
 
       <aside
         aria-label={t('Exemplo do quadro do DevDesk')}
-        className="hidden border-l border-border bg-bg lg:flex lg:items-center lg:justify-center lg:p-12"
+        className="relative hidden overflow-hidden border-l border-border bg-bg lg:flex lg:items-center lg:justify-center lg:px-12 lg:py-[120px]"
       >
+        <GitGraphBackdrop />
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25, duration: 0.5, ease: [0.2, 0.9, 0.3, 1] }}
-          className="flex w-full justify-center"
+          className="relative flex w-full justify-center [@media(min-height:781px)_and_(max-height:860px)]:[zoom:0.84] [@media(min-height:731px)_and_(max-height:780px)]:[zoom:0.74] [@media(max-height:730px)]:[zoom:0.72]"
         >
           <BoardPreview />
         </motion.div>
