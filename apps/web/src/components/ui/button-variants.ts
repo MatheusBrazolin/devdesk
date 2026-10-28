@@ -1,6 +1,6 @@
 import { cva } from 'class-variance-authority'
 
-/** Botões em pílula. Primário em lima com texto no verde do fundo. */
+/** Botões em pílula. Primário em lavanda com texto em roxo bem escuro. */
 export const buttonVariants = cva(
   'inline-flex items-center justify-center gap-2 rounded-full font-medium whitespace-nowrap select-none transition-colors duration-[140ms] disabled:pointer-events-none disabled:opacity-45 [&_svg]:size-4 [&_svg]:shrink-0',
   {

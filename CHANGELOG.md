@@ -7,7 +7,8 @@ Mudanças que valem a pena saber, versão a versão. O formato segue o [Keep a C
 ### Mudado
 
 - **Sem rolagem no computador**: a partir de 1024 × 700, cada tela cabe na janela e o que cresce rola dentro do próprio painel. Configurações e Issues ganharam duas colunas; calendário, gráficos e o quadro do Hoje se ajustam à altura. No celular, a página continua rolando.
-- **Logo novo**: uma branch descendo até a `main` e as duas se juntando num ponto de merge, na barra, no favicon e nos ícones do app.
+- **Paleta grafite e lavanda** no lugar do verde-floresta com lima: fundo neutro quase preto e acento lavanda, que lembra o roxo de "merged". Coral e amarelo continuam marcando o que pede ação e o que está parado. Contraste conferido (o texto mais fraco dá 4,95:1 sobre os cards).
+- **Logo novo**: uma branch descendo até a `main` e as duas se juntando num ponto de merge, em lavanda, na barra, no favicon e nos ícones do app.
 - **Login animado**: o quadro do Hoje em miniatura trabalhando sozinho, sobre um grafo de git que se desenha; trocar de idioma esmaece a tela em vez de piscar.
 
 ## [1.1.0] - 2026-10-27

@@ -65,8 +65,8 @@ export function UserMenu({ variant = 'sidebar' }: { variant?: 'sidebar' | 'avata
   return (
     <DropdownMenu>
       {variant === 'avatar' ? (
-        // Barra superior do Quadro: só o avatar, com as iniciais e anel lima.
-        <DropdownMenuTrigger className="q-ease grid size-10 shrink-0 place-items-center rounded-full border-2 border-q-lime bg-q-col text-[14px] font-semibold text-q-text hover:bg-q-card">
+        // Barra superior do Quadro: só o avatar, com as iniciais e anel lavanda.
+        <DropdownMenuTrigger className="q-ease grid size-10 shrink-0 place-items-center rounded-full border-2 border-q-accent bg-q-col text-[14px] font-semibold text-q-text hover:bg-q-card">
           {initials(user.name, user.login)}
           <span className="sr-only">{t('Menu de {nome}', { nome: user.name ?? user.login })}</span>
         </DropdownMenuTrigger>

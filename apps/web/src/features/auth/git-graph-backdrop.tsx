@@ -4,7 +4,7 @@ import { cn } from '@/lib/cn'
 /**
  * Fundo do lado direito do login: um grafo de git em duas faixas, uma presa
  * no topo e outra no rodapé, com o quadro livre no meio. Branches saem da
- * `main` e voltam com merge, os commits acendem, um ponto lima corre pela
+ * `main` e voltam com merge, os commits acendem, um ponto lavanda corre pela
  * main e cada merge solta um pulso. Linhas finas e pouca opacidade, sem
  * gradiente. Decorativo (aria-hidden); com movimento reduzido, fica parado.
  */
@@ -20,7 +20,7 @@ interface Band {
   commits: number[]
   /** Atraso do desenho, para as faixas não entrarem juntas. */
   delay: number
-  /** Duração da volta do ponto lima na main. */
+  /** Duração da volta do ponto lavanda na main. */
   travel: number
 }
 
@@ -118,7 +118,7 @@ function GraphBand({ band, reduce }: { band: Band; reduce: boolean }) {
 
   return (
     <g>
-      {/* A main: corre de ponta a ponta e o ponto lima passa por ela. */}
+      {/* A main: corre de ponta a ponta e o ponto lavanda passa por ela. */}
       <motion.path
         d={main}
         className="stroke-border-strong"
@@ -170,7 +170,7 @@ function GraphBand({ band, reduce }: { band: Band; reduce: boolean }) {
                 {...pop(start + 0.9 + commit * 0.15)}
               />
             ))}
-            {/* O merge: ponto lima e um pulso que se repete. */}
+            {/* O merge: ponto lavanda e um pulso que se repete. */}
             {!reduce && (
               <circle
                 cx={branch.to}

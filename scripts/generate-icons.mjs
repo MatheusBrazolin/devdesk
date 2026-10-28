@@ -4,8 +4,8 @@ import { mkdirSync } from 'node:fs'
 import { chromium } from '@playwright/test'
 
 const OUT = 'apps/web/public/icons'
-const BG = '#c7f26b'
-const INK = '#0e1713'
+const BG = '#b8a9ff'
+const INK = '#17112e'
 
 /** A marca do merge (branch descendo até a main), num quadro de 32×32 como no favicon. */
 const mark = `<g stroke="${INK}" stroke-width="2.6" stroke-linecap="round" fill="none"><path d="M7 21H19"/><path d="M7 11C14.5 11 13.5 21 19.5 21"/></g>

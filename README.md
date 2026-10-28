@@ -71,7 +71,7 @@ Painel de trabalho para desenvolvedores: o que pede a sua atenção no GitHub, s
 - **Só leitura no GitHub:** o DevDesk nunca comenta, aprova, edita nem faz merge; uma trava no código recusa qualquer escrita
 - Login com GitHub (OAuth) e **modo demonstração**, para quem quer conhecer sem conectar uma conta
 - Sessão por cookie `httpOnly`, com o token guardado só como hash; o token do GitHub fica cifrado (AES-256-GCM)
-- **Visual Quadro** em todas as telas: escuro verde-floresta com acento lima, barra superior com navegação em pílula, painéis e cards arredondados, Bricolage Grotesque e DM Mono ([ADR 0014](docs/adr/0014-visual-quadro.md))
+- **Visual Quadro** em todas as telas: grafite com acento lavanda, barra superior com navegação em pílula, painéis e cards arredondados, Bricolage Grotesque e DM Mono ([ADR 0014](docs/adr/0014-visual-quadro.md))
 - Paleta de comandos (<kbd>⌘</kbd> <kbd>K</kbd>) e atalhos no estilo do GitHub (<kbd>g</kbd> <kbd>p</kbd> vai para os pull requests)
 
 ## Roteiro

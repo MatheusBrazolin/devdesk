@@ -15,7 +15,7 @@ app inteiro, e duas linguagens convivendo pareciam dois produtos.
 - Os tokens semânticos (`--bg`, `--surface`, `--fg`, `--accent`…) passam a
   ter os valores do Quadro. Como os componentes só usam esses nomes, todas as
   telas mudam juntas, sem reescrever cada uma.
-- Papéis das cores: lima é ativo, foco e o que é bom (mergeado, aprovado);
+- Papéis das cores: o acento é ativo, foco e o que é bom (mergeado, aprovado);
   coral é o que pede ação; amarelo (`--warning`) é o que está parado ou
   esperando. Os mesmos valores existem com nome próprio (`q-*`).
 - Escuro sempre: o tema claro e a escolha de tema saíram.
@@ -32,3 +32,12 @@ app inteiro, e duas linguagens convivendo pareciam dois produtos.
   acessibilidade (axe) passa em todas as páginas.
 - Quem preferia o tema claro perdeu a opção. Uma versão clara da paleta pode
   voltar como outro bloco de tokens, sem mexer nos componentes.
+
+## Atualização (2026-10-28): grafite e lavanda
+
+O modelo ficou, a cor não: o verde-floresta com lima pesava. A paleta passou
+para grafite (fundo `#121214`, painéis `#19191d`, cards `#212126`) com acento
+lavanda (`#b8a9ff`, texto sobre ele em `#17112e`). Coral e amarelo seguem nos
+mesmos papéis. Os tokens `q-lime` viraram `q-accent`, para a próxima troca de
+cor não precisar renomear nada. Contraste: o texto mais fraco dá 4,95:1 sobre
+os cards, a lavanda como texto 7,75:1 e o texto sobre ela 8,8:1.

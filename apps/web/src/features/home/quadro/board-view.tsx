@@ -12,14 +12,14 @@ const TAGS: Record<StatusTag, { label: string; className: string }> = {
   changes_requested: { label: t('Mudanças pedidas'), className: 'border-q-coral text-q-coral' },
   review_requested: { label: t('Review pedida'), className: 'border-q-coral text-q-coral' },
   no_review: { label: t('Sem review'), className: 'border-q-sun text-q-sun' },
-  approved: { label: t('Aprovado'), className: 'border-q-lime text-q-lime' },
+  approved: { label: t('Aprovado'), className: 'border-q-accent text-q-accent' },
   draft: { label: t('Rascunho'), className: 'border-q-line text-q-text3' },
 }
 
 const DOTS = {
   coral: 'bg-q-coral',
   sun: 'bg-q-sun',
-  lime: 'bg-q-lime',
+  accent: 'bg-q-accent',
   muted: 'bg-q-text3',
 } as const
 
@@ -107,7 +107,7 @@ export function PrCard({ card, showIdle }: { card: BoardCard; showIdle?: boolean
         {showIdle && (
           <RemindButton
             pullRequest={pr}
-            className="q-ease relative z-10 ml-auto grid size-8 place-items-center rounded-full text-q-text3 hover:bg-q-col hover:text-q-lime"
+            className="q-ease relative z-10 ml-auto grid size-8 place-items-center rounded-full text-q-text3 hover:bg-q-col hover:text-q-accent"
           />
         )}
       </span>
@@ -119,14 +119,14 @@ export function PrCard({ card, showIdle }: { card: BoardCard; showIdle?: boolean
 export function InProgressSummary({ count }: { count: number }) {
   return (
     <div className="flex flex-col gap-2 rounded-q-card bg-q-card p-5">
-      <span className="text-[64px] leading-none font-semibold tracking-tight text-q-lime">
+      <span className="text-[64px] leading-none font-semibold tracking-tight text-q-accent">
         {count}
       </span>
       <span className="text-[15px] text-q-text2">{t('PRs abertos, nenhum com pendência')}</span>
       <Link
         to="/pull-requests"
         search={{ aba: 'meus' }}
-        className="q-ease mt-2 w-fit rounded-sm text-[14px] font-semibold text-q-lime hover:text-q-text"
+        className="q-ease mt-2 w-fit rounded-sm text-[14px] font-semibold text-q-accent hover:text-q-text"
       >
         {t('Ver todos →')}
       </Link>
@@ -144,7 +144,7 @@ const CHART_HEIGHT = 170
 const weekday = new Intl.DateTimeFormat(LOCALE, { weekday: 'short' })
 
 /**
- * Mergeados por dia: barras lima a 30%, hoje em lima sólido, dia sem merge
+ * Mergeados por dia: barras lavanda a 30%, hoje em lavanda sólido, dia sem merge
  * vira um traço. O pico leva o valor escrito; a lista escondida dá os números
  * a quem usa leitor de tela.
  */
@@ -183,12 +183,15 @@ export function MergedChart({ days, today }: { days: DayCount[]; today: string }
               )}
               {day.count > 0 ? (
                 <span
-                  className={cn('w-full rounded-[6px]', isToday ? 'bg-q-lime' : 'bg-q-lime/30')}
+                  className={cn('w-full rounded-[6px]', isToday ? 'bg-q-accent' : 'bg-q-accent/30')}
                   style={{ height }}
                 />
               ) : (
                 <span
-                  className={cn('h-[3px] w-full rounded-full', isToday ? 'bg-q-lime' : 'bg-q-line')}
+                  className={cn(
+                    'h-[3px] w-full rounded-full',
+                    isToday ? 'bg-q-accent' : 'bg-q-line',
+                  )}
                 />
               )}
             </div>
@@ -201,7 +204,7 @@ export function MergedChart({ days, today }: { days: DayCount[]; today: string }
             key={day.day}
             className={cn(
               'min-w-0 flex-1 text-center text-[12px]',
-              day.day === today ? 'font-semibold text-q-lime' : 'text-q-text3',
+              day.day === today ? 'font-semibold text-q-accent' : 'text-q-text3',
             )}
           >
             {label(day.day)}

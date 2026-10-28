@@ -106,7 +106,7 @@ export function HomePage() {
             )}
           </Column>
 
-          <Column title={t('Em andamento')} dot="lime" count={board?.inProgress.length ?? null}>
+          <Column title={t('Em andamento')} dot="accent" count={board?.inProgress.length ?? null}>
             {!board ? (
               <EmptyLine>{t('Carregando')}</EmptyLine>
             ) : board.inProgress.length === 0 ? (
@@ -164,7 +164,7 @@ function Stat({
           {...(to as { to: '/issues' })}
           className={cn(
             'q-ease mt-1 block rounded-sm text-[34px] leading-none font-semibold tracking-tight hover:text-q-text2',
-            highlight ? 'text-q-lime' : 'text-q-text',
+            highlight ? 'text-q-accent' : 'text-q-text',
           )}
           aria-label={value === undefined ? label : t('{rotulo}: {n}', { rotulo: label, n: value })}
         >

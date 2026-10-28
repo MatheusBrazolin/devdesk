@@ -15,39 +15,39 @@
 @custom-variant desk (@media (min-width: 1024px) and (min-height: 700px));
 
 /*
- * Tokens semânticos, na direção visual "Quadro": escuro verde-floresta com
- * acento lima, o mesmo em todo o app (não há tema claro). Os componentes
+ * Tokens semânticos, na direção visual "Quadro": grafite com acento lavanda,
+ * o mesmo em todo o app (não há tema claro). Os componentes
  * nunca usam cor crua, só estes nomes. Contraste medido contra o fundo das
- * colunas (#14211b): texto fraco 6,0:1, lima 12,9:1, coral 7,8:1, sol 10,5:1.
+ * colunas (#19191d): texto fraco 5,3:1, lavanda 8,5:1, coral 7,9:1, sol 11:1.
  */
 :root,
 .dark {
   color-scheme: dark;
-  --bg: #0e1713;
-  --surface: #14211b;
-  --elevated: #1b2c24;
-  --border: rgb(234 242 230 / 0.1);
-  --border-strong: rgb(234 242 230 / 0.18);
-  --fg: #eaf2e6;
-  --fg-muted: #b4c3b0;
-  --fg-subtle: #8fa18b;
-  /* Lima: ativo, foco e o que é bom. Texto sobre lima usa o fundo da página. */
-  --accent: #c7f26b;
-  --accent-soft: rgb(199 242 107 / 0.12);
-  --primary: #c7f26b;
-  --primary-fg: #0e1713;
-  --success: #c7f26b;
+  --bg: #121214;
+  --surface: #19191d;
+  --elevated: #212126;
+  --border: rgb(238 237 241 / 0.1);
+  --border-strong: rgb(238 237 241 / 0.18);
+  --fg: #eeedf1;
+  --fg-muted: #aaa9b2;
+  --fg-subtle: #8f8e97;
+  /* Lavanda: ativo, foco e o que é bom. Texto sobre lavanda usa um roxo bem escuro. */
+  --accent: #b8a9ff;
+  --accent-soft: rgb(184 169 255 / 0.14);
+  --primary: #b8a9ff;
+  --primary-fg: #17112e;
+  --success: #b8a9ff;
   /* Coral: o que pede ação. Sol: o que está parado. */
   --danger: #ff9484;
   --warning: #f2c94c;
-  --ring: #c7f26b;
-  /* Gráficos: destaque lima, contexto lima a 30%, como no quadro do Hoje. */
-  --chart-accent: #c7f26b;
-  --chart-muted: rgb(199 242 107 / 0.3);
-  --chart-ink: #b4c3b0;
-  /* Mergeado fica lima (o que entrou); organizações e informação, no verde-acinzentado. */
-  --merged: #c7f26b;
-  --info: #b4c3b0;
+  --ring: #b8a9ff;
+  /* Gráficos: destaque lavanda, contexto lavanda a 30%, como no quadro do Hoje. */
+  --chart-accent: #b8a9ff;
+  --chart-muted: rgb(184 169 255 / 0.3);
+  --chart-ink: #aaa9b2;
+  /* Mergeado fica lavanda (o que entrou); organizações e informação, no cinza. */
+  --merged: #b8a9ff;
+  --info: #aaa9b2;
 }
 
 /*
@@ -60,15 +60,15 @@
   --radius-md: 12px;
   --radius-lg: 22px;
 
-  --color-q-bg: #0e1713;
-  --color-q-col: #14211b;
-  --color-q-card: #1b2c24;
-  --color-q-line: rgb(234 242 230 / 0.1);
-  --color-q-text: #eaf2e6;
-  --color-q-text2: #b4c3b0;
-  --color-q-text3: #8fa18b;
-  --color-q-lime: #c7f26b;
-  --color-q-on-lime: #0e1713;
+  --color-q-bg: #121214;
+  --color-q-col: #19191d;
+  --color-q-card: #212126;
+  --color-q-line: rgb(238 237 241 / 0.1);
+  --color-q-text: #eeedf1;
+  --color-q-text2: #aaa9b2;
+  --color-q-text3: #8f8e97;
+  --color-q-accent: #b8a9ff;
+  --color-q-on-accent: #17112e;
   --color-q-coral: #ff9484;
   --color-q-sun: #f2c94c;
 

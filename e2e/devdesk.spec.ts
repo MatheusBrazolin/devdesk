@@ -220,7 +220,7 @@ test.describe('visual', () => {
     await enterDemo(page)
     await expect(page.locator('html')).toHaveClass(/\bdark\b/)
     const background = await page.evaluate(() => getComputedStyle(document.body).backgroundColor)
-    expect(background).toBe('rgb(14, 23, 19)')
+    expect(background).toBe('rgb(18, 18, 20)')
     await page.getByRole('button', { name: /Menu de Visitante/ }).click()
     await expect(page.getByRole('menuitemradio', { name: 'Claro' })).toHaveCount(0)
   })

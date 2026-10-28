@@ -66,7 +66,7 @@ export function TopBar({ focus = false }: { focus?: boolean }) {
                     className={cn(
                       'q-ease flex h-9 items-center rounded-full px-4 text-[14px] whitespace-nowrap min-[1280px]:px-3 min-[1400px]:px-4',
                       active
-                        ? 'bg-q-lime font-semibold text-q-on-lime'
+                        ? 'bg-q-accent font-semibold text-q-on-accent'
                         : 'text-q-text2 hover:bg-q-card hover:text-q-text',
                     )}
                   >

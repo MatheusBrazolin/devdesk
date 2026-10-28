@@ -85,7 +85,7 @@ export function OwnersPanel({
                 </span>
                 <span aria-hidden className="h-1.5 w-full rounded-full bg-q-card">
                   <span
-                    className="block h-full rounded-full bg-q-lime"
+                    className="block h-full rounded-full bg-q-accent"
                     style={{ width: `${(total / max) * 100}%` }}
                   />
                 </span>
