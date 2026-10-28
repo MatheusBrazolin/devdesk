@@ -72,7 +72,7 @@ A work dashboard for developers: what needs your attention on GitHub, your notes
 - GitHub login (OAuth) and a **demo mode** for anyone who wants to look around without connecting an account
 - Cookie session (`httpOnly`), stored only as a hash; the GitHub token is encrypted (AES-256-GCM)
 - **Quadro look** on every screen: graphite with a lavender accent, a top bar with pill navigation, rounded panels and cards, Bricolage Grotesque and DM Mono ([ADR 0014](docs/adr/0014-visual-quadro.md))
-- Command palette (<kbd>⌘</kbd> <kbd>K</kbd>) and GitHub-style shortcuts (<kbd>g</kbd> <kbd>p</kbd> goes to pull requests)
+- Command palette (<kbd>⌘</kbd> <kbd>K</kbd>) and GitHub-style shortcuts (<kbd>g</kbd> <kbd>p</kbd> goes to pull requests; <kbd>j</kbd> and <kbd>k</kbd> move through lists and <kbd>o</kbd> opens on GitHub)
 
 ## Roadmap
 

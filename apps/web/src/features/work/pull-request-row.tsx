@@ -47,7 +47,10 @@ export function PullRequestRow({
   const stale = !merged && isStale(pr)
 
   return (
-    <li className="group relative flex items-start gap-3 px-4 py-3 transition-colors hover:bg-elevated/50">
+    <li
+      data-list-item
+      className="group relative flex items-start gap-3 px-4 py-3 transition-colors hover:bg-elevated/50 has-[a:focus-visible]:bg-elevated/50"
+    >
       <Icon
         aria-label={merged ? t('mergeado') : pr.isDraft ? t('rascunho') : t('aberto')}
         className={cn(
@@ -68,6 +71,7 @@ export function PullRequestRow({
           href={pr.url}
           target="_blank"
           rel="noreferrer"
+          data-list-link
           className="line-clamp-2 text-[13px] font-medium after:absolute after:inset-0 group-hover:underline"
         >
           {pr.title}

@@ -179,6 +179,27 @@ test.describe('navegação', () => {
     await page.keyboard.press('p')
     await expect(page).toHaveURL(/\/pull-requests/)
   })
+
+  test('j e k andam pela lista e o abre no GitHub', async ({ page, context }) => {
+    await context.route('https://github.com/**', (route) => route.fulfill({ body: '' }))
+    await enterDemo(page)
+    await page.keyboard.press('g')
+    await page.keyboard.press('i')
+    const links = page.locator('[data-list-item] a[data-list-link]')
+    await expect(links.first()).toBeVisible()
+
+    await page.keyboard.press('j')
+    await expect(links.nth(0)).toBeFocused()
+    await page.keyboard.press('j')
+    await expect(links.nth(1)).toBeFocused()
+    await page.keyboard.press('k')
+    await expect(links.nth(0)).toBeFocused()
+
+    const href = await links.nth(0).getAttribute('href')
+    const popup = page.waitForEvent('popup')
+    await page.keyboard.press('o')
+    expect((await popup).url()).toBe(href)
+  })
 })
 
 test.describe('foco e modo TV', () => {

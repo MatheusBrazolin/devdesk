@@ -17,6 +17,7 @@ export default {
   'Paleta de comandos: ir para qualquer lugar': 'Command palette: go anywhere',
   'Buscar PRs, issues, notas e eventos': 'Search PRs, issues, notes and events',
   'Esta ajuda': 'This help',
+  'Próximo e anterior na lista': 'Next and previous in the list',
   'Fechar diálogo ou menu': 'Close dialog or menu',
   'Tela cheia, no modo TV': 'Full screen, in TV mode',
   'Atalhos de teclado': 'Keyboard shortcuts',

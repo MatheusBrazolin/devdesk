@@ -72,7 +72,7 @@ Painel de trabalho para desenvolvedores: o que pede a sua atenção no GitHub, s
 - Login com GitHub (OAuth) e **modo demonstração**, para quem quer conhecer sem conectar uma conta
 - Sessão por cookie `httpOnly`, com o token guardado só como hash; o token do GitHub fica cifrado (AES-256-GCM)
 - **Visual Quadro** em todas as telas: grafite com acento lavanda, barra superior com navegação em pílula, painéis e cards arredondados, Bricolage Grotesque e DM Mono ([ADR 0014](docs/adr/0014-visual-quadro.md))
-- Paleta de comandos (<kbd>⌘</kbd> <kbd>K</kbd>) e atalhos no estilo do GitHub (<kbd>g</kbd> <kbd>p</kbd> vai para os pull requests)
+- Paleta de comandos (<kbd>⌘</kbd> <kbd>K</kbd>) e atalhos no estilo do GitHub (<kbd>g</kbd> <kbd>p</kbd> vai para os pull requests; <kbd>j</kbd> e <kbd>k</kbd> andam pela lista e <kbd>o</kbd> abre no GitHub)
 
 ## Roteiro
 

@@ -4,6 +4,14 @@ Mudanças que valem a pena saber, versão a versão. O formato segue o [Keep a C
 
 ## [Não lançado]
 
+## [1.2.0] - 2026-10-28
+
+Um DevDesk com cara própria: paleta grafite e lavanda, logo novo, login animado e telas que cabem na janela do computador.
+
+### Adicionado
+
+- **Andar pelas listas com o teclado**: <kbd>j</kbd> e <kbd>k</kbd> passam de um PR ou issue para o outro (no Hoje, em Pull requests e em Issues) e <kbd>o</kbd> abre o item no GitHub. Os atalhos aparecem na ajuda do <kbd>?</kbd>.
+
 ### Mudado
 
 - **Sem rolagem no computador**: a partir de 1024 × 700, cada tela cabe na janela e o que cresce rola dentro do próprio painel. Configurações e Issues ganharam duas colunas; calendário, gráficos e o quadro do Hoje se ajustam à altura. No celular, a página continua rolando.
@@ -81,5 +89,7 @@ Primeira versão publicada do DevDesk: o painel inteiro, no ar em [devdesk-tklq.
 - CodeQL, Dependabot e [política de segurança](SECURITY.md).
 - Uma imagem Docker só, publicada no Render com o banco no Neon ([guia](docs/DEPLOY.md)).
 
+[Não lançado]: https://github.com/MatheusBrazolin/devdesk/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/MatheusBrazolin/devdesk/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/MatheusBrazolin/devdesk/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/MatheusBrazolin/devdesk/releases/tag/v1.0.0

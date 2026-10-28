@@ -3,6 +3,7 @@ import { motion } from 'motion/react'
 import { useReminderToasts } from '@/features/calendar/use-reminder-toasts'
 import { CommandPaletteProvider } from '@/features/commands/command-palette'
 import { useGoToShortcuts } from '@/features/commands/use-go-to-shortcuts'
+import { useListKeys } from '@/features/commands/use-list-keys'
 import { useFocusAlarm } from '@/features/focus/focus-timer'
 import { useDashboardSync } from '@/features/work/dashboard-sync'
 import { useWorkNotifications } from '@/features/work/use-work-notifications'
@@ -14,6 +15,7 @@ import { TopBar } from './top-bar'
 export function AppShell() {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   useGoToShortcuts()
+  useListKeys()
   useReminderToasts()
   useWorkNotifications()
   useFocusAlarm()

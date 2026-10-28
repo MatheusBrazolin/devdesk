@@ -15,7 +15,10 @@ export function IssueRow({
 }) {
   const stale = isStale(issue)
   return (
-    <li className="group relative flex items-start gap-3 px-4 py-3 transition-colors hover:bg-elevated/50">
+    <li
+      data-list-item
+      className="group relative flex items-start gap-3 px-4 py-3 transition-colors hover:bg-elevated/50 has-[a:focus-visible]:bg-elevated/50"
+    >
       <CircleDot
         aria-label={t('issue aberta')}
         className="mt-0.5 size-4 shrink-0 text-success"
@@ -26,6 +29,7 @@ export function IssueRow({
           href={issue.url}
           target="_blank"
           rel="noreferrer"
+          data-list-link
           className="line-clamp-2 text-[13px] font-medium after:absolute after:inset-0 group-hover:underline"
         >
           {issue.title}

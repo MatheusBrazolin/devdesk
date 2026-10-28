@@ -13,6 +13,8 @@ const isTyping = (target: EventTarget | null) =>
 const GENERAL: { keys: string[]; label: string }[] = [
   { keys: ['⌘', 'K'], label: t('Paleta de comandos: ir para qualquer lugar') },
   { keys: ['/'], label: t('Buscar PRs, issues, notas e eventos') },
+  { keys: ['j', 'k'], label: t('Próximo e anterior na lista') },
+  { keys: ['o'], label: t('Abrir no GitHub') },
   { keys: ['?'], label: t('Esta ajuda') },
   { keys: ['Esc'], label: t('Fechar diálogo ou menu') },
   { keys: ['F'], label: t('Tela cheia, no modo TV') },

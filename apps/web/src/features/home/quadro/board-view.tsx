@@ -70,7 +70,10 @@ export function PrCard({ card, showIdle }: { card: BoardCard; showIdle?: boolean
   const { pullRequest: pr, tag } = card
   const status = TAGS[tag]
   return (
-    <article className="q-ease relative flex flex-col gap-3 rounded-q-card border border-transparent bg-q-card p-4 hover:border-q-line">
+    <article
+      data-list-item
+      className="q-ease relative flex flex-col gap-3 rounded-q-card border border-transparent bg-q-card p-4 hover:border-q-line has-[a:focus-visible]:border-q-line"
+    >
       <span
         className={cn(
           'w-fit rounded-full border px-2.5 py-[3px] text-[12px] leading-4 font-semibold',
@@ -84,6 +87,7 @@ export function PrCard({ card, showIdle }: { card: BoardCard; showIdle?: boolean
           href={pr.url}
           target="_blank"
           rel="noreferrer"
+          data-list-link
           className="min-w-0 flex-1 rounded-sm text-[16px] leading-[1.35] font-medium text-q-text after:absolute after:inset-0 after:rounded-q-card"
         >
           {pr.title}
