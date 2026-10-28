@@ -59,7 +59,7 @@ export function FocusPage() {
   const [current, ...queue] = orderAttention(dashboard.data?.attention ?? [])
 
   return (
-    <div className="mx-auto max-w-5xl space-y-5">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 desk:h-full desk:min-h-0">
       <PageHeader
         section="/foco"
         subtitle={t('Uma coisa de cada vez: o que pede ação agora e um tempo para fazer.')}
@@ -70,8 +70,8 @@ export function FocusPage() {
         }
       />
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="min-w-0 space-y-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_20rem] desk:min-h-0 desk:flex-1 desk:grid-rows-[minmax(0,1fr)]">
+        <div className="flex min-w-0 flex-col gap-4 desk:min-h-0">
           <Reveal delay={0.05}>
             <Card className="overflow-hidden">
               <CardHeader>
@@ -102,8 +102,8 @@ export function FocusPage() {
           </Reveal>
 
           {queue.length > 0 && (
-            <Reveal delay={0.1}>
-              <Card className="overflow-hidden">
+            <Reveal delay={0.1} className="desk:flex desk:min-h-0 desk:flex-1 desk:flex-col">
+              <Card className="flex flex-col overflow-hidden desk:min-h-0">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <ListTodo className="size-3.5 text-fg-subtle" strokeWidth={2} />
@@ -111,7 +111,7 @@ export function FocusPage() {
                   </CardTitle>
                   <span className="font-mono text-[11px] text-fg-subtle">{queue.length}</span>
                 </CardHeader>
-                <ul className="divide-y divide-border">
+                <ul className="scroll-thin divide-y divide-border desk:min-h-0 desk:flex-1 desk:overflow-y-auto">
                   {queue.map(({ reason, pullRequest }) => (
                     <PullRequestRow
                       key={pullRequest.id}
@@ -131,7 +131,7 @@ export function FocusPage() {
           )}
         </div>
 
-        <div className="space-y-4">
+        <div className="scroll-thin space-y-4 desk:min-h-0 desk:overflow-y-auto">
           <Reveal delay={0.08}>
             <FocusTimerCard />
           </Reveal>

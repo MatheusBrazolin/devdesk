@@ -8,6 +8,13 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
+ * Computador: de 1024 px de largura e 700 de altura para cima, cada página
+ * cabe na janela e o que cresce rola por dentro do próprio painel. Abaixo
+ * disso (celular, janela baixa), a página rola normalmente.
+ */
+@custom-variant desk (@media (min-width: 1024px) and (min-height: 700px));
+
+/*
  * Tokens semânticos, na direção visual "Quadro": escuro verde-floresta com
  * acento lima, o mesmo em todo o app (não há tema claro). Os componentes
  * nunca usam cor crua, só estes nomes. Contraste medido contra o fundo das

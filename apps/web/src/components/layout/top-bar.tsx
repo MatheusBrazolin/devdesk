@@ -50,7 +50,7 @@ export function TopBar({ focus = false }: { focus?: boolean }) {
       {!focus && (
         <nav
           aria-label={t('Navegação principal')}
-          className="order-last w-full min-w-0 min-[1400px]:order-none min-[1400px]:w-auto min-[1400px]:flex-1"
+          className="order-last w-full min-w-0 min-[1280px]:order-none min-[1280px]:w-auto min-[1280px]:flex-1"
         >
           <ul
             ref={navRef}
@@ -64,7 +64,7 @@ export function TopBar({ focus = false }: { focus?: boolean }) {
                     to={item.to}
                     aria-current={active ? 'page' : undefined}
                     className={cn(
-                      'q-ease flex h-9 items-center rounded-full px-4 text-[14px] whitespace-nowrap',
+                      'q-ease flex h-9 items-center rounded-full px-4 text-[14px] whitespace-nowrap min-[1280px]:px-3 min-[1400px]:px-4',
                       active
                         ? 'bg-q-lime font-semibold text-q-on-lime'
                         : 'text-q-text2 hover:bg-q-card hover:text-q-text',
@@ -80,18 +80,21 @@ export function TopBar({ focus = false }: { focus?: boolean }) {
       )}
 
       <div
-        className={cn('ml-auto flex shrink-0 items-center gap-3', !focus && 'min-[1400px]:ml-0')}
+        className={cn('ml-auto flex shrink-0 items-center gap-3', !focus && 'min-[1280px]:ml-0')}
       >
         <button
           type="button"
           onClick={palette.open}
-          className="q-ease flex size-10 items-center justify-center gap-2 rounded-full border border-q-line bg-q-col text-[14px] text-q-text3 hover:text-q-text2 sm:w-[220px] sm:justify-start sm:px-4"
+          className="q-ease flex size-10 items-center justify-center gap-2 rounded-full border border-q-line bg-q-col text-[14px] text-q-text3 hover:text-q-text2 sm:w-[220px] sm:justify-start sm:px-4 min-[1280px]:w-10 min-[1280px]:justify-center min-[1280px]:px-0 min-[1400px]:w-[220px] min-[1400px]:justify-start min-[1400px]:px-4"
         >
           <Search className="size-4 shrink-0" aria-hidden />
-          <span className="sr-only sm:not-sr-only sm:flex-1 sm:truncate sm:text-left">
+          <span className="sr-only sm:not-sr-only sm:flex-1 sm:truncate sm:text-left min-[1280px]:sr-only min-[1400px]:not-sr-only">
             {t('Ir para…')}
           </span>
-          <span aria-hidden className="hidden font-quadro-mono text-[12px] sm:block">
+          <span
+            aria-hidden
+            className="hidden font-quadro-mono text-[12px] sm:block min-[1280px]:hidden min-[1400px]:block"
+          >
             {isMac ? '⌘K' : 'Ctrl K'}
           </span>
         </button>

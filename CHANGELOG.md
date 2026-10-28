@@ -2,6 +2,14 @@
 
 Mudanças que valem a pena saber, versão a versão. O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e as versões seguem o [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [Não lançado]
+
+### Mudado
+
+- **Sem rolagem no computador**: a partir de 1024 × 700, cada tela cabe na janela e o que cresce rola dentro do próprio painel. Configurações e Issues ganharam duas colunas; calendário, gráficos e o quadro do Hoje se ajustam à altura. No celular, a página continua rolando.
+- **Logo novo**: uma branch descendo até a `main` e as duas se juntando num ponto de merge, na barra, no favicon e nos ícones do app.
+- **Login animado**: o quadro do Hoje em miniatura trabalhando sozinho, sobre um grafo de git que se desenha; trocar de idioma esmaece a tela em vez de piscar.
+
 ## [1.1.0] - 2026-10-27
 
 Agora para o time todo: cada pessoa conecta o GitHub da empresa sem pedir nada à organização, o app fala inglês e ganhou um visual novo, o Quadro.

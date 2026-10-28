@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { ownerOf } from '@/features/work/list-filters'
 import { RemindButton } from '@/features/work/remind-button'
 import { fromKey } from '@/lib/calendar-dates'
@@ -40,7 +40,7 @@ export function Column({
   return (
     <section
       aria-label={title}
-      className="flex min-w-0 flex-[1_1_280px] flex-col gap-3 rounded-q-panel border border-q-line bg-q-col p-4 md:min-h-[520px]"
+      className="flex min-w-0 flex-[1_1_280px] flex-col gap-3 rounded-q-panel border border-q-line bg-q-col p-4 md:min-h-[520px] desk:min-h-0"
     >
       <h2 className="flex items-center gap-2.5 px-1 pt-1">
         <span aria-hidden className={cn('size-2.5 shrink-0 rounded-full', DOTS[dot])} />
@@ -53,7 +53,9 @@ export function Column({
           </span>
         )}
       </h2>
-      <div className="flex flex-1 flex-col gap-3">{children}</div>
+      <div className="scroll-thin flex flex-1 flex-col gap-3 desk:min-h-0 desk:overflow-y-auto">
+        {children}
+      </div>
       {footer && <p className="px-1 pb-1 text-[13px] text-q-text3">{footer}</p>}
     </section>
   )
@@ -137,6 +139,7 @@ export const EmptyLine = ({ children }: { children: ReactNode }) => (
   <p className="px-1 text-[14px] text-q-text3">{children}</p>
 )
 
+/** Altura das barras no celular; no computador, o gráfico ocupa o que a coluna der. */
 const CHART_HEIGHT = 170
 const weekday = new Intl.DateTimeFormat(LOCALE, { weekday: 'short' })
 
@@ -152,7 +155,7 @@ export function MergedChart({ days, today }: { days: DayCount[]; today: string }
     day === today ? t('hoje') : weekday.format(fromKey(day)).replace('.', '')
 
   return (
-    <figure className="flex flex-col gap-3 rounded-q-card bg-q-card p-4">
+    <figure className="flex flex-col gap-3 rounded-q-card bg-q-card p-4 desk:min-h-40 desk:flex-1">
       <ul className="sr-only">
         {days.map((day) => (
           <li key={day.day}>
@@ -160,9 +163,14 @@ export function MergedChart({ days, today }: { days: DayCount[]; today: string }
           </li>
         ))}
       </ul>
-      <div aria-hidden className="flex items-end gap-2" style={{ height: CHART_HEIGHT + 22 }}>
+      <div
+        aria-hidden
+        className="flex h-[var(--chart-h)] items-end gap-2 desk:h-auto desk:min-h-0 desk:flex-1"
+        style={{ '--chart-h': `${CHART_HEIGHT + 22}px` } as CSSProperties}
+      >
         {days.map((day, index) => {
-          const height = max > 0 ? Math.round((day.count / max) * CHART_HEIGHT) : 0
+          // Em porcentagem da área: a mesma conta vale para a altura fixa e para a que sobra.
+          const height = max > 0 ? `${Math.round((day.count / max) * 82)}%` : 0
           const isToday = day.day === today
           return (
             <div

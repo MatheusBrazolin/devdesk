@@ -1,17 +1,25 @@
 import { cn } from '@/lib/cn'
 
-/** Marca do Quadro: quadrado lima, raio 9, com o "D" no verde do fundo. */
+/**
+ * Marca do DevDesk: uma branch descendo até a `main` e as duas se juntando
+ * num ponto de merge. Quadrado lima, traço no verde do fundo. O mesmo
+ * desenho está no favicon e nos ícones do app (scripts/generate-icons.mjs).
+ */
 export function LogoMark({ className }: { className?: string }) {
   return (
-    <span
-      aria-hidden
-      className={cn(
-        'grid size-[30px] shrink-0 place-items-center rounded-q-logo bg-q-lime text-[16px] leading-none font-bold text-q-on-lime',
-        className,
-      )}
-    >
-      D
-    </span>
+    <svg viewBox="0 0 32 32" aria-hidden className={cn('size-[30px] shrink-0', className)}>
+      <rect width="32" height="32" rx="9" className="fill-q-lime" />
+      <g className="stroke-q-on-lime" strokeWidth="2.6" strokeLinecap="round" fill="none">
+        <path d="M7 21H19" />
+        <path d="M7 11C14.5 11 13.5 21 19.5 21" />
+      </g>
+      <g className="fill-q-on-lime">
+        <circle cx="7" cy="11" r="2.6" />
+        <circle cx="7" cy="21" r="2.6" />
+        <circle cx="22.5" cy="21" r="4.2" />
+      </g>
+      <circle cx="22.5" cy="21" r="1.6" className="fill-q-lime" />
+    </svg>
   )
 }
 

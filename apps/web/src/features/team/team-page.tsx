@@ -24,7 +24,7 @@ export function TeamPage() {
   const data = team.data
 
   return (
-    <div className="space-y-5">
+    <div className="flex flex-col gap-5 desk:h-full desk:min-h-0">
       <PageHeader
         section="/time"
         subtitle={t(
@@ -74,9 +74,9 @@ export function TeamPage() {
 
           <Reveal
             delay={0.08}
-            className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]"
+            className="grid grid-cols-1 gap-4 desk:grid-cols-[minmax(0,1fr)_17rem] desk:grid-rows-[minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_20rem] desk:min-h-0 desk:flex-1"
           >
-            <Card className="overflow-hidden">
+            <Card className="flex flex-col overflow-hidden desk:min-h-0">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Hourglass className="size-3.5 shrink-0 text-warning" strokeWidth={2} />
@@ -95,7 +95,10 @@ export function TeamPage() {
                   description={t('Todos os PRs abertos do time já têm aprovação.')}
                 />
               ) : (
-                <ol aria-label={t('PRs esperando review')} className="divide-y divide-border">
+                <ol
+                  aria-label={t('PRs esperando review')}
+                  className="scroll-thin divide-y divide-border desk:min-h-0 desk:flex-1 desk:overflow-y-auto"
+                >
                   {data.queue.map((pr) => (
                     <QueueRow key={pr.id} pr={pr} />
                   ))}
@@ -103,7 +106,7 @@ export function TeamPage() {
               )}
             </Card>
 
-            <Card className="self-start overflow-hidden">
+            <Card className="scroll-thin self-start overflow-hidden desk:max-h-full desk:overflow-y-auto">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="size-3.5 shrink-0 text-success" strokeWidth={2} />

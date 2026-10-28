@@ -59,7 +59,7 @@ export function PullRequestsPage() {
     void navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true })
 
   return (
-    <div className="space-y-5">
+    <div className="flex flex-col gap-5 desk:h-full desk:min-h-0">
       <PageHeader
         section="/pull-requests"
         subtitle={dashboard.data ? summary(byTab.meus) : undefined}
@@ -107,8 +107,8 @@ export function PullRequestsPage() {
         />
       )}
 
-      <Reveal delay={0.1}>
-        <Card className="overflow-hidden">
+      <Reveal delay={0.1} className="desk:flex desk:min-h-0 desk:flex-1 desk:flex-col">
+        <Card className="scroll-thin overflow-hidden desk:min-h-0 desk:flex-1 desk:overflow-y-auto">
           {dashboard.isPending ? (
             <ListSkeleton rows={6} />
           ) : dashboard.isError ? (

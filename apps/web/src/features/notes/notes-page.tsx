@@ -44,8 +44,8 @@ export function NotesPage() {
   const filtered = Boolean(search.q || search.tag)
 
   return (
-    <div className="-mx-4 -my-6 h-[calc(100dvh-3rem)] sm:-mx-6 lg:mx-0 lg:my-0 lg:h-[calc(100dvh-6rem)]">
-      <div className="grid h-full grid-cols-1 overflow-hidden border-border bg-surface lg:grid-cols-[19rem_minmax(0,1fr)] lg:rounded-lg lg:border">
+    <div className="h-[calc(100dvh-11rem)] min-h-[28rem] desk:h-full desk:min-h-0">
+      <div className="grid h-full grid-cols-1 overflow-hidden rounded-q-panel border border-border bg-surface lg:grid-cols-[19rem_minmax(0,1fr)]">
         <aside
           aria-label={t('Lista de notas')}
           className={cn(

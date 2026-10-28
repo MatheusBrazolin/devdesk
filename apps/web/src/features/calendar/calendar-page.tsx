@@ -76,7 +76,7 @@ export function CalendarPage() {
     void navigate({ search: { mes: monthKey(y, m) }, replace: true })
 
   return (
-    <div className="space-y-5">
+    <div className="flex flex-col gap-5 desk:h-full desk:min-h-0">
       <PageHeader
         section="/calendario"
         subtitle={t('Eventos, lembretes e prazos das milestones do GitHub.')}
@@ -152,10 +152,10 @@ export function CalendarPage() {
 
       <Reveal
         delay={0.08}
-        className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]"
+        className="grid grid-cols-1 items-start gap-4 desk:grid-cols-[minmax(0,1fr)_17rem] xl:grid-cols-[minmax(0,1fr)_18rem] desk:min-h-0 desk:flex-1 desk:grid-rows-[minmax(0,1fr)] desk:items-stretch"
       >
-        <Card className="overflow-hidden">
-          <div className="grid grid-cols-7 border-b border-border">
+        <Card className="scroll-thin flex flex-col overflow-hidden desk:min-h-0 desk:overflow-y-auto">
+          <div className="sticky top-0 z-10 grid grid-cols-7 border-b border-border bg-surface">
             {WEEKDAYS.map((weekday) => (
               <div
                 key={weekday}
@@ -165,7 +165,7 @@ export function CalendarPage() {
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-7">
+          <div className="grid grid-cols-7 desk:flex-1 desk:auto-rows-fr">
             {monthGrid(year, month)
               .flat()
               .map((day, index) => (
@@ -192,25 +192,27 @@ export function CalendarPage() {
           </div>
         </Card>
 
-        <Card className="self-start overflow-hidden">
+        <Card className="flex flex-col self-start overflow-hidden desk:min-h-0 desk:self-stretch">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CalendarClock className="size-3.5 shrink-0 text-info" strokeWidth={2} />
               {t('Próximos {dias} dias', { dias: AGENDA_DAYS })}
             </CardTitle>
           </CardHeader>
-          {agenda.data ? (
-            <AgendaList
-              from={today}
-              days={AGENDA_DAYS}
-              events={agenda.data.events}
-              deadlines={agendaDeadlines.data?.deadlines ?? []}
-              onSelectEvent={(event) => select(event, today)}
-              empty={t('Nada nos próximos dias. Clique num dia do calendário para marcar algo.')}
-            />
-          ) : (
-            <AgendaSkeleton />
-          )}
+          <div className="scroll-thin relative desk:min-h-0 desk:flex-1 desk:overflow-y-auto">
+            {agenda.data ? (
+              <AgendaList
+                from={today}
+                days={AGENDA_DAYS}
+                events={agenda.data.events}
+                deadlines={agendaDeadlines.data?.deadlines ?? []}
+                onSelectEvent={(event) => select(event, today)}
+                empty={t('Nada nos próximos dias. Clique num dia do calendário para marcar algo.')}
+              />
+            ) : (
+              <AgendaSkeleton />
+            )}
+          </div>
         </Card>
       </Reveal>
 

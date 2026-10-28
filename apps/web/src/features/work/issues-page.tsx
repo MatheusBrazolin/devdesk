@@ -27,7 +27,7 @@ export function IssuesPage() {
     void navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true })
 
   return (
-    <div className="space-y-5">
+    <div className="flex flex-col gap-5 desk:h-full desk:min-h-0">
       <PageHeader
         section="/issues"
         subtitle={
@@ -47,54 +47,57 @@ export function IssuesPage() {
         />
       )}
 
-      {dashboard.isPending ? (
-        <Card>
-          <ListSkeleton rows={6} />
-        </Card>
-      ) : dashboard.isError ? (
-        <Card>
-          <DashboardError error={dashboard.error} onRetry={() => void dashboard.refetch()} />
-        </Card>
-      ) : all.length === 0 ? (
-        <Card>
-          <EmptyState
-            icon={CircleDot}
-            title={t('Nenhuma issue atribuída')}
-            description={t(
-              'Issues abertas atribuídas a você aparecem aqui, agrupadas por repositório.',
-            )}
-            className="py-10"
-          />
-        </Card>
-      ) : visible.length === 0 ? (
-        <Card>
-          <EmptyState
-            icon={SearchX}
-            title={t('Nada com esse filtro')}
-            description={t('Tente outra busca ou mostre todas as organizações.')}
-            className="py-10"
-          />
-        </Card>
-      ) : (
-        groupByRepository(visible).map(([repository, issues], index) => (
-          <Reveal key={repository} delay={0.05 + Math.min(index, 6) * 0.04}>
-            <Card className="overflow-hidden">
-              <CardHeader>
-                <CardTitle className="flex min-w-0 items-center gap-2 font-mono text-[12px] font-medium">
-                  <OwnerAvatar owner={ownerOf(repository)} className="size-5" />
-                  <span className="truncate">{repository}</span>
-                </CardTitle>
-                <span className="font-mono text-[11px] text-fg-subtle">{issues.length}</span>
-              </CardHeader>
-              <ul className="divide-y divide-border">
-                {issues.map((issue) => (
-                  <IssueRow key={issue.id} issue={issue} showRepository={false} />
-                ))}
-              </ul>
-            </Card>
-          </Reveal>
-        ))
-      )}
+      {/* No computador, os repositórios ficam em duas colunas e a área rola por dentro. */}
+      <div className="scroll-thin flex flex-col gap-5 desk:grid desk:min-h-0 desk:flex-1 desk:grid-cols-2 desk:content-start desk:overflow-y-auto desk:pr-1">
+        {dashboard.isPending ? (
+          <Card>
+            <ListSkeleton rows={6} />
+          </Card>
+        ) : dashboard.isError ? (
+          <Card>
+            <DashboardError error={dashboard.error} onRetry={() => void dashboard.refetch()} />
+          </Card>
+        ) : all.length === 0 ? (
+          <Card>
+            <EmptyState
+              icon={CircleDot}
+              title={t('Nenhuma issue atribuída')}
+              description={t(
+                'Issues abertas atribuídas a você aparecem aqui, agrupadas por repositório.',
+              )}
+              className="py-10"
+            />
+          </Card>
+        ) : visible.length === 0 ? (
+          <Card>
+            <EmptyState
+              icon={SearchX}
+              title={t('Nada com esse filtro')}
+              description={t('Tente outra busca ou mostre todas as organizações.')}
+              className="py-10"
+            />
+          </Card>
+        ) : (
+          groupByRepository(visible).map(([repository, issues], index) => (
+            <Reveal key={repository} delay={0.05 + Math.min(index, 6) * 0.04}>
+              <Card className="overflow-hidden">
+                <CardHeader>
+                  <CardTitle className="flex min-w-0 items-center gap-2 font-mono text-[12px] font-medium">
+                    <OwnerAvatar owner={ownerOf(repository)} className="size-5" />
+                    <span className="truncate">{repository}</span>
+                  </CardTitle>
+                  <span className="font-mono text-[11px] text-fg-subtle">{issues.length}</span>
+                </CardHeader>
+                <ul className="divide-y divide-border">
+                  {issues.map((issue) => (
+                    <IssueRow key={issue.id} issue={issue} showRepository={false} />
+                  ))}
+                </ul>
+              </Card>
+            </Reveal>
+          ))
+        )}
+      </div>
     </div>
   )
 }

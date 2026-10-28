@@ -18,7 +18,7 @@ export function SettingsPage() {
   const settings = useQuery(settingsQuery)
 
   return (
-    <div className="mx-auto max-w-3xl space-y-5">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 desk:h-full desk:min-h-0 desk:max-w-none">
       <PageHeader
         section="/configuracoes"
         subtitle={t(
@@ -26,71 +26,76 @@ export function SettingsPage() {
         )}
       />
 
-      <Reveal delay={0.04}>
-        <Card className="overflow-hidden">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <GitHubIcon className="size-3.5 text-fg-muted" /> {t('Acesso ao GitHub')}
-            </CardTitle>
-          </CardHeader>
-          <GitHubSection />
-        </Card>
-      </Reveal>
+      <div className="grid grid-cols-1 gap-5 desk:min-h-0 desk:flex-1 desk:grid-cols-2 desk:grid-rows-[minmax(0,1fr)]">
+        <div className="scroll-thin flex flex-col gap-5 desk:min-h-0 desk:overflow-y-auto desk:pr-1">
+          <Reveal delay={0.04}>
+            <Card className="overflow-hidden">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <GitHubIcon className="size-3.5 text-fg-muted" /> {t('Acesso ao GitHub')}
+                </CardTitle>
+              </CardHeader>
+              <GitHubSection />
+            </Card>
+          </Reveal>
 
-      <Reveal delay={0.08}>
-        <Card className="overflow-hidden">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="size-3.5 text-accent" strokeWidth={2} /> {t('Avisos')}
-            </CardTitle>
-          </CardHeader>
-          {settings.data ? <NoticesSection settings={settings.data} /> : <SectionSkeleton />}
-        </Card>
-      </Reveal>
+          <Reveal delay={0.08}>
+            <Card className="overflow-hidden">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="size-3.5 text-accent" strokeWidth={2} /> {t('Avisos')}
+                </CardTitle>
+              </CardHeader>
+              {settings.data ? <NoticesSection settings={settings.data} /> : <SectionSkeleton />}
+            </Card>
+          </Reveal>
+        </div>
+        <div className="scroll-thin flex flex-col gap-5 desk:min-h-0 desk:overflow-y-auto desk:pr-1">
+          <Reveal delay={0.12}>
+            <Card className="overflow-hidden">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="size-3.5 text-success" strokeWidth={2} />{' '}
+                  {t('Repositórios do time')}
+                </CardTitle>
+              </CardHeader>
+              {settings.data ? <TeamSection settings={settings.data} /> : <SectionSkeleton />}
+            </Card>
+          </Reveal>
 
-      <Reveal delay={0.12}>
-        <Card className="overflow-hidden">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="size-3.5 text-success" strokeWidth={2} />{' '}
-              {t('Repositórios do time')}
-            </CardTitle>
-          </CardHeader>
-          {settings.data ? <TeamSection settings={settings.data} /> : <SectionSkeleton />}
-        </Card>
-      </Reveal>
+          <Reveal delay={0.16}>
+            <Card className="overflow-hidden">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Languages className="size-3.5 text-info" strokeWidth={2} /> {t('Idioma')}
+                </CardTitle>
+              </CardHeader>
+              <div className="flex flex-wrap items-center gap-3 px-4 py-3">
+                <p className="min-w-0 flex-1 text-[13px] text-fg-muted">
+                  {t(
+                    'O idioma do app neste navegador. Os dados de exemplo da demonstração continuam em português.',
+                  )}
+                </p>
+                <LanguageSwitch />
+              </div>
+            </Card>
+          </Reveal>
 
-      <Reveal delay={0.16}>
-        <Card className="overflow-hidden">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Languages className="size-3.5 text-info" strokeWidth={2} /> {t('Idioma')}
-            </CardTitle>
-          </CardHeader>
-          <div className="flex flex-wrap items-center gap-3 px-4 py-3">
-            <p className="min-w-0 flex-1 text-[13px] text-fg-muted">
-              {t(
-                'O idioma do app neste navegador. Os dados de exemplo da demonstração continuam em português.',
-              )}
-            </p>
-            <LanguageSwitch />
-          </div>
-        </Card>
-      </Reveal>
-
-      <Reveal delay={0.2}>
-        <Card className="overflow-hidden">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="size-3.5 text-info" strokeWidth={2} /> {t('Seus dados')}
-            </CardTitle>
-            <Link to="/privacidade" className="text-[12px] text-fg-muted hover:text-fg">
-              {t('Privacidade')}
-            </Link>
-          </CardHeader>
-          <DataSection />
-        </Card>
-      </Reveal>
+          <Reveal delay={0.2}>
+            <Card className="overflow-hidden">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Database className="size-3.5 text-info" strokeWidth={2} /> {t('Seus dados')}
+                </CardTitle>
+                <Link to="/privacidade" className="text-[12px] text-fg-muted hover:text-fg">
+                  {t('Privacidade')}
+                </Link>
+              </CardHeader>
+              <DataSection />
+            </Card>
+          </Reveal>
+        </div>
+      </div>
     </div>
   )
 }

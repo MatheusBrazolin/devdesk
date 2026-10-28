@@ -32,7 +32,7 @@ export function HomePage() {
   const merged = data ? mergedPerDay(data.pullRequests.merged, today) : null
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 desk:h-full desk:min-h-0 desk:gap-6">
       <header className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6">
         <div className="min-w-0">
           <h1 className="text-[32px] leading-[1.05] font-semibold tracking-[-0.035em] sm:text-[44px]">
@@ -78,7 +78,7 @@ export function HomePage() {
           <DashboardError error={dashboard.error} onRetry={() => void dashboard.refetch()} />
         </div>
       ) : (
-        <div className="flex flex-wrap gap-5">
+        <div className="flex flex-wrap gap-5 desk:grid desk:min-h-0 desk:flex-1 desk:grid-cols-4 desk:grid-rows-[minmax(0,1fr)]">
           <Column
             title={t('Precisa de você')}
             dot="coral"
@@ -132,7 +132,7 @@ export function HomePage() {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-5">
+      <div className="flex flex-wrap gap-5 desk:grid desk:grid-cols-3">
         <AgePanel authored={data?.pullRequests.authored ?? null} />
         <OwnersPanel authored={data?.pullRequests.authored ?? null} issues={data?.issues ?? null} />
         <AgendaNotesPanel />

@@ -33,14 +33,14 @@ export function AppShell() {
 
   return (
     <CommandPaletteProvider>
-      <div className="mx-auto flex min-h-dvh w-full max-w-[1440px] flex-col gap-8 px-4 py-6 sm:px-10 sm:py-8">
+      <div className="mx-auto flex min-h-dvh w-full max-w-[1440px] flex-col gap-8 px-4 py-6 sm:px-10 sm:py-8 desk:h-dvh desk:min-h-0 desk:gap-6 desk:overflow-hidden desk:py-6">
         <TopBar focus={focus} />
         <motion.main
           key={pathname}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.15, ease: 'easeOut' }}
-          className="min-w-0 flex-1"
+          className="min-w-0 flex-1 desk:flex desk:min-h-0 desk:flex-col"
         >
           <Outlet />
         </motion.main>

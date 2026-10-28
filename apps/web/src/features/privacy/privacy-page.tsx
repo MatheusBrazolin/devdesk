@@ -12,7 +12,7 @@ const REPOSITORY = 'https://github.com/MatheusBrazolin/devdesk'
  */
 export function PrivacyPage() {
   return (
-    <div className="min-h-dvh bg-bg">
+    <div className="min-h-dvh bg-bg desk:flex desk:h-dvh desk:flex-col">
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-6">
           <Logo />
@@ -25,136 +25,139 @@ export function PrivacyPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl space-y-8 px-4 py-10 sm:px-6">
-        <div className="space-y-2">
-          <p className="flex items-center gap-2 text-[12px] font-medium text-fg-subtle">
-            <Lock className="size-3.5" /> {t('Privacidade')}
-          </p>
-          <h1 className="text-2xl font-semibold tracking-tight">{t('Seus dados no DevDesk')}</h1>
-          <p className="text-[14px] leading-relaxed text-fg-muted">
-            {t(
-              t(
-                'O DevDesk é um painel pessoal: mostra o seu trabalho no GitHub ao lado das suas notas e da sua agenda. Esta página diz o que fica guardado, como e por quanto tempo, e como levar ou apagar tudo. Vale a Lei Geral de Proteção de Dados (LGPD).',
-              ),
-            )}
-          </p>
-        </div>
+      <div className="scroll-thin desk:min-h-0 desk:flex-1 desk:overflow-y-auto">
+        <main className="mx-auto max-w-3xl space-y-8 px-4 py-10 sm:px-6">
+          <div className="space-y-2">
+            <p className="flex items-center gap-2 text-[12px] font-medium text-fg-subtle">
+              <Lock className="size-3.5" /> {t('Privacidade')}
+            </p>
+            <h1 className="text-2xl font-semibold tracking-tight">{t('Seus dados no DevDesk')}</h1>
+            <p className="text-[14px] leading-relaxed text-fg-muted">
+              {t(
+                t(
+                  'O DevDesk é um painel pessoal: mostra o seu trabalho no GitHub ao lado das suas notas e da sua agenda. Esta página diz o que fica guardado, como e por quanto tempo, e como levar ou apagar tudo. Vale a Lei Geral de Proteção de Dados (LGPD).',
+                ),
+              )}
+            </p>
+          </div>
 
-        <Section title={t('O que fica guardado')}>
-          <List
-            items={[
-              <>
-                <b>{t('Perfil do GitHub:')}</b>{' '}
-                {t('login, nome e foto, para mostrar quem está conectado.')}
-              </>,
-              <>
-                <b>{t('Token de acesso do GitHub:')}</b>{' '}
-                {t(
-                  'cifrado (AES-256-GCM). Serve só para ler; o DevDesk nunca comenta, aprova, edita nem faz merge, e uma trava no código recusa qualquer escrita.',
-                )}
-              </>,
-              <>
-                <b>{t('Token pessoal do GitHub, se você conectar um:')}</b>{' '}
-                {t(
-                  'cifrado do mesmo jeito, usado só para ler e nunca devolvido ao navegador. Remover em Configurações apaga na hora.',
-                )}
-              </>,
-              <>
-                <b>{t('O que você escreve:')}</b> {t('notas, eventos, lembretes e configurações.')}
-              </>,
-              <>
-                <b>{t('Agendas conectadas:')}</b>{' '}
-                {t(
-                  'o nome que você deu e o endereço secreto do .ics, cifrado. O endereço não volta para o navegador depois de salvo.',
-                )}
-              </>,
-              <>
-                <b>{t('Avisos com o app fechado:')}</b>{' '}
-                {t(
-                  'o endereço de entrega que o navegador cria, e quais avisos já foram mandados, para não repetir.',
-                )}
-              </>,
-              <>
-                <b>{t('Último retrato do painel:')}</b>{' '}
-                {t(
-                  'uma cópia dos seus PRs e issues, para a tela abrir na hora. É substituída a cada atualização.',
-                )}
-              </>,
-            ]}
-          />
-        </Section>
+          <Section title={t('O que fica guardado')}>
+            <List
+              items={[
+                <>
+                  <b>{t('Perfil do GitHub:')}</b>{' '}
+                  {t('login, nome e foto, para mostrar quem está conectado.')}
+                </>,
+                <>
+                  <b>{t('Token de acesso do GitHub:')}</b>{' '}
+                  {t(
+                    'cifrado (AES-256-GCM). Serve só para ler; o DevDesk nunca comenta, aprova, edita nem faz merge, e uma trava no código recusa qualquer escrita.',
+                  )}
+                </>,
+                <>
+                  <b>{t('Token pessoal do GitHub, se você conectar um:')}</b>{' '}
+                  {t(
+                    'cifrado do mesmo jeito, usado só para ler e nunca devolvido ao navegador. Remover em Configurações apaga na hora.',
+                  )}
+                </>,
+                <>
+                  <b>{t('O que você escreve:')}</b>{' '}
+                  {t('notas, eventos, lembretes e configurações.')}
+                </>,
+                <>
+                  <b>{t('Agendas conectadas:')}</b>{' '}
+                  {t(
+                    'o nome que você deu e o endereço secreto do .ics, cifrado. O endereço não volta para o navegador depois de salvo.',
+                  )}
+                </>,
+                <>
+                  <b>{t('Avisos com o app fechado:')}</b>{' '}
+                  {t(
+                    'o endereço de entrega que o navegador cria, e quais avisos já foram mandados, para não repetir.',
+                  )}
+                </>,
+                <>
+                  <b>{t('Último retrato do painel:')}</b>{' '}
+                  {t(
+                    'uma cópia dos seus PRs e issues, para a tela abrir na hora. É substituída a cada atualização.',
+                  )}
+                </>,
+              ]}
+            />
+          </Section>
 
-        <Section title={t('O que não fica guardado')}>
-          <List
-            items={[
-              t('Código, comentários ou conteúdo dos repositórios: só o que aparece no painel.'),
-              t('Senhas: o login é feito pelo próprio GitHub.'),
-              t('Rastreamento, anúncios ou análise de uso de terceiros: não há nenhum.'),
-            ]}
-          />
-        </Section>
+          <Section title={t('O que não fica guardado')}>
+            <List
+              items={[
+                t('Código, comentários ou conteúdo dos repositórios: só o que aparece no painel.'),
+                t('Senhas: o login é feito pelo próprio GitHub.'),
+                t('Rastreamento, anúncios ou análise de uso de terceiros: não há nenhum.'),
+              ]}
+            />
+          </Section>
 
-        <Section title={t('Por quanto tempo')}>
-          <List
-            items={[
-              t('Sessão: 30 dias, ou até você sair.'),
-              t('Modo demonstração: tudo o que a visita criou é apagado depois de 24 horas.'),
-              t('Conta: até você apagar. Ao apagar, tudo sai na hora, sem cópia guardada.'),
-            ]}
-          />
-        </Section>
+          <Section title={t('Por quanto tempo')}>
+            <List
+              items={[
+                t('Sessão: 30 dias, ou até você sair.'),
+                t('Modo demonstração: tudo o que a visita criou é apagado depois de 24 horas.'),
+                t('Conta: até você apagar. Ao apagar, tudo sai na hora, sem cópia guardada.'),
+              ]}
+            />
+          </Section>
 
-        <Section title={t('Com quem os dados passam')}>
-          <List
-            items={[
-              t('GitHub: de onde vêm os PRs, issues e reviews.'),
-              t(
-                'Google, Microsoft (Outlook) ou Apple (iCloud): só se você conectar uma agenda, para baixar o .ics.',
-              ),
-              t(
-                'Serviço de push do seu navegador (Google, Mozilla, Apple ou Microsoft): só o aviso, se você ligar as notificações.',
-              ),
-              t('Hospedagem: Render (servidor) e Neon (banco de dados), nos Estados Unidos.'),
-            ]}
-          />
-        </Section>
+          <Section title={t('Com quem os dados passam')}>
+            <List
+              items={[
+                t('GitHub: de onde vêm os PRs, issues e reviews.'),
+                t(
+                  'Google, Microsoft (Outlook) ou Apple (iCloud): só se você conectar uma agenda, para baixar o .ics.',
+                ),
+                t(
+                  'Serviço de push do seu navegador (Google, Mozilla, Apple ou Microsoft): só o aviso, se você ligar as notificações.',
+                ),
+                t('Hospedagem: Render (servidor) e Neon (banco de dados), nos Estados Unidos.'),
+              ]}
+            />
+          </Section>
 
-        <Section title={t('Seus direitos')}>
-          <List
-            items={[
-              <>
-                <b>{t('Levar seus dados:')}</b>{' '}
-                {t(
-                  'em Configurações → Seus dados, "Baixar meus dados" gera um JSON com notas, eventos, agendas e configurações.',
-                )}
-              </>,
-              <>
-                <b>{t('Apagar a conta:')}</b>{' '}
-                {t(
-                  'em Configurações → Seus dados. Leva junto sessões, tokens, notas, eventos, agendas, avisos e configurações.',
-                )}
-              </>,
-              <>
-                <b>{t('Tirar o acesso ao GitHub:')}</b>{' '}
-                {tx('em {link}, revogue o DevDesk.', {
-                  link: (
-                    <ExternalLink href="https://github.com/settings/applications">
-                      github.com/settings/applications
-                    </ExternalLink>
-                  ),
-                })}
-              </>,
-              <>
-                <b>{t('Dúvidas ou pedidos:')}</b> {t('abra uma issue em')}{' '}
-                <ExternalLink href={`${REPOSITORY}/issues`}>
-                  github.com/MatheusBrazolin/devdesk
-                </ExternalLink>
-                {t('. O código é aberto: dá para conferir tudo o que está escrito aqui.')}
-              </>,
-            ]}
-          />
-        </Section>
-      </main>
+          <Section title={t('Seus direitos')}>
+            <List
+              items={[
+                <>
+                  <b>{t('Levar seus dados:')}</b>{' '}
+                  {t(
+                    'em Configurações → Seus dados, "Baixar meus dados" gera um JSON com notas, eventos, agendas e configurações.',
+                  )}
+                </>,
+                <>
+                  <b>{t('Apagar a conta:')}</b>{' '}
+                  {t(
+                    'em Configurações → Seus dados. Leva junto sessões, tokens, notas, eventos, agendas, avisos e configurações.',
+                  )}
+                </>,
+                <>
+                  <b>{t('Tirar o acesso ao GitHub:')}</b>{' '}
+                  {tx('em {link}, revogue o DevDesk.', {
+                    link: (
+                      <ExternalLink href="https://github.com/settings/applications">
+                        github.com/settings/applications
+                      </ExternalLink>
+                    ),
+                  })}
+                </>,
+                <>
+                  <b>{t('Dúvidas ou pedidos:')}</b> {t('abra uma issue em')}{' '}
+                  <ExternalLink href={`${REPOSITORY}/issues`}>
+                    github.com/MatheusBrazolin/devdesk
+                  </ExternalLink>
+                  {t('. O código é aberto: dá para conferir tudo o que está escrito aqui.')}
+                </>,
+              ]}
+            />
+          </Section>
+        </main>
+      </div>
     </div>
   )
 }

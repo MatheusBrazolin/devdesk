@@ -26,7 +26,7 @@ export function MetricsPage() {
 
   return (
     <ChartTooltipProvider>
-      <div className="space-y-5">
+      <div className="flex flex-col gap-5 desk:h-full desk:min-h-0">
         <PageHeader
           section="/metricas"
           subtitle={t(
@@ -41,7 +41,7 @@ export function MetricsPage() {
           </Card>
         ) : (
           <>
-            <Reveal delay={0.04} className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+            <Reveal delay={0.04} className="grid grid-cols-2 gap-4 md:grid-cols-3 desk:grid-cols-5">
               <MetricTile
                 icon={GitMerge}
                 tone="merged"
@@ -85,7 +85,10 @@ export function MetricsPage() {
               />
             </Reveal>
 
-            <Reveal delay={0.08} className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <Reveal
+              delay={0.08}
+              className="grid grid-cols-1 gap-4 lg:grid-cols-3 desk:min-h-0 desk:flex-1 desk:grid-rows-[minmax(0,1fr)]"
+            >
               <ChartCard title={t('Mergeados por semana')} icon={GitMerge} iconClass="text-merged">
                 {data ? (
                   <ColumnChart
@@ -176,15 +179,15 @@ function ChartCard({
   children: ReactNode
 }) {
   return (
-    <Card className="flex flex-col overflow-hidden">
+    <Card className="flex flex-col overflow-hidden desk:min-h-0">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Icon className={cn('size-3.5 shrink-0', iconClass)} strokeWidth={2} />
           {title}
         </CardTitle>
       </CardHeader>
-      {/* Altura fixa: o gráfico de colunas ocupa a altura que o pai der. */}
-      <div className="h-64 px-4 py-3">{children}</div>
+      {/* No computador, o gráfico ocupa a altura que sobra; no celular, uma altura fixa. */}
+      <div className="h-64 px-4 py-3 desk:h-auto desk:min-h-28 desk:flex-1">{children}</div>
     </Card>
   )
 }

@@ -1,11 +1,15 @@
 import type { ComponentProps } from 'react'
 import { cn } from '@/lib/cn'
 
-/** Painel do Quadro: fundo das colunas, borda fina e raio 22. Sem sombra. */
+/**
+ * Painel do Quadro: fundo das colunas, borda fina e raio 22. Sem sombra.
+ * `relative` prende o que é absoluto (textos só para leitor de tela) dentro do
+ * painel; sem isso, eles escapam da rolagem e esticam a página.
+ */
 export function Card({ className, ...props }: ComponentProps<'section'>) {
   return (
     <section
-      className={cn('rounded-q-panel border border-border bg-surface', className)}
+      className={cn('relative rounded-q-panel border border-border bg-surface', className)}
       {...props}
     />
   )

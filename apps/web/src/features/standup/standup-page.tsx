@@ -93,7 +93,7 @@ export function StandupPage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="flex flex-col gap-5 desk:h-full desk:min-h-0">
       <PageHeader
         section="/standup"
         subtitle={t(
@@ -138,9 +138,9 @@ export function StandupPage() {
 
       <Reveal
         delay={0.06}
-        className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
+        className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] desk:min-h-0 desk:flex-1 desk:grid-rows-[minmax(0,1fr)]"
       >
-        <Card className="overflow-hidden">
+        <Card className="flex flex-col overflow-hidden desk:min-h-0">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ListChecks className="size-3.5 shrink-0 text-success" strokeWidth={2} />
@@ -152,7 +152,7 @@ export function StandupPage() {
           ) : standup.isError ? (
             <DashboardError error={standup.error} onRetry={() => void standup.refetch()} />
           ) : (
-            <div className="divide-y divide-border">
+            <div className="scroll-thin divide-y divide-border desk:min-h-0 desk:flex-1 desk:overflow-y-auto">
               <Section
                 title={t('Ontem ({data})', { data: sinceLabel })}
                 items={standup.data.done}
@@ -182,7 +182,7 @@ export function StandupPage() {
           )}
         </Card>
 
-        <Card className="flex flex-col overflow-hidden">
+        <Card className="flex flex-col overflow-hidden desk:min-h-0">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ClipboardCopy className="size-3.5 shrink-0 text-accent" strokeWidth={2} />
@@ -220,7 +220,7 @@ export function StandupPage() {
             onChange={(event) => setDraft(event.target.value)}
             aria-label={t('Texto do standup')}
             spellCheck={false}
-            className="min-h-72 flex-1 resize-none bg-transparent px-4 py-3 font-mono text-[12px] leading-relaxed focus:outline-none"
+            className="scroll-thin min-h-72 flex-1 resize-none desk:min-h-0 bg-transparent px-4 py-3 font-mono text-[12px] leading-relaxed focus:outline-none"
           />
           <footer className="flex flex-wrap items-center gap-2 border-t border-border px-4 py-3">
             <Button onClick={() => void copy()} disabled={!text}>
