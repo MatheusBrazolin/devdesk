@@ -19,8 +19,11 @@ interface Sources {
   sample: WorkSource
 }
 
-/** Até aqui o retrato guardado é servido sem buscar outro. */
-export const FRESH_MS = 60_000
+/**
+ * Até aqui o retrato guardado é servido sem buscar outro. Curto para PR e
+ * issue novos aparecerem em segundos; o front pergunta a cada 30 s.
+ */
+export const FRESH_MS = 20_000
 /** Até aqui ele ainda é servido na hora, enquanto um novo é buscado por trás. */
 export const MAX_STALE_MS = 24 * 60 * 60 * 1000
 

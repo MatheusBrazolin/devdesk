@@ -4,6 +4,10 @@ Mudanças que valem a pena saber, versão a versão. O formato segue o [Keep a C
 
 ## [Não lançado]
 
+### Mudado
+
+- **Painel se atualiza sozinho mais rápido**: PR e issue novos aparecem em até cerca de 30 segundos, sem recarregar a página. Voltar para a aba já busca de novo, e com a aba escondida o painel continua conferindo a cada 2 minutos para os avisos chegarem.
+
 ## [1.2.0] - 2026-10-28
 
 Um DevDesk com cara própria: paleta grafite e lavanda, logo novo, login animado e telas que cabem na janela do computador.

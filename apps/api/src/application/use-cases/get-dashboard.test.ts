@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createTestContext } from '../../../test/helpers.js'
 import { AppError } from '../../domain/errors.js'
+import { FRESH_MS } from './get-dashboard.js'
 
 async function githubUser() {
   const ctx = createTestContext()
@@ -31,7 +32,7 @@ describe('GetDashboard', () => {
   it('serve do cache dentro da validade', async () => {
     const { deps, user, githubWork, clock } = await githubUser()
     await deps.useCases.getDashboard.execute(user)
-    clock.advance(30_000)
+    clock.advance(FRESH_MS - 1)
     await deps.useCases.getDashboard.execute(user)
     expect(githubWork.calls).toHaveLength(1)
   })
@@ -39,7 +40,7 @@ describe('GetDashboard', () => {
   it('busca de novo quando o cache vence', async () => {
     const { deps, user, githubWork, clock } = await githubUser()
     await deps.useCases.getDashboard.execute(user)
-    clock.advance(60_000)
+    clock.advance(FRESH_MS)
     await deps.useCases.getDashboard.execute(user)
     expect(githubWork.calls).toHaveLength(2)
   })
