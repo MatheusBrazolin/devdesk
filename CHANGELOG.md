@@ -6,6 +6,7 @@ Mudanças que valem a pena saber, versão a versão. O formato segue o [Keep a C
 
 ### Mudado
 
+- **Precisa de você mostra seus PRs travados**: além das reviews pedidas, entram os seus PRs com conflito ou com CI falhando, em pílulas coral cheias e no topo da coluna, antes das reviews. Conflito aparece até em rascunho.
 - **Painel se atualiza sozinho mais rápido**: PR e issue novos aparecem em até cerca de 30 segundos, sem recarregar a página. Voltar para a aba já busca de novo, e com a aba escondida o painel continua conferindo a cada 2 minutos para os avisos chegarem.
 
 ## [1.2.0] - 2026-10-28

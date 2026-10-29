@@ -185,6 +185,8 @@ test.describe('navegação', () => {
     await enterDemo(page)
     await page.keyboard.press('g')
     await page.keyboard.press('i')
+    // O Hoje também tem linhas: esperar a troca de página antes de andar.
+    await expect(page.getByRole('heading', { level: 1, name: 'Issues' })).toBeVisible()
     const links = page.locator('[data-list-item] a[data-list-link]')
     await expect(links.first()).toBeVisible()
 

@@ -3,7 +3,13 @@ import { daysSince, isStale } from '@/features/work/list-filters'
 
 /** Situação que aparece na pílula do card. */
 export type StatusTag =
-  'changes_requested' | 'review_requested' | 'no_review' | 'approved' | 'draft'
+  | 'conflict'
+  | 'ci_failure'
+  | 'changes_requested'
+  | 'review_requested'
+  | 'no_review'
+  | 'approved'
+  | 'draft'
 
 export interface BoardCard {
   pullRequest: PullRequest
@@ -27,6 +33,26 @@ export const IN_PROGRESS_LIST_LIMIT = 3
 const changesRequested = (pr: PullRequest) =>
   pr.reviewDecision === 'changes_requested' || pr.changesRequested > 0
 
+/**
+ * O que trava um PR seu e só você resolve, do mais grave ao menos: conflito
+ * (vale até em rascunho), CI quebrado e mudanças pedidas. Nada disso, null.
+ */
+function blockedTag(pr: PullRequest): StatusTag | null {
+  if (pr.mergeable === 'conflicting') return 'conflict'
+  if (pr.isDraft) return null
+  if (pr.ciStatus === 'failure') return 'ci_failure'
+  if (changesRequested(pr)) return 'changes_requested'
+  return null
+}
+
+/** Ordem em "Precisa de você": o que trava seu PR vem antes das reviews. */
+const URGENCY: Partial<Record<StatusTag, number>> = {
+  conflict: 0,
+  ci_failure: 1,
+  changes_requested: 2,
+  review_requested: 3,
+}
+
 /** A situação de um PR seu: o que mais pesa aparece. */
 function authoredTag(pr: PullRequest): StatusTag {
   if (pr.isDraft) return 'draft'
@@ -37,7 +63,8 @@ function authoredTag(pr: PullRequest): StatusTag {
 
 /**
  * Os PRs do painel nas quatro colunas do quadro. Cada PR fica numa coluna só,
- * a mais urgente: pede ação sua > parado há mais de 7 dias > em andamento.
+ * a mais urgente: pede ação sua (review pedida, ou PR seu com conflito, CI
+ * quebrado ou mudanças pedidas) > parado há mais de 7 dias > em andamento.
  */
 export function buildBoard(data: Dashboard, now: Date = new Date()): Board {
   const card = (pullRequest: PullRequest, tag: StatusTag): BoardCard => ({
@@ -53,12 +80,13 @@ export function buildBoard(data: Dashboard, now: Date = new Date()): Board {
   const seen = new Set(reviews.map((c) => c.pullRequest.id))
   const mine = data.pullRequests.authored.filter((pr) => !seen.has(pr.id))
 
-  const needsYou = [
-    ...mine
-      .filter((pr) => !pr.isDraft && changesRequested(pr))
-      .map((pr) => card(pr, 'changes_requested')),
-    ...reviews,
-  ].sort(oldestFirst)
+  const blocked = mine.flatMap((pr) => {
+    const tag = blockedTag(pr)
+    return tag ? [card(pr, tag)] : []
+  })
+  const needsYou = [...blocked, ...reviews].sort(
+    (a, b) => (URGENCY[a.tag] ?? 9) - (URGENCY[b.tag] ?? 9) || oldestFirst(a, b),
+  )
   const taken = new Set(needsYou.map((c) => c.pullRequest.id))
 
   const stale = mine

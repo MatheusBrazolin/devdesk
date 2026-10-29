@@ -8,7 +8,10 @@ import { LOCALE, plural, t } from '@/lib/i18n'
 import type { DayCount } from '../dashboard-metrics'
 import type { BoardCard, StatusTag } from './board'
 
+// Conflito e CI quebrado vêm cheios, para não se confundir com review pedida.
 const TAGS: Record<StatusTag, { label: string; className: string }> = {
+  conflict: { label: t('Conflito'), className: 'border-q-coral bg-q-coral text-q-bg' },
+  ci_failure: { label: t('CI falhando'), className: 'border-q-coral bg-q-coral text-q-bg' },
   changes_requested: { label: t('Mudanças pedidas'), className: 'border-q-coral text-q-coral' },
   review_requested: { label: t('Review pedida'), className: 'border-q-coral text-q-coral' },
   no_review: { label: t('Sem review'), className: 'border-q-sun text-q-sun' },

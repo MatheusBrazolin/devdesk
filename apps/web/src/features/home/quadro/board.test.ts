@@ -46,6 +46,39 @@ function dashboard(prs: Partial<Dashboard['pullRequests']>): Dashboard {
 }
 
 describe('buildBoard', () => {
+  it('PR seu com conflito ou CI quebrado entra em Precisa de você, antes das reviews', () => {
+    const asked = pr({ updatedAt: daysAgo(5) })
+    const conflict = pr({ mergeable: 'conflicting', updatedAt: daysAgo(2) })
+    const draftConflict = pr({ mergeable: 'conflicting', isDraft: true })
+    const broken = pr({ ciStatus: 'failure' })
+    const brokenDraft = pr({ ciStatus: 'failure', isDraft: true })
+    const fine = pr()
+
+    const board = buildBoard(
+      dashboard({
+        reviewRequested: [asked],
+        authored: [fine, broken, brokenDraft, draftConflict, conflict],
+      }),
+      now,
+    )
+
+    expect(board.needsYou.map((c) => [c.pullRequest.id, c.tag])).toEqual([
+      [conflict.id, 'conflict'],
+      [draftConflict.id, 'conflict'],
+      [broken.id, 'ci_failure'],
+      [asked.id, 'review_requested'],
+    ])
+    expect(board.inProgress.map((c) => c.pullRequest.id)).toEqual(
+      expect.arrayContaining([fine.id, brokenDraft.id]),
+    )
+  })
+
+  it('conflito pesa mais que CI quebrado e mudanças pedidas', () => {
+    const all = pr({ mergeable: 'conflicting', ciStatus: 'failure', changesRequested: 1 })
+    const board = buildBoard(dashboard({ authored: [all] }), now)
+    expect(board.needsYou[0]?.tag).toBe('conflict')
+  })
+
   it('cada PR fica numa coluna só, a mais urgente', () => {
     const asked = pr()
     const changes = pr({ reviewDecision: 'changes_requested', updatedAt: daysAgo(10) })
