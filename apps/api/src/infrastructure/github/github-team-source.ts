@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import type { TeamSource } from '../../application/ports/team-source.js'
-import { githubReconnect, upstream } from '../../domain/errors.js'
+import { githubReconnect, githubUnavailable, githubUnexpected } from '../../domain/errors.js'
 import type { TeamPullRequest } from '../../domain/team.js'
 import { createReadOnlyFetch } from './read-only-fetch.js'
 import { readGitHubJson } from './read-github-json.js'
@@ -125,11 +125,12 @@ export class GitHubTeamSource implements TeamSource {
       body: JSON.stringify({ query: TEAM_QUERY, variables: { q } }),
     })
     if (response.status === 401) throw githubReconnect()
-    if (!response.ok) throw upstream(`GitHub respondeu ${response.status} ao montar o time.`)
+    if (!response.ok)
+      throw githubUnavailable(`GitHub respondeu ${response.status} ao montar o time.`)
     const parsed = responseSchema.safeParse(
       await readGitHubJson(response, z.unknown(), 'montar o time'),
     )
-    if (!parsed.success) throw upstream('O GitHub respondeu num formato inesperado (time).')
+    if (!parsed.success) throw githubUnexpected('formato inesperado (time)', parsed.error)
 
     // Cada PR à parte: o que não bater (ex.: bloqueado por SAML) sai do painel.
     const pullRequests = parsed.data.data.search.nodes.flatMap((raw): TeamPullRequest[] => {

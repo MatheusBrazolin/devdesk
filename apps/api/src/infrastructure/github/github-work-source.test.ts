@@ -253,10 +253,13 @@ describe('GitHubWorkSource', () => {
     })
   })
 
-  it('GitHub fora do ar vira falha de upstream', async () => {
+  it('GitHub fora do ar vira falha de upstream, com mensagem fixa e o status só na causa', async () => {
     const { impl } = fakeFetch(502, {})
-    await expect(new GitHubWorkSource(clock, impl).fetchSnapshot('gho_x')).rejects.toMatchObject({
+    const error = await new GitHubWorkSource(clock, impl).fetchSnapshot('gho_x').catch((e) => e)
+    expect(error).toMatchObject({
       code: 'UPSTREAM',
+      message: 'O GitHub não respondeu agora. Tente de novo em instantes.',
     })
+    expect(error.cause.message).toContain('502')
   })
 })

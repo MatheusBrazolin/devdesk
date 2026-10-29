@@ -67,8 +67,12 @@ export const deadlineSchema = z.object({
   items: z.number().int(),
 })
 
+/** Agenda se consulta perto de agora: além disto, expandir séries só gastaria CPU. */
+const RANGE_LIMIT = { from: '2000-01-01', to: '2100-12-31' }
+
 export const calendarRangeQuerySchema = z
   .object({ from: calendarDateSchema, to: calendarDateSchema })
+  .refine(({ from, to }) => from >= RANGE_LIMIT.from && to <= RANGE_LIMIT.to, 'fora do intervalo')
   .refine(({ from, to }) => from <= to, 'from depois de to')
   .refine(({ from, to }) => daysBetween(from, to) <= 400, 'intervalo grande demais')
 

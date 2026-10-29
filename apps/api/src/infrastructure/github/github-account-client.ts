@@ -3,7 +3,7 @@ import type {
   GitHubAccount,
   GitHubAccountSnapshot,
 } from '../../application/ports/github-account.js'
-import { githubReconnect, upstream } from '../../domain/errors.js'
+import { githubReconnect, githubUnavailable } from '../../domain/errors.js'
 import { readGitHubJson } from './read-github-json.js'
 import { createReadOnlyFetch } from './read-only-fetch.js'
 import { parseTokenExpiration } from './token-expiration.js'
@@ -34,7 +34,7 @@ export class GitHubAccountClient implements GitHubAccount {
       get('/rate_limit'),
     ])
     if (user.status === 401) throw githubReconnect('O GitHub recusou o token.')
-    if (!user.ok) throw upstream(`GitHub respondeu ${user.status} ao conferir o token.`)
+    if (!user.ok) throw githubUnavailable(`GitHub respondeu ${user.status} ao conferir o token.`)
 
     const organizations = orgs.ok
       ? (await readGitHubJson(orgs, orgsSchema, 'listar as organizações')).map((org) => ({

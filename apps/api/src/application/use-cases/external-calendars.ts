@@ -63,7 +63,10 @@ export class ExternalCalendars {
     if (user.isDemo) throw forbidden('No modo demonstração a agenda de exemplo já vem conectada.')
     const url = parseCalendarUrl(input.url)
     if ((await this.repository.list(user.id)).length >= MAX_SUBSCRIPTIONS) {
-      throw new AppError('VALIDATION', `Dá para assinar até ${MAX_SUBSCRIPTIONS} agendas.`)
+      throw new AppError(
+        'VALIDATION',
+        'Você chegou ao limite de agendas assinadas. Remova uma para adicionar outra.',
+      )
     }
 
     // Lê uma vez antes de guardar: um link errado é avisado agora, não some calado depois.

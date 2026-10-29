@@ -1,4 +1,4 @@
-import { and, arrayContains, desc, eq, ilike, or, sql } from 'drizzle-orm'
+import { and, arrayContains, desc, eq, or, sql } from 'drizzle-orm'
 import type {
   NoteChanges,
   NoteFilter,
@@ -17,8 +17,13 @@ export class DrizzleNoteRepository implements NoteRepository {
   async list(userId: string, filter: NoteFilter): Promise<Note[]> {
     const conditions = [eq(notes.userId, userId)]
     if (filter.q) {
+      // unaccent dos dois lados: "cabecalho" acha "Cabeçalho" e vice-versa (migração 0009).
+      const pattern = likePattern(filter.q)
       conditions.push(
-        or(ilike(notes.title, likePattern(filter.q)), ilike(notes.body, likePattern(filter.q)))!,
+        or(
+          sql`unaccent(${notes.title}) ilike unaccent(${pattern})`,
+          sql`unaccent(${notes.body}) ilike unaccent(${pattern})`,
+        )!,
       )
     }
     if (filter.tag) conditions.push(arrayContains(notes.tags, [filter.tag]))

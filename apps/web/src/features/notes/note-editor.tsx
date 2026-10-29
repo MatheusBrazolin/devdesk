@@ -12,7 +12,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/cn'
 import { formatRelative } from '@/lib/time'
@@ -21,8 +21,40 @@ import { Markdown } from './markdown'
 import { useDeleteNote } from './queries'
 import { TagInput } from './tag-input'
 import { type SaveState, useAutosave } from './use-autosave'
+import { returnFocus } from '@/lib/return-focus'
 
 type Mode = 'escrever' | 'visualizar'
+
+/**
+ * Apagamentos de notas vazias à espera. Esperar um instante deixa o modo
+ * estrito do React (que desmonta e remonta) e reabrir a mesma nota cancelarem.
+ */
+const pendingDiscard = new Map<string, ReturnType<typeof setTimeout>>()
+
+/**
+ * "Nova" já cria a nota no servidor. Quem sai sem escrever nada não deixa
+ * uma "Sem título" vazia na lista: ao fechar, a nota vazia é apagada.
+ */
+function useDiscardIfEmpty(note: Note, isEmpty: () => boolean) {
+  const remove = useDeleteNote()
+  // Lê o estado da última renderização na hora de fechar, sem refazer o efeito a cada tecla.
+  const discard = useEffectEvent(() => {
+    if (!isEmpty()) return
+    pendingDiscard.set(
+      note.id,
+      setTimeout(() => {
+        pendingDiscard.delete(note.id)
+        remove.mutate(note.id)
+      }, 300),
+    )
+  })
+
+  useEffect(() => {
+    clearTimeout(pendingDiscard.get(note.id))
+    pendingDiscard.delete(note.id)
+    return () => discard()
+  }, [note.id])
+}
 
 interface NoteEditorProps {
   note: Note
@@ -41,6 +73,10 @@ export function NoteEditor({ note, onBack, onDeleted }: NoteEditorProps) {
   const [mode, setMode] = useState<Mode>(note.body ? 'visualizar' : 'escrever')
   const { schedule, flush, state, error } = useAutosave(note.id)
   const bodyRef = useRef<HTMLTextAreaElement>(null)
+  useDiscardIfEmpty(
+    note,
+    () => !title.trim() && !body.trim() && tags.length === 0 && links.length === 0 && !pinned,
+  )
 
   /** Vai para o corpo, no fim do texto; troca para "escrever" se precisar. */
   const focusBody = () => {
@@ -306,7 +342,10 @@ function DeleteButton({
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/30 animate-overlay-in" />
-        <Dialog.Content className="fixed top-1/3 left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-lg border border-border bg-surface p-5 shadow-pop animate-pop-in">
+        <Dialog.Content
+          onCloseAutoFocus={returnFocus}
+          className="fixed top-1/3 left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-lg border border-border bg-surface p-5 shadow-pop animate-pop-in"
+        >
           <Dialog.Title className="text-sm font-semibold">
             {t('Apagar “{titulo}”?', { titulo: title })}
           </Dialog.Title>

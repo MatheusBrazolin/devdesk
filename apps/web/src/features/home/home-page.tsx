@@ -73,13 +73,14 @@ export function HomePage() {
       <TokenAlertNotice id="token-hoje-renovar" />
       <OrgAccessHint data={data} isDemo={user.isDemo} />
 
-      {dashboard.isError ? (
+      {dashboard.isError && !dashboard.data ? (
         <div className="rounded-q-panel border border-q-line bg-q-col p-2">
           <DashboardError error={dashboard.error} onRetry={() => void dashboard.refetch()} />
         </div>
       ) : (
         <div className="flex flex-wrap gap-5 desk:grid desk:min-h-0 desk:flex-1 desk:grid-cols-4 desk:grid-rows-[minmax(0,1fr)]">
           <Column
+            data-tour="precisa-de-voce"
             title={t('Precisa de você')}
             dot="coral"
             count={board?.needsYou.length ?? null}
@@ -133,8 +134,12 @@ export function HomePage() {
       )}
 
       <div className="flex flex-wrap gap-5 desk:grid desk:grid-cols-3">
-        <AgePanel authored={data?.pullRequests.authored ?? null} />
-        <OwnersPanel authored={data?.pullRequests.authored ?? null} issues={data?.issues ?? null} />
+        <AgePanel authored={data?.pullRequests.authored ?? null} failed={dashboard.isError} />
+        <OwnersPanel
+          authored={data?.pullRequests.authored ?? null}
+          issues={data?.issues ?? null}
+          failed={dashboard.isError}
+        />
         <AgendaNotesPanel />
       </div>
     </div>
@@ -179,7 +184,8 @@ function Stat({
 function FreshnessNote() {
   const { data, isFetching } = useQuery(dashboardQuery)
   const refresh = useRefreshDashboard()
-  const busy = isFetching || refresh.isPending
+  // Busca de fundo (a cada 30 s) não gira o botão: só a pedida ou a primeira.
+  const busy = refresh.isPending || (isFetching && !data)
   const [now, setNow] = useState(() => new Date())
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 30_000)

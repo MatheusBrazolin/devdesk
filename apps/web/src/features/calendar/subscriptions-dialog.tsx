@@ -5,9 +5,10 @@ import { type FormEvent, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { t } from '@/lib/i18n'
 import { subscriptionsQuery, useAddSubscription, useRemoveSubscription } from './queries'
+import { returnFocus } from '@/lib/return-focus'
 
 const field =
-  'h-8 w-full rounded-md border border-border bg-bg px-2.5 text-[13px] focus:border-border-strong focus:outline-none'
+  'h-8 w-full rounded-md border border-border bg-bg px-2.5 text-[13px] focus:border-border-strong'
 
 const HOW_TO = [
   {
@@ -33,7 +34,10 @@ export function SubscriptionsDialog({
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/30 animate-overlay-in" />
-        <Dialog.Content className="fixed top-[10vh] left-1/2 z-50 max-h-[80vh] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 overflow-y-auto rounded-lg border border-border bg-surface shadow-pop animate-pop-in">
+        <Dialog.Content
+          onCloseAutoFocus={returnFocus}
+          className="fixed top-[10vh] left-1/2 z-50 max-h-[80vh] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 overflow-y-auto rounded-lg border border-border bg-surface shadow-pop animate-pop-in"
+        >
           <header className="flex items-center justify-between border-b border-border px-4 py-3">
             <Dialog.Title className="flex items-center gap-2 text-sm font-semibold">
               <CalendarSync className="size-4 text-info" /> {t('Agendas conectadas')}

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { type AttentionItem, buildAttentionList } from '../../domain/attention.js'
 import { AppError } from '../../domain/errors.js'
 import type { User } from '../../domain/user.js'
@@ -24,6 +25,8 @@ interface Sources {
  * issue novos aparecerem em segundos; o front pergunta a cada 30 s.
  */
 export const FRESH_MS = 20_000
+/** Depois de uma atualização por trás falhar, espera isto antes de tentar de novo. */
+export const RETRY_AFTER_FAILURE_MS = 60_000
 /** Até aqui ele ainda é servido na hora, enquanto um novo é buscado por trás. */
 export const MAX_STALE_MS = 24 * 60 * 60 * 1000
 
@@ -37,6 +40,8 @@ export class GetDashboard {
   private readonly inFlight = new Map<string, Promise<WorkSnapshot>>()
   /** Chaves cuja atualização por trás descobriu um token recusado. */
   private readonly needsReconnect = new Set<string>()
+  /** Quando a última atualização por trás falhou, por chave. */
+  private readonly failedAt = new Map<string, number>()
 
   constructor(
     private readonly sources: Sources,
@@ -58,7 +63,8 @@ export class GetDashboard {
 
     const accessToken = await this.tokens.getAccessToken(user.id)
     // A credencial entra na chave: outro login ou um token renovado não herdam o retrato antigo.
-    const credential = accessToken.slice(-8)
+    // Só um hash curto vai para o banco, nunca um pedaço do token.
+    const credential = createHash('sha256').update(accessToken).digest('hex').slice(0, 16)
     const key = `${user.id}:${credential}`
 
     // Token recusado numa atualização por trás: não esconder isso atrás de dados velhos.
@@ -71,10 +77,17 @@ export class GetDashboard {
 
     if (cached && age < FRESH_MS) return { snapshot: cached, stale: false }
     if (cached && age < MAX_STALE_MS) {
+      // O GitHub acabou de falhar (cota, fora do ar): serve o guardado sem pedir de novo, e
+      // sem "stale", para o front não perguntar a cada 3 s enquanto o GitHub não volta.
+      const failed = this.failedAt.get(key)
+      const now = this.clock.now().getTime()
+      if (failed !== undefined && now - failed < RETRY_AFTER_FAILURE_MS) {
+        return { snapshot: cached, stale: false }
+      }
       this.fetchAndStore(user.id, credential, accessToken).catch((error: unknown) => {
         if (error instanceof AppError && error.code === 'GITHUB_RECONNECT')
           this.needsReconnect.add(key)
-        // Outras falhas: o retrato guardado continua valendo, e a próxima requisição tenta de novo.
+        else this.failedAt.set(key, this.clock.now().getTime())
       })
       return { snapshot: cached, stale: true }
     }
@@ -94,6 +107,7 @@ export class GetDashboard {
       const snapshot = await this.sources.github.fetchSnapshot(accessToken)
       await this.cache.set(userId, credential, snapshot)
       this.needsReconnect.delete(key)
+      this.failedAt.delete(key)
       return snapshot
     })().finally(() => this.inFlight.delete(key))
     this.inFlight.set(key, fetching)

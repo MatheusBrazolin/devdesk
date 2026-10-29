@@ -3,6 +3,8 @@ import type { ExternalOccurrence } from '../../domain/external-calendar.js'
 
 /** Teto de voltas por série: uma diária desde 2015 ainda cabe; uma série sem fim não trava a API. */
 const MAX_STEPS_PER_SERIES = 10_000
+/** Teto de voltas somando todas as séries: um .ics com centenas de séries não trava a API. */
+const MAX_STEPS_PER_CALL = 50_000
 /** Teto de ocorrências devolvidas por agenda. */
 const MAX_OCCURRENCES = 2_000
 
@@ -89,6 +91,7 @@ export function expandIcs(source: string, from: Date, to: Date): ExternalOccurre
     if (result.length < MAX_OCCURRENCES && overlaps(event, from, to)) result.push(event)
   }
 
+  let budget = MAX_STEPS_PER_CALL
   for (const [uid, component] of masters) {
     if (cancelled(component) || !component.hasProperty('dtstart')) continue
     const event = new ICAL.Event(component)
@@ -100,7 +103,11 @@ export function expandIcs(source: string, from: Date, to: Date): ExternalOccurre
     }
 
     const iterator = event.iterator()
-    for (let step = 0, next = iterator.next(); next && step < MAX_STEPS_PER_SERIES; step++) {
+    for (
+      let step = 0, next = iterator.next();
+      next && step < MAX_STEPS_PER_SERIES && budget > 0;
+      step++, budget--
+    ) {
       if (next.toJSDate() >= to) break
       const details = event.getOccurrenceDetails(next)
       if (!cancelled(details.item.component)) {

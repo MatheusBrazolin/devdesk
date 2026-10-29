@@ -136,7 +136,8 @@ export function notify(notice: Notice) {
     duration: 15_000,
     ...(url && { action: { label: t('Abrir'), onClick: () => window.open(url, '_blank') } }),
   })
-  if (!notificationsEnabled() || document.visibilityState === 'visible') return
+  // Janela visível mas atrás do editor também conta: o aviso na página ninguém vê.
+  if (!notificationsEnabled() || document.hasFocus()) return
   try {
     const notification = new Notification(title, { body, tag, icon: '/favicon.svg' })
     notification.onclick = () => {

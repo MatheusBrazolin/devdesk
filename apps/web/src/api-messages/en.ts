@@ -1,7 +1,7 @@
 /**
  * Inglês das mensagens de erro fixas da API (apps/api) e dos schemas em
  * packages/shared. A API responde em português; lib/api.ts passa a mensagem
- * por t(). Mensagens montadas com valores (template literals) não casam aqui.
+ * por t(). Por isso a API só responde frases fixas, sem valores no meio.
  */
 export default {
   // domain/errors.ts e error-handler.ts
@@ -46,10 +46,15 @@ export default {
   'O token guardado não pôde ser lido. Conecte a conta de novo.':
     "The stored token couldn't be read. Connect your account again.",
   'O GitHub recusou o token.': 'GitHub rejected the token.',
-  'O GitHub respondeu num formato inesperado (time).':
-    'GitHub responded in an unexpected format (team).',
-  'O GitHub respondeu num formato inesperado (métricas).':
-    'GitHub responded in an unexpected format (metrics).',
+  'Você chegou ao limite de agendas assinadas. Remova uma para adicionar outra.':
+    "You've reached the limit of subscribed calendars. Remove one to add another.",
+  // Falhas do GitHub (infrastructure/github): frase fixa, o detalhe fica no log da API
+  'O GitHub não respondeu agora. Tente de novo em instantes.':
+    "GitHub isn't responding right now. Try again in a moment.",
+  'O GitHub respondeu de um jeito inesperado. Tente de novo em instantes.':
+    'GitHub responded in an unexpected way. Try again in a moment.',
+  'O GitHub recusou o login. Tente entrar de novo.':
+    'GitHub rejected the sign-in. Try signing in again.',
   // Domínio: eventos e agendas
   'O último dia vem antes do primeiro.': 'The last day comes before the first.',
   'O fim precisa ser depois do começo.': 'The end must be after the start.',
@@ -65,4 +70,6 @@ export default {
   'período longo demais': 'period too long',
   'repositório no formato dono/nome': 'repository in owner/name format',
   'dê um título': 'add a title',
+  'ano fora do intervalo': 'year out of range',
+  'use o formato dono/repositorio': 'use the owner/repository format',
 } satisfies Record<string, string>

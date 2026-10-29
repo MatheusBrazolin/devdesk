@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { ActivitySource } from '../../application/ports/activity-source.js'
 import type { Activity, ReviewVerdict, WorkRef } from '../../domain/activity.js'
-import { githubReconnect, upstream } from '../../domain/errors.js'
+import { githubReconnect, githubUnavailable, githubUnexpected } from '../../domain/errors.js'
 import {
   ACTIVITY_QUERIES,
   type ActivityList,
@@ -132,7 +132,8 @@ export class GitHubActivitySource implements ActivitySource {
       from: from.toISOString(),
       to: to.toISOString(),
     })
-    if (!response.ok) throw upstream(`GitHub respondeu ${response.status} às contribuições.`)
+    if (!response.ok)
+      throw githubUnavailable(`GitHub respondeu ${response.status} às contribuições.`)
     const body = await readGitHubJson(response, contributionsSchema, 'ler as reviews')
     return body.data.viewer.contributionsCollection.pullRequestReviewContributions.nodes.flatMap(
       (node) =>
@@ -163,11 +164,14 @@ export class GitHubActivitySource implements ActivitySource {
   private async search(accessToken: string, list: ActivityList, variables: Record<string, string>) {
     const response = await this.post(accessToken, ACTIVITY_QUERIES[list], variables)
     if (response.status === 401) throw githubReconnect()
-    if (!response.ok) throw upstream(`GitHub respondeu ${response.status} ao montar o standup.`)
+    if (!response.ok)
+      throw githubUnavailable(`GitHub respondeu ${response.status} ao montar o standup.`)
 
     const body = await readGitHubJson(response, responseSchema, 'montar o standup')
     if (!body.data)
-      throw upstream(`GitHub recusou a consulta: ${body.errors?.[0]?.message ?? 'sem detalhes'}`)
+      throw githubUnexpected(
+        `GitHub recusou a consulta: ${body.errors?.[0]?.message ?? 'sem detalhes'}`,
+      )
     return body.data.search.nodes
   }
 }

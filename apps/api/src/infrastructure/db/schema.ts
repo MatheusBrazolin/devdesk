@@ -129,6 +129,9 @@ export const pushSubscriptions = pgTable(
     endpoint: text('endpoint').notNull().unique(),
     p256dh: text('p256dh').notNull(),
     auth: text('auth').notNull(),
+    /** Idioma e fuso de quem se inscreveu: o aviso sai no idioma e no horário dessa pessoa. */
+    language: text('language'),
+    timeZone: text('time_zone'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index('push_subscriptions_user_idx').on(table.userId)],

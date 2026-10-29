@@ -423,11 +423,11 @@ test.describe('primeiros passos', () => {
     await page.getByRole('button', { name: 'Ver a demonstração' }).click()
     const tour = page.getByRole('dialog')
     await expect(tour.getByRole('heading', { name: 'Comece pelo Hoje' })).toBeVisible()
-    for (const title of ['Notas, agenda e standup', 'Deixe à vista', 'Pelo teclado']) {
+    for (const title of ['Tudo a um clique', 'Pelo teclado', 'Deixe à vista']) {
       await tour.getByRole('button', { name: 'Próximo' }).click()
       await expect(tour.getByRole('heading', { name: title })).toBeVisible()
     }
-    await tour.getByRole('button', { name: 'Começar' }).click()
+    await tour.getByRole('button', { name: 'Concluir' }).click()
     await expect(tour).toBeHidden()
     await page.reload()
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Visitante')

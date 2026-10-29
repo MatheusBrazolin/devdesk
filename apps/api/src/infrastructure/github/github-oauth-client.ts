@@ -2,7 +2,7 @@ import { z } from 'zod'
 import type { GitHubOAuth } from '../../application/ports/github-oauth.js'
 import type { Clock } from '../../application/ports/security.js'
 import type { GitHubProfile } from '../../application/ports/user-repository.js'
-import { githubReconnect, upstream } from '../../domain/errors.js'
+import { githubReconnect, githubUnavailable, upstream } from '../../domain/errors.js'
 import type { GitHubTokens } from '../../domain/github-tokens.js'
 import { GitHubProfileClient } from './github-profile-client.js'
 import { createReadOnlyFetch } from './read-only-fetch.js'
@@ -50,7 +50,10 @@ export class GitHubOAuthClient implements GitHubOAuth {
   async exchangeCode(code: string): Promise<GitHubTokens> {
     const body = await this.requestToken({ code, redirect_uri: this.options.redirectUri })
     if ('error' in body) {
-      throw upstream(`GitHub recusou o login: ${body.error_description ?? body.error}`)
+      throw upstream(
+        'O GitHub recusou o login. Tente entrar de novo.',
+        new Error(`GitHub recusou o login: ${body.error_description ?? body.error}`),
+      )
     }
     return this.toTokens(body)
   }
@@ -63,7 +66,7 @@ export class GitHubOAuthClient implements GitHubOAuth {
     if ('error' in body) {
       // bad_refresh_token: revogado, expirado ou já usado.
       if (body.error === 'bad_refresh_token') throw githubReconnect()
-      throw upstream(`GitHub recusou a renovação: ${body.error_description ?? body.error}`)
+      throw githubUnavailable(`GitHub recusou a renovação: ${body.error_description ?? body.error}`)
     }
     return this.toTokens(body)
   }
@@ -78,7 +81,8 @@ export class GitHubOAuthClient implements GitHubOAuth {
         ...params,
       }),
     })
-    if (!response.ok) throw upstream(`GitHub respondeu ${response.status} ao emitir o token.`)
+    if (!response.ok)
+      throw githubUnavailable(`GitHub respondeu ${response.status} ao emitir o token.`)
     return readGitHubJson(response, tokenResponseSchema, 'emitir o token')
   }
 

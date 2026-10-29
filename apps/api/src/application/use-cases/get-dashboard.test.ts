@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createTestContext } from '../../../test/helpers.js'
 import { AppError } from '../../domain/errors.js'
-import { FRESH_MS } from './get-dashboard.js'
+import { FRESH_MS, RETRY_AFTER_FAILURE_MS } from './get-dashboard.js'
 
 async function githubUser() {
   const ctx = createTestContext()
@@ -83,5 +83,24 @@ describe('GetDashboard', () => {
     githubWork.error = null
     await deps.useCases.getDashboard.execute(user)
     expect(githubWork.calls).toHaveLength(2)
+  })
+
+  it('depois de falhar por trás, serve o guardado sem stale e espera antes de tentar de novo', async () => {
+    const { deps, user, githubWork, clock } = await githubUser()
+    await deps.useCases.getDashboard.execute(user)
+    clock.advance(FRESH_MS)
+    githubWork.error = new AppError('UPSTREAM', 'fora do ar')
+    expect((await deps.useCases.getDashboard.execute(user)).stale).toBe(true)
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    const calls = githubWork.calls.length
+    const again = await deps.useCases.getDashboard.execute(user)
+    expect(again.stale).toBe(false)
+    expect(githubWork.calls).toHaveLength(calls)
+
+    githubWork.error = null
+    clock.advance(RETRY_AFTER_FAILURE_MS)
+    expect((await deps.useCases.getDashboard.execute(user)).stale).toBe(true)
+    expect(githubWork.calls).toHaveLength(calls + 1)
   })
 })

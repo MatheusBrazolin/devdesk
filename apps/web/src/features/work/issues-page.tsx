@@ -12,7 +12,7 @@ import { DashboardError, ListSkeleton } from './list-states'
 import { ListToolbar, type ToolbarValue } from './list-toolbar'
 import { dashboardQuery } from './queries'
 import { SyncStatus } from './sync-status'
-import { t } from '@/lib/i18n'
+import { plural, t } from '@/lib/i18n'
 
 const route = getRouteApi('/app/issues')
 
@@ -32,7 +32,11 @@ export function IssuesPage() {
         section="/issues"
         subtitle={
           dashboard.data &&
-          t('{n} abertas e atribuídas a você', { n: dashboard.data.summary.assignedIssues })
+          plural(
+            dashboard.data.summary.assignedIssues,
+            '{n} aberta e atribuída a você',
+            '{n} abertas e atribuídas a você',
+          )
         }
         actions={<SyncStatus />}
       />
@@ -53,7 +57,7 @@ export function IssuesPage() {
           <Card>
             <ListSkeleton rows={6} />
           </Card>
-        ) : dashboard.isError ? (
+        ) : dashboard.isError && !dashboard.data ? (
           <Card>
             <DashboardError error={dashboard.error} onRetry={() => void dashboard.refetch()} />
           </Card>
@@ -73,7 +77,9 @@ export function IssuesPage() {
             <EmptyState
               icon={SearchX}
               title={t('Nada com esse filtro')}
-              description={t('Tente outra busca ou mostre todas as organizações.')}
+              description={t(
+                'Tente outra busca: o DevDesk ignora acentos e acha palavra por palavra.',
+              )}
               className="py-10"
             />
           </Card>

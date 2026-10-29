@@ -13,7 +13,7 @@ import { PullRequestRow } from './pull-request-row'
 import { orderReviewQueue } from './review-queue'
 import { dashboardQuery } from './queries'
 import { SyncStatus } from './sync-status'
-import { t } from '@/lib/i18n'
+import { plural, t } from '@/lib/i18n'
 
 export type PullRequestTab = 'review' | 'meus' | 'mergeados'
 
@@ -111,7 +111,7 @@ export function PullRequestsPage() {
         <Card className="scroll-thin overflow-hidden desk:min-h-0 desk:flex-1 desk:overflow-y-auto">
           {dashboard.isPending ? (
             <ListSkeleton rows={6} />
-          ) : dashboard.isError ? (
+          ) : dashboard.isError && !dashboard.data ? (
             <DashboardError error={dashboard.error} onRetry={() => void dashboard.refetch()} />
           ) : all.length === 0 ? (
             <EmptyState
@@ -124,7 +124,9 @@ export function PullRequestsPage() {
             <EmptyState
               icon={SearchX}
               title={t('Nada com esse filtro')}
-              description={t('Tente outra busca ou mostre todas as organizações.')}
+              description={t(
+                'Tente outra busca: o DevDesk ignora acentos e acha palavra por palavra.',
+              )}
               className="py-10"
             />
           ) : (
@@ -156,10 +158,10 @@ function summary(items: PullRequest[]): string | undefined {
   const failing = items.filter((pr) => pr.ciStatus === 'failure').length
 
   const parts = [
-    t('{n} abertos', { n: items.length }),
+    plural(items.length, '{n} aberto', '{n} abertos'),
     approved > 0 && t('{n} com aprovação', { n: approved }),
     failing > 0 && t('{n} com CI falhando', { n: failing }),
-    stale > 0 && t('{n} parados há mais de 7 dias', { n: stale }),
+    stale > 0 && plural(stale, '{n} parado há mais de 7 dias', '{n} parados há mais de 7 dias'),
   ].filter(Boolean)
 
   return parts.join(' · ')

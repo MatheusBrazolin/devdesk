@@ -1,7 +1,8 @@
+import { createHash } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
 import { createTestContext } from '../../../test/helpers.js'
 import { githubReconnect, upstream } from '../../domain/errors.js'
-import { FRESH_MS, MAX_STALE_MS } from './get-dashboard.js'
+import { FRESH_MS, MAX_STALE_MS, RETRY_AFTER_FAILURE_MS } from './get-dashboard.js'
 
 async function githubUser() {
   const ctx = createTestContext()
@@ -67,7 +68,7 @@ describe('GetDashboard: responde na hora e atualiza por trás', () => {
     expect(githubWork.calls).toHaveLength(2)
   })
 
-  it('se a busca por trás falhar, o guardado continua valendo e a próxima tenta de novo', async () => {
+  it('se a busca por trás falhar, o guardado continua valendo e tenta de novo depois de um tempo', async () => {
     const { dashboard, user, githubWork, clock } = await githubUser()
     await dashboard.execute(user)
     clock.advance(FRESH_MS + 1000)
@@ -76,7 +77,12 @@ describe('GetDashboard: responde na hora e atualiza por trás', () => {
     await expect(dashboard.execute(user)).resolves.toMatchObject({ stale: true })
     await settle()
 
+    // Logo depois da falha: serve o guardado sem pedir ao GitHub de novo.
     githubWork.error = null
+    await expect(dashboard.execute(user)).resolves.toMatchObject({ stale: false })
+    expect(githubWork.calls).toHaveLength(2)
+
+    clock.advance(RETRY_AFTER_FAILURE_MS)
     await expect(dashboard.execute(user)).resolves.toMatchObject({ stale: true })
     await settle()
     expect(githubWork.calls).toHaveLength(3)
@@ -96,6 +102,7 @@ describe('GetDashboard: responde na hora e atualiza por trás', () => {
   it('o retrato fica guardado no cache para a próxima vez', async () => {
     const { dashboard, user, snapshotCache } = await githubUser()
     await dashboard.execute(user)
-    await expect(snapshotCache.get(user.id, 'de_teste'.slice(-8))).resolves.toBeDefined()
+    const credential = createHash('sha256').update('gho_token_de_teste').digest('hex').slice(0, 16)
+    await expect(snapshotCache.get(user.id, credential)).resolves.toBeDefined()
   })
 })

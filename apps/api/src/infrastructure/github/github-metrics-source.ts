@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { MetricsSource } from '../../application/ports/metrics-source.js'
 import type { MergedPullRequestFacts, MetricsData } from '../../domain/metrics.js'
-import { githubReconnect, upstream } from '../../domain/errors.js'
+import { githubReconnect, githubUnavailable, githubUnexpected } from '../../domain/errors.js'
 import { REVIEW_CONTRIBUTIONS_QUERY } from './activity-query.js'
 import { createReadOnlyFetch } from './read-only-fetch.js'
 import { readGitHubJson } from './read-github-json.js'
@@ -98,7 +98,7 @@ export class GitHubMetricsSource implements MetricsSource {
       q: `is:pr author:@me is:merged merged:>=${stamp(from)} sort:updated-desc`,
     })
     const parsed = mergedSchema.safeParse(body)
-    if (!parsed.success) throw upstream('O GitHub respondeu num formato inesperado (métricas).')
+    if (!parsed.success) throw githubUnexpected('formato inesperado (métricas)', parsed.error)
     return parsed.data.data.search.nodes.flatMap((raw): MergedPullRequestFacts[] => {
       const result = mergedNodeSchema.safeParse(raw)
       if (!result.success) return []
@@ -145,7 +145,8 @@ export class GitHubMetricsSource implements MetricsSource {
       body: JSON.stringify({ query, variables }),
     })
     if (response.status === 401) throw githubReconnect()
-    if (!response.ok) throw upstream(`GitHub respondeu ${response.status} ao montar as métricas.`)
+    if (!response.ok)
+      throw githubUnavailable(`GitHub respondeu ${response.status} ao montar as métricas.`)
     return readGitHubJson(response, z.unknown(), 'montar as métricas')
   }
 }

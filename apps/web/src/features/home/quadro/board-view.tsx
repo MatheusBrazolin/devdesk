@@ -33,15 +33,18 @@ export function Column({
   count,
   children,
   footer,
+  'data-tour': tour,
 }: {
   title: string
   dot: keyof typeof DOTS
   count: number | null
   children: ReactNode
   footer?: ReactNode
+  'data-tour'?: string
 }) {
   return (
     <section
+      data-tour={tour}
       aria-label={title}
       className="flex min-w-0 flex-[1_1_280px] flex-col gap-3 rounded-q-panel border border-q-line bg-q-col p-4 md:min-h-[520px] desk:min-h-0"
     >

@@ -52,6 +52,20 @@ export async function buildApp(deps: AppDependencies, options: BuildOptions = {}
   await app.register(rateLimit, { max: rateLimitPerMinute, timeWindow: '1 minute' })
   registerErrorHandler(app)
 
+  // Escrita vinda de outro site (formulário que posta para cá) é recusada. O
+  // navegador sempre manda Origin num POST entre sites; fetch do próprio app
+  // manda a mesma origem, e testes e ferramentas não mandam nenhuma.
+  app.addHook('onRequest', async (request, reply) => {
+    if (['GET', 'HEAD', 'OPTIONS'].includes(request.method)) return
+    const origin = request.headers.origin
+    const crossSite = request.headers['sec-fetch-site'] === 'cross-site'
+    if ((origin && origin !== deps.config.webOrigin) || crossSite) {
+      return reply
+        .status(403)
+        .send({ error: { code: 'FORBIDDEN', message: 'Origem não permitida.' } })
+    }
+  })
+
   await app.register(
     async (api) => {
       await systemRoutes(api, deps)

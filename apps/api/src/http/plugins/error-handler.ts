@@ -16,6 +16,19 @@ const STATUS_BY_CODE: Record<ApiErrorCode, number> = {
 
 const body = (code: ApiErrorCode, message: string): ApiError => ({ error: { code, message } })
 
+/**
+ * Erros de dado do Postgres (classe 22): texto com caractere nulo, número ou
+ * data fora do que a coluna aceita. É entrada ruim, não falha nossa.
+ */
+function isPostgresDataError(error: unknown): boolean {
+  for (let current = error; current && typeof current === 'object';) {
+    const code = (current as { code?: unknown }).code
+    if (typeof code === 'string' && /^22[0-9A-Z]{3}$/.test(code)) return true
+    current = (current as { cause?: unknown }).cause
+  }
+  return false
+}
+
 export function registerErrorHandler(app: FastifyInstance): void {
   app.setErrorHandler((error, request, reply) => {
     if (error instanceof AppError) {
@@ -23,7 +36,7 @@ export function registerErrorHandler(app: FastifyInstance): void {
       return reply.status(STATUS_BY_CODE[error.code]).send(body(error.code, error.message))
     }
 
-    if (error instanceof ZodError) {
+    if (error instanceof ZodError || isPostgresDataError(error)) {
       return reply.status(400).send(body('VALIDATION', 'Requisição inválida.'))
     }
 

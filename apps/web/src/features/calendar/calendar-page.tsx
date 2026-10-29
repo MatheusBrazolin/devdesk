@@ -37,6 +37,7 @@ import { SubscriptionsDialog } from './subscriptions-dialog'
 import { type AgendaEvent, isExternal, useCalendarEvents } from './use-calendar-events'
 import { useToday } from '@/lib/use-today'
 import { LOCALE, plural, t } from '@/lib/i18n'
+import { returnFocus } from '@/lib/return-focus'
 
 const route = getRouteApi('/app/calendario')
 const WEEKDAYS = [t('dom'), t('seg'), t('ter'), t('qua'), t('qui'), t('sex'), t('sáb')]
@@ -380,7 +381,10 @@ function DaySheet({
     <Dialog.Root open={day !== null} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/30 animate-overlay-in" />
-        <Dialog.Content className="fixed inset-x-0 bottom-0 z-50 max-h-[70vh] overflow-y-auto rounded-t-xl border-t border-border bg-surface p-4 shadow-pop animate-pop-in">
+        <Dialog.Content
+          onCloseAutoFocus={returnFocus}
+          className="fixed inset-x-0 bottom-0 z-50 max-h-[70vh] overflow-y-auto rounded-t-xl border-t border-border bg-surface p-4 shadow-pop animate-pop-in"
+        >
           <Dialog.Title className="text-sm font-semibold first-letter:uppercase">
             {day &&
               fromKey(day).toLocaleDateString(LOCALE, {

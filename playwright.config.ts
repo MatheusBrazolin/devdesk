@@ -44,6 +44,7 @@ export default defineConfig({
       LOG_LEVEL: 'warn',
       // Todos os testes vêm do mesmo 127.0.0.1, em paralelo.
       RATE_LIMIT_PER_MINUTE: '10000',
+      DEMO_LOGINS_PER_MINUTE: '10000',
     },
   },
 })

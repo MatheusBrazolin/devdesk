@@ -38,6 +38,22 @@ export const LANGUAGE: Language = detect()
 /** Para `Intl.DateTimeFormat`, `toLocaleString` e afins. */
 export const LOCALE = LANGUAGE === 'en' ? 'en-US' : 'pt-BR'
 
+/** Hora como cada idioma escreve: "09:30" em português, "9:30 AM" em inglês. */
+export const HOUR_STYLE = LANGUAGE === 'en' ? 'numeric' : '2-digit'
+
+/**
+ * Dia da semana e dia do mês na ordem de cada idioma: "sex., 30" e "Fri 30".
+ * Pedido junto, o Intl em inglês escreve "30 Fri".
+ */
+export function weekdayDayFormat(weekday: 'short' | 'long') {
+  const both = new Intl.DateTimeFormat(LOCALE, { weekday, day: 'numeric' })
+  const name = new Intl.DateTimeFormat(LOCALE, { weekday })
+  return {
+    format: (date: Date) =>
+      LANGUAGE === 'en' ? `${name.format(date)} ${date.getDate()}` : both.format(date),
+  }
+}
+
 /** Cada pasta traz o seu `en.ts`: dicionário em pedaços, sem um arquivo gigante. */
 const modules = import.meta.glob<{ default: Record<string, string> }>('/src/**/en.ts', {
   eager: true,

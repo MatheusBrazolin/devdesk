@@ -16,6 +16,8 @@ const toDomain = ({
   accessTokenExpiresAt: _accessExpiry,
   refreshTokenEncrypted: _refresh,
   refreshTokenExpiresAt: _refreshExpiry,
+  personalTokenEncrypted: _personal,
+  personalTokenSavedAt: _personalSavedAt,
   ...row
 }: UserRow): User => row
 

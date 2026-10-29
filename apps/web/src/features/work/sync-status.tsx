@@ -11,7 +11,8 @@ import { dashboardQuery, useRefreshDashboard } from './queries'
 export function SyncStatus() {
   const { data, isFetching } = useQuery(dashboardQuery)
   const refresh = useRefreshDashboard()
-  const busy = isFetching || refresh.isPending
+  // Busca de fundo (a cada 30 s) não gira o botão: só a pedida ou a primeira.
+  const busy = refresh.isPending || (isFetching && !data)
   const now = useNow(30_000)
 
   return (

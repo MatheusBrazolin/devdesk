@@ -48,7 +48,8 @@ export function ListToolbar({
       if (
         event.key !== '/' ||
         target.isContentEditable ||
-        ['INPUT', 'TEXTAREA'].includes(target.tagName)
+        ['INPUT', 'TEXTAREA'].includes(target.tagName) ||
+        document.querySelector('[role="dialog"], [role="alertdialog"]')
       )
         return
       event.preventDefault()
@@ -61,7 +62,7 @@ export function ListToolbar({
   return (
     <div className="space-y-3">
       <div className="flex flex-col gap-2 sm:flex-row">
-        <label className="relative flex h-8 flex-1 items-center">
+        <label className="relative flex h-8 items-center sm:flex-1">
           <Search className="pointer-events-none absolute left-2.5 size-3.5 text-fg-subtle" />
           <span className="sr-only">{t('Buscar')}</span>
           <input
@@ -71,7 +72,7 @@ export function ListToolbar({
             onChange={(event) => onChange({ q: event.target.value || undefined })}
             onKeyDown={(event) => event.key === 'Escape' && onChange({ q: undefined })}
             placeholder={t('Buscar por título, repositório ou número')}
-            className="h-full w-full rounded-md border border-border bg-surface pr-8 pl-8 text-[13px] placeholder:text-fg-subtle focus:border-border-strong focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+            className="h-full w-full rounded-md border border-border bg-surface pr-8 pl-8 text-[13px] placeholder:text-fg-subtle focus:border-border-strong [&::-webkit-search-cancel-button]:hidden"
           />
           {value.q ? (
             <button
@@ -100,7 +101,7 @@ export function ListToolbar({
                       : (event.target.value as SortOrder),
                 })
               }
-              className="h-full rounded-md border border-border bg-surface px-2.5 text-[13px] text-fg-muted hover:border-border-strong focus:outline-none"
+              className="h-full rounded-md border border-border bg-surface px-2.5 text-[13px] text-fg-muted hover:border-border-strong"
             >
               {orders.map((order) => (
                 <option key={order} value={order}>

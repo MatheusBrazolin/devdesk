@@ -138,6 +138,7 @@ export function createContainer(env: Env, db: Database): AppDependencies {
       webOrigin: env.WEB_ORIGIN,
       secureCookies: env.NODE_ENV === 'production',
       demoEnabled: env.DEMO_ENABLED,
+      demoLoginsPerMinute: env.DEMO_LOGINS_PER_MINUTE,
     },
     github: oauth && {
       oauth,

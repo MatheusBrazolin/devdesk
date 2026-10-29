@@ -48,12 +48,13 @@ export default {
   '{n} itens novos pedem sua atenção': '{n} new items need your attention',
   // Páginas
   '{n} abertas e atribuídas a você': '{n} open and assigned to you',
+  '{n} aberta e atribuída a você': '{n} open and assigned to you',
   'Nenhuma issue atribuída': 'No assigned issues',
   'Issues abertas atribuídas a você aparecem aqui, agrupadas por repositório.':
     'Open issues assigned to you show up here, grouped by repository.',
   'Nada com esse filtro': 'Nothing matches this filter',
-  'Tente outra busca ou mostre todas as organizações.':
-    'Try another search or show all organizations.',
+  'Tente outra busca: o DevDesk ignora acentos e acha palavra por palavra.':
+    'Try another search: accents are ignored and words can be in any order.',
   'Nenhuma review pedida': 'No review requests',
   'Quando alguém pedir a sua review, o PR aparece aqui.':
     'When someone requests your review, the PR shows up here.',
@@ -67,9 +68,11 @@ export default {
   'Seus PRs': 'Your PRs',
   'Mergeados (7 dias)': 'Merged (7 days)',
   '{n} abertos': '{n} open',
+  '{n} aberto': '{n} open',
   '{n} com aprovação': '{n} approved',
   '{n} com CI falhando': '{n} with failing CI',
   '{n} parados há mais de 7 dias': '{n} stale for more than 7 days',
+  '{n} parado há mais de 7 dias': '{n} stale for more than 7 days',
   // Barra de busca e filtros
   'Prioridade de review': 'Review priority',
   'Atualizados recentemente': 'Recently updated',
@@ -87,7 +90,7 @@ export default {
   'Atualizar agora': 'Refresh now',
   'Não foi possível atualizar': 'Couldn’t refresh',
   Carregando: 'Loading',
-  'O GitHub não aceitou mais o acesso': 'GitHub no longer accepts the access',
+  'O GitHub não aceitou mais o acesso': 'GitHub access expired or was revoked',
   'Não deu para carregar os dados do GitHub': 'Couldn’t load the GitHub data',
   'O token pessoal foi revogado ou venceu. Gere outro e rode':
     'The personal token was revoked or expired. Generate a new one and run',

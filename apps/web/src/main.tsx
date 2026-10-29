@@ -8,7 +8,7 @@ import { createAppRouter } from '@/app/router'
 import { ThemeProvider, useTheme } from '@/lib/theme'
 import '@/styles/app.css'
 import { isUnauthenticated } from '@/lib/api'
-import { LANGUAGE } from '@/lib/i18n'
+import { LANGUAGE, t } from '@/lib/i18n'
 
 document.documentElement.lang = LANGUAGE
 
@@ -31,7 +31,7 @@ const router = createAppRouter(queryClient)
 
 function ThemedToaster() {
   const { resolved } = useTheme()
-  return <Toaster theme={resolved} position="bottom-right" />
+  return <Toaster theme={resolved} position="bottom-right" containerAriaLabel={t('Avisos')} />
 }
 
 createRoot(document.getElementById('root')!).render(

@@ -34,6 +34,7 @@ import { deadlinesQuery } from '@/features/calendar/queries'
 import { useCalendarEvents } from '@/features/calendar/use-calendar-events'
 import { ageBuckets, loadByOwner, mergedPerDay } from '@/features/home/dashboard-metrics'
 import { REASON_LABEL } from '@/features/work/labels'
+import { dashboardQuery } from '@/features/work/queries'
 import { orderAttention } from '@/features/work/review-queue'
 import { applySort, daysSince, isStale, ownerOf } from '@/features/work/list-filters'
 import {
@@ -50,27 +51,27 @@ import { formatRelative } from '@/lib/time'
 import { TONE_CHIP, type Tone } from '@/lib/tones'
 import { useToday } from '@/lib/use-today'
 import { rowsToShow } from './tv-scale'
-import { LOCALE, plural, t } from '@/lib/i18n'
+import { HOUR_STYLE, LOCALE, plural, t, weekdayDayFormat } from '@/lib/i18n'
 
 /**
  * Peças do modo TV. Cada arranjo (grade, coluna, faixa, mini) monta as
  * mesmas peças em quantidades e densidades diferentes.
  */
 
-const clockFormat = new Intl.DateTimeFormat(LOCALE, { hour: '2-digit', minute: '2-digit' })
+const clockFormat = new Intl.DateTimeFormat(LOCALE, { hour: HOUR_STYLE, minute: '2-digit' })
 const dateFormat = new Intl.DateTimeFormat(LOCALE, {
   weekday: 'long',
   day: 'numeric',
   month: 'long',
 })
-const shortDate = new Intl.DateTimeFormat(LOCALE, { weekday: 'short', day: 'numeric' })
+const shortDate = weekdayDayFormat('short')
 const weekday = new Intl.DateTimeFormat(LOCALE, { weekday: 'short' })
 const longDay = new Intl.DateTimeFormat(LOCALE, {
   weekday: 'short',
   day: 'numeric',
   month: 'short',
 })
-const agendaDay = new Intl.DateTimeFormat(LOCALE, { weekday: 'long', day: 'numeric' })
+const agendaDay = weekdayDayFormat('long')
 
 /** Hora que anda: atualiza a cada 10 s, o bastante para o relógio de minutos. */
 function useClock(): Date {
@@ -82,22 +83,37 @@ function useClock(): Date {
   return now
 }
 
-/** O ponto pulsa enquanto a tela está viva e atualizando. */
-const LiveDot = () => (
+/** O ponto pulsa enquanto a tela está viva e atualizando; parado e coral quando não está. */
+const LiveDot = ({ live }: { live: boolean }) => (
   <span className="relative flex size-2 shrink-0">
-    <span className="absolute inset-0 animate-ping rounded-full bg-success/60" />
-    <span className="relative size-2 rounded-full bg-success" />
+    {live && <span className="absolute inset-0 animate-ping rounded-full bg-success/60" />}
+    <span className={cn('relative size-2 rounded-full', live ? 'bg-success' : 'bg-danger')} />
   </span>
 )
 
-const freshness = (data: Dashboard | undefined, now: Date) =>
-  data
-    ? `${data.isSample ? t('Dados de exemplo') : 'GitHub'} · ${t('atualizado {quando}', { quando: formatRelative(new Date(data.fetchedAt), now) })}`
-    : t('Conectando…')
+/** Acima disto sem dado novo, a tela avisa: ninguém olha a TV de perto para conferir. */
+const OUTDATED_MS = 10 * 60_000
+const clock = new Intl.DateTimeFormat(LOCALE, { hour: HOUR_STYLE, minute: '2-digit' })
+
+/** De onde vêm os dados e de quando; diz claramente quando a tela parou de atualizar. */
+function freshness(data: Dashboard | undefined, failing: boolean, now: Date) {
+  if (!data)
+    return { live: !failing, text: failing ? t('Sem conexão com o GitHub') : t('Conectando…') }
+  const fetched = new Date(data.fetchedAt)
+  if (failing || now.getTime() - fetched.getTime() > OUTDATED_MS) {
+    return { live: false, text: t('Sem atualizar desde {hora}', { hora: clock.format(fetched) }) }
+  }
+  const source = data.isSample ? t('Dados de exemplo') : 'GitHub'
+  return {
+    live: true,
+    text: `${source} · ${t('atualizado {quando}', { quando: formatRelative(fetched, now) })}`,
+  }
+}
 
 /** Logo, frescor dos dados e relógio. `compact` para coluna e mini. */
 export function TvHeader({ data, compact }: { data: Dashboard | undefined; compact?: boolean }) {
   const now = useClock()
+  const status = freshness(data, useQuery(dashboardQuery).isError, now)
   return (
     <motion.header {...fadeUp(0)} className="flex shrink-0 items-center justify-between gap-4">
       <div className="flex min-w-0 items-center gap-2.5">
@@ -106,9 +122,14 @@ export function TvHeader({ data, compact }: { data: Dashboard | undefined; compa
           <p className={cn('leading-tight font-semibold', compact ? 'text-[15px]' : 'text-[18px]')}>
             DevDesk
           </p>
-          <p className="flex items-center gap-1.5 text-[12px] text-fg-muted">
-            <LiveDot />
-            <span className="truncate">{freshness(data, now)}</span>
+          <p
+            className={cn(
+              'flex items-center gap-1.5 text-[12px]',
+              status.live ? 'text-fg-muted' : 'font-medium text-danger',
+            )}
+          >
+            <LiveDot live={status.live} />
+            <span className="truncate">{status.text}</span>
           </p>
         </div>
       </div>
@@ -132,6 +153,7 @@ export function TvHeader({ data, compact }: { data: Dashboard | undefined; compa
 /** Relógio em bloco, para a faixa (onde o cabeçalho não cabe em cima). */
 export function TvClockBlock({ data }: { data: Dashboard | undefined }) {
   const now = useClock()
+  const status = freshness(data, useQuery(dashboardQuery).isError, now)
   return (
     <div className="flex h-full flex-col justify-between rounded-lg border border-border bg-surface p-4">
       <span className="flex items-center gap-2">
@@ -146,9 +168,14 @@ export function TvClockBlock({ data }: { data: Dashboard | undefined }) {
           {shortDate.format(now)}
         </span>
       </span>
-      <span className="flex items-center gap-1.5 text-[11px] text-fg-subtle">
-        <LiveDot />
-        <span className="truncate">{data ? t('atualizando') : t('conectando…')}</span>
+      <span
+        className={cn(
+          'flex items-center gap-1.5 text-[11px]',
+          status.live ? 'text-fg-subtle' : 'font-medium text-danger',
+        )}
+      >
+        <LiveDot live={status.live} />
+        <span className="truncate">{status.live ? t('atualizando') : status.text}</span>
       </span>
     </div>
   )
@@ -189,7 +216,8 @@ function kpisOf(data: Dashboard | undefined): Kpi[] {
       icon: CircleX,
       tone: 'danger',
       value: data && failing,
-      hint: failing ? t('precisa de correção') : t('tudo verde'),
+      // Sem dados não dá para dizer que está tudo verde.
+      hint: !data ? t('sem dados') : failing ? t('precisa de correção') : t('tudo verde'),
       alert: true,
     },
     {
@@ -371,7 +399,7 @@ export function MergedPanel({
 
 export function AgePanel({ data }: { data: Dashboard | undefined }) {
   return (
-    <Panel icon={Timer} iconClass="text-accent" title={t('Idade dos seus PRs abertos')}>
+    <Panel icon={Timer} iconClass="text-accent" title={t('Seus PRs pelo tempo sem movimento')}>
       {data ? (
         <BarList
           tone="muted"
@@ -746,7 +774,7 @@ function PullRequestState({ pr }: { pr: PullRequest }) {
 export function OwnersPanel({ data }: { data: Dashboard | undefined }) {
   const owners = data ? loadByOwner(data.pullRequests.authored, data.issues) : []
   return (
-    <Panel icon={Building2} iconClass="text-info" title={t('Abertos por organização')}>
+    <Panel icon={Building2} iconClass="text-info" title={t('PRs e issues por organização')}>
       {!data ? (
         <Skeleton className="h-20" />
       ) : owners.length === 0 ? (

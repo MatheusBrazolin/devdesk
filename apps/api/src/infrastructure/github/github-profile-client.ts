@@ -5,7 +5,7 @@ import type {
   TokenInspection,
 } from '../../application/ports/github-token-inspector.js'
 import type { GitHubProfile } from '../../application/ports/user-repository.js'
-import { githubReconnect, upstream } from '../../domain/errors.js'
+import { githubReconnect, githubUnavailable } from '../../domain/errors.js'
 import { createReadOnlyFetch } from './read-only-fetch.js'
 import { readGitHubJson } from './read-github-json.js'
 
@@ -32,7 +32,8 @@ export class GitHubProfileClient implements GitHubProfiles, GitHubTokenInspector
       },
     })
     if (response.status === 401) throw githubReconnect('O GitHub recusou o token.')
-    if (!response.ok) throw upstream(`GitHub respondeu ${response.status} ao buscar o perfil.`)
+    if (!response.ok)
+      throw githubUnavailable(`GitHub respondeu ${response.status} ao buscar o perfil.`)
 
     const profile = await readGitHubJson(response, profileSchema, 'buscar o perfil')
     // Tokens classic dizem os escopos neste cabeçalho; os fine-grained não mandam nada.

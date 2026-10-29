@@ -42,7 +42,9 @@ export function TvPage() {
   const idle = useIdle()
   // Com um menu aberto, os controles não podem sumir debaixo do mouse.
   const [menuOpen, setMenuOpen] = useState(false)
-  const hidden = idle && !menuOpen
+  // Nem com o foco do teclado num controle: sumir com ele focado deixa a pessoa às cegas.
+  const [focusInside, setFocusInside] = useState(false)
+  const hidden = idle && !menuOpen && !focusInside
   const fullscreen = useFullscreen()
   useWakeLock()
 
@@ -76,6 +78,10 @@ export function TvPage() {
 
       <motion.nav
         aria-label={t('Controles do modo TV')}
+        onFocus={() => setFocusInside(true)}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) setFocusInside(false)
+        }}
         animate={{ opacity: hidden ? 0 : 1 }}
         transition={{ duration: 0.3 }}
         className={cn(
@@ -87,7 +93,7 @@ export function TvPage() {
         <DropdownMenu onOpenChange={setMenuOpen}>
           <DropdownMenuTrigger className={CONTROL}>
             <LayoutGrid className="size-4" />
-            <span className="hidden sm:inline">
+            <span className="sr-only sm:not-sr-only">
               {TV_LAYOUTS.find((option) => option.value === choice)?.label}
             </span>
           </DropdownMenuTrigger>
@@ -116,7 +122,7 @@ export function TvPage() {
         <DropdownMenu onOpenChange={setMenuOpen}>
           <DropdownMenuTrigger className={CONTROL}>
             <AppWindow className="size-4" />
-            <span className="hidden sm:inline">{t('Abrir em janela')}</span>
+            <span className="sr-only sm:not-sr-only">{t('Abrir em janela')}</span>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="end" className="w-60">
             <DropdownMenuLabel>{t('Janela à parte, já no lugar')}</DropdownMenuLabel>
@@ -135,7 +141,7 @@ export function TvPage() {
         {fullscreen.supported && (
           <button type="button" onClick={fullscreen.toggle} className={CONTROL}>
             {fullscreen.on ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
-            <span className="hidden sm:inline">
+            <span className="sr-only sm:not-sr-only">
               {fullscreen.on ? t('Sair da tela cheia') : t('Tela cheia')}
             </span>
             <kbd className="hidden font-mono text-[11px] text-fg-subtle sm:inline">F</kbd>

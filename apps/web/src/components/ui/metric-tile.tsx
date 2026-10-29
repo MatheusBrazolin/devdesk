@@ -27,14 +27,14 @@ export function MetricTile({
       ) : (
         <span
           className={cn(
-            'text-[34px] leading-none font-semibold tracking-tight tabular-nums',
+            'text-[34px] leading-none font-semibold tracking-tight whitespace-nowrap tabular-nums',
             tone === 'merged' ? 'text-accent' : 'text-fg',
           )}
         >
           {value}
         </span>
       )}
-      <span className="truncate text-[13px] text-fg-subtle">{hint}</span>
+      <span className="line-clamp-2 text-[13px] text-fg-subtle sm:truncate">{hint}</span>
     </div>
   )
 }

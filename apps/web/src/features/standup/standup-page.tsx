@@ -22,11 +22,11 @@ import { useCreateNote } from '@/features/notes/queries'
 import { DashboardError, ListSkeleton } from '@/features/work/list-states'
 import { addDaysToKey, compareEvents, dateKey, fromKey, occursOn } from '@/lib/calendar-dates'
 import { cn } from '@/lib/cn'
-import { formatStandup, type StandupFormat } from './format'
+import { formatStandup, sinceTitle, type StandupFormat } from './format'
 import { standupQuery } from './queries'
 import { StandupSection as Section } from './standup-section'
 import { previousWorkday, windowForDay } from './standup-window'
-import { LOCALE, t } from '@/lib/i18n'
+import { HOUR_STYLE, LOCALE, t } from '@/lib/i18n'
 
 const route = getRouteApi('/app/standup')
 const dayFormat = new Intl.DateTimeFormat(LOCALE, {
@@ -46,6 +46,7 @@ export function StandupPage() {
   const navigate = route.useNavigate()
   const today = dateKey(new Date())
   const window = dia ? windowForDay(dia) : previousWorkday()
+  const sinceIsYesterday = window.first === window.last && window.first === addDaysToKey(today, -1)
   const sinceLabel =
     window.first === window.last
       ? dayFormat.format(fromKey(window.first))
@@ -62,7 +63,7 @@ export function StandupPage() {
 
   const [format, setFormat] = useState<StandupFormat>('slack')
   const generated = standup.data
-    ? formatStandup({ sinceLabel, ...standup.data, events }, format)
+    ? formatStandup({ sinceLabel, sinceIsYesterday, ...standup.data, events }, format)
     : ''
   // Nulo enquanto ninguém editou: o texto acompanha os dados e o formato.
   const [draft, setDraft] = useState<string | null>(null)
@@ -110,7 +111,7 @@ export function StandupPage() {
               <ChevronLeft />
             </Button>
             <span className="min-w-40 text-center text-[13px] font-medium first-letter:uppercase">
-              {t('Ontem: {data}', { data: sinceLabel })}
+              {sinceTitle(sinceLabel, sinceIsYesterday)}
             </span>
             <Button
               variant="ghost"
@@ -154,7 +155,7 @@ export function StandupPage() {
           ) : (
             <div className="scroll-thin divide-y divide-border desk:min-h-0 desk:flex-1 desk:overflow-y-auto">
               <Section
-                title={t('Ontem ({data})', { data: sinceLabel })}
+                title={sinceTitle(sinceLabel, sinceIsYesterday)}
                 items={standup.data.done}
                 empty={t('Nada registrado no GitHub.')}
               />
@@ -169,7 +170,7 @@ export function StandupPage() {
                       {event.allDay
                         ? t('dia todo')
                         : new Date(event.startsAt).toLocaleTimeString(LOCALE, {
-                            hour: '2-digit',
+                            hour: HOUR_STYLE,
                             minute: '2-digit',
                           })}
                     </span>
@@ -220,7 +221,7 @@ export function StandupPage() {
             onChange={(event) => setDraft(event.target.value)}
             aria-label={t('Texto do standup')}
             spellCheck={false}
-            className="scroll-thin min-h-72 flex-1 resize-none desk:min-h-0 bg-transparent px-4 py-3 font-mono text-[12px] leading-relaxed focus:outline-none"
+            className="scroll-thin min-h-72 flex-1 resize-none desk:min-h-0 bg-transparent px-4 py-3 font-mono text-[12px] leading-relaxed focus-visible:outline-offset-[-2px]"
           />
           <footer className="flex flex-wrap items-center gap-2 border-t border-border px-4 py-3">
             <Button onClick={() => void copy()} disabled={!text}>

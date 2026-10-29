@@ -17,7 +17,6 @@ export default {
   '{item}: {titulo} (esperando review {detalhe})':
     '{item}: {titulo} (waiting for review {detalhe})',
   Texto: 'Text',
-  '{inicio} a {fim}': '{inicio} to {fim}',
   'Resumo copiado': 'Summary copied',
   'Texto do resumo': 'Summary text',
   'Não deu para copiar sozinho': "Couldn't copy automatically",

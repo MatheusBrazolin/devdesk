@@ -22,7 +22,7 @@ export function useListKeys(): void {
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey || isTyping(event.target)) return
-      if (document.querySelector('[role="dialog"], [role="alertdialog"]')) return
+      if (document.querySelector('[role="dialog"], [role="alertdialog"], [role="menu"]')) return
       const key = event.key.toLowerCase()
       const sequence = afterG && Date.now() - afterG < SEQUENCE_TIMEOUT_MS
       afterG = key === 'g' ? Date.now() : 0

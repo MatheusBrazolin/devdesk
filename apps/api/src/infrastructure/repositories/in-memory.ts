@@ -111,14 +111,17 @@ export class InMemorySessionRepository implements SessionRepository {
   }
 }
 
+/** Como o unaccent + ilike do Postgres: sem acentos e sem diferença de maiúsculas. */
+const searchable = (text: string) => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()
+
 export class InMemoryNoteRepository implements NoteRepository {
   readonly items = new Map<string, Note>()
 
   async list(userId: string, filter: NoteFilter): Promise<Note[]> {
-    const q = filter.q?.toLowerCase()
+    const q = filter.q ? searchable(filter.q) : undefined
     return [...this.items.values()]
       .filter((note) => note.userId === userId)
-      .filter((note) => !q || `${note.title}\n${note.body}`.toLowerCase().includes(q))
+      .filter((note) => !q || searchable(`${note.title}\n${note.body}`).includes(q))
       .filter((note) => !filter.tag || note.tags.includes(filter.tag))
       .filter((note) => !filter.linkUrl || note.links.some((link) => link.url === filter.linkUrl))
       .sort(

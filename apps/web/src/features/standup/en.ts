@@ -13,6 +13,7 @@ export default {
   aprovado: 'approved',
   '{item} esperando review {detalhe}': '{item} waiting for review {detalhe}',
   'Ontem ({data})': 'Yesterday ({data})',
+  'Em {data}': 'On {data}',
   'Nada registrado no GitHub.': 'Nothing recorded on GitHub.',
   Hoje: 'Today',
   'Sem pendências no GitHub nem eventos na agenda.':

@@ -6,6 +6,7 @@ import { Logo } from '@/components/ui/logo'
 import { UserMenu } from './user-menu'
 import { meQuery } from '@/features/auth/queries'
 import { useCommandPalette } from '@/features/commands/command-palette'
+import { FocusPill } from '@/features/focus/focus-pill'
 import { cn } from '@/lib/cn'
 import { t } from '@/lib/i18n'
 import { NAV_ITEMS } from '@/lib/navigation'
@@ -54,6 +55,7 @@ export function TopBar({ focus = false }: { focus?: boolean }) {
         >
           <ul
             ref={navRef}
+            data-tour="navegacao"
             className="mx-auto flex w-fit max-w-full gap-1 overflow-x-auto rounded-full border border-q-line bg-q-col p-1 [scrollbar-width:none]"
           >
             {items.map((item) => {
@@ -82,8 +84,10 @@ export function TopBar({ focus = false }: { focus?: boolean }) {
       <div
         className={cn('ml-auto flex shrink-0 items-center gap-3', !focus && 'min-[1280px]:ml-0')}
       >
+        <FocusPill />
         <button
           type="button"
+          data-tour="busca"
           onClick={palette.open}
           className="q-ease flex size-10 items-center justify-center gap-2 rounded-full border border-q-line bg-q-col text-[14px] text-q-text3 hover:text-q-text2 sm:w-[220px] sm:justify-start sm:px-4 min-[1280px]:w-10 min-[1280px]:justify-center min-[1280px]:px-0 min-[1400px]:w-[220px] min-[1400px]:justify-start min-[1400px]:px-4"
         >

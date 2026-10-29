@@ -2,7 +2,11 @@ import { addDays } from '../../domain/calendar-event.js'
 import { AppError, forbidden } from '../../domain/errors.js'
 import {
   isAllowedPushEndpoint,
+  isValidTimeZone,
+  type PushLocale,
+  type PushNotice,
   type PushSubscription,
+  pushLocale,
   pushRound,
   type UpcomingEvent,
 } from '../../domain/push.js'
@@ -47,7 +51,14 @@ export class PushNotifications {
     if (!isAllowedPushEndpoint(subscription.endpoint)) {
       throw new AppError('VALIDATION', 'Este navegador usa um serviço de push desconhecido.')
     }
-    await this.repository.save(user.id, subscription)
+    // Fuso que o Intl não conhece não vale guardar: o aviso cai no horário de Brasília.
+    const timeZone =
+      subscription.timeZone && isValidTimeZone(subscription.timeZone) ? subscription.timeZone : null
+    await this.repository.save(user.id, {
+      ...subscription,
+      language: subscription.language ?? null,
+      timeZone,
+    })
   }
 
   unsubscribe(user: User, endpoint: string): Promise<void> {
@@ -81,13 +92,23 @@ export class PushNotifications {
         .filter(([, on]) => on)
         .map(([kind]) => kind),
     )
-    const { keys, notices } = pushRound(seen, attention, events, now, this.webOrigin, enabled)
+    const round = (locale?: PushLocale) =>
+      pushRound(seen, attention, events, now, this.webOrigin, enabled, locale)
+    const { keys, notices } = round()
     await this.repository.saveSeen(userId, keys, now)
     if (notices.length === 0) return 0
 
+    // Cada navegador recebe no seu idioma e no seu fuso; o texto sai uma vez por combinação.
+    const byLocale = new Map<string, PushNotice[]>()
+    const noticesFor = (locale: PushLocale) => {
+      const key = `${locale.language}|${locale.timeZone}`
+      if (!byLocale.has(key)) byLocale.set(key, round(locale).notices)
+      return byLocale.get(key)!
+    }
+
     let sent = 0
     for (const subscription of await this.repository.listForUser(userId)) {
-      for (const notice of notices) {
+      for (const notice of noticesFor(pushLocale(subscription))) {
         const result = await this.sender.send(subscription, notice)
         if (result === 'gone') {
           await this.repository.deleteEndpoint(subscription.endpoint)

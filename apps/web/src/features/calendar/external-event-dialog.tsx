@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { formatTime, fromKey } from '@/lib/calendar-dates'
 import type { AgendaEvent } from './use-calendar-events'
 import { LOCALE, t } from '@/lib/i18n'
+import { returnFocus } from '@/lib/return-focus'
 
 const dayFormat = new Intl.DateTimeFormat(LOCALE, {
   weekday: 'long',
@@ -37,7 +38,10 @@ export function ExternalEventDialog({
     <Dialog.Root open={event !== null} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/30 animate-overlay-in" />
-        <Dialog.Content className="fixed top-[12vh] left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-lg border border-border bg-surface shadow-pop animate-pop-in">
+        <Dialog.Content
+          onCloseAutoFocus={returnFocus}
+          className="fixed top-[12vh] left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-lg border border-border bg-surface shadow-pop animate-pop-in"
+        >
           {event && (
             <>
               <header className="flex items-start justify-between gap-2 border-b border-border px-4 py-3">

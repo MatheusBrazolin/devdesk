@@ -29,4 +29,5 @@ export default {
   'Ligar notificações': 'Turn on notifications',
   Sair: 'Sign out',
   Seções: 'Sections',
+  'Pular para o conteúdo': 'Skip to content',
 } satisfies Record<string, string>

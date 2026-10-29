@@ -68,6 +68,12 @@ describe('GitHubOAuthClient', () => {
       error: 'incorrect_client_credentials',
       error_description: 'The client_id and/or client_secret passed are incorrect.',
     })
-    await expect(client.exchangeCode('code')).rejects.toThrow(/client_secret passed are incorrect/)
+    const error = await client.exchangeCode('code').catch((e) => e)
+    // A pessoa vê uma frase fixa; o motivo do GitHub fica na causa, para o log.
+    expect(error).toMatchObject({
+      code: 'UPSTREAM',
+      message: 'O GitHub recusou o login. Tente entrar de novo.',
+    })
+    expect(error.cause.message).toMatch(/client_secret passed are incorrect/)
   })
 })

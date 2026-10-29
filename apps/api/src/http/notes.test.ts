@@ -113,6 +113,35 @@ describe('notas', () => {
     expect(await ids(`link=${encodeURIComponent(prLink.url)}`)).toEqual(['PR do backoff'])
   })
 
+  it('a busca ignora acentos e maiúsculas, no título e no texto', async () => {
+    const { app, me } = await twoUsers()
+    const create = (payload: object) =>
+      app.inject({ method: 'POST', url: '/api/notes', headers: me, payload })
+    await create({ title: 'Cabeçalho', body: 'ajustar o menu' })
+    await create({ title: 'Reunião', body: 'revisar a migração do banco' })
+    await create({ title: 'cabecalho sem acento' })
+    await create({ title: '50% pronto' })
+
+    const ids = async (q: string) =>
+      (
+        await app.inject({
+          method: 'GET',
+          url: `/api/notes?q=${encodeURIComponent(q)}`,
+          headers: me,
+        })
+      )
+        .json()
+        .notes.map((n: { title: string }) => n.title)
+        .sort()
+
+    expect(await ids('cabecalho')).toEqual(['Cabeçalho', 'cabecalho sem acento'])
+    expect(await ids('CABEÇALHO')).toEqual(['Cabeçalho', 'cabecalho sem acento'])
+    expect(await ids('migracao')).toEqual(['Reunião'])
+    expect(await ids('reuniao')).toEqual(['Reunião'])
+    // % continua literal, não curinga.
+    expect(await ids('0%')).toEqual(['50% pronto'])
+  })
+
   it('lista as fixadas primeiro, depois as mais recentes', async () => {
     const { app, me, clock } = await twoUsers()
     const create = async (title: string, pinned = false) => {

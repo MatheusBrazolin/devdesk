@@ -110,7 +110,7 @@ export function NotesPage() {
                 value={search.q ?? ''}
                 onChange={(event) => setSearch({ q: event.target.value || undefined })}
                 placeholder={t('Buscar nas notas')}
-                className="h-full w-full rounded-md border border-border bg-bg pr-2 pl-8 text-[13px] placeholder:text-fg-subtle focus:border-border-strong focus:outline-none"
+                className="h-full w-full rounded-md border border-border bg-bg pr-2 pl-8 text-[13px] placeholder:text-fg-subtle focus:border-border-strong"
               />
             </label>
 

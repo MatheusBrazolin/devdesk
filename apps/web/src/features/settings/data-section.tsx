@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { meQuery } from '@/features/auth/queries'
 import { t } from '@/lib/i18n'
 import { EXPORT_URL, useDeleteAccount } from './queries'
+import { returnFocus } from '@/lib/return-focus'
 
 /** Levar os dados num arquivo e apagar a conta (LGPD). */
 export function DataSection() {
@@ -67,7 +68,10 @@ function DeleteAccountDialog({
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/30 animate-overlay-in" />
-        <Dialog.Content className="fixed top-[15vh] left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 rounded-lg border border-border bg-surface shadow-pop animate-pop-in">
+        <Dialog.Content
+          onCloseAutoFocus={returnFocus}
+          className="fixed top-[15vh] left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 rounded-lg border border-border bg-surface shadow-pop animate-pop-in"
+        >
           <form onSubmit={submit}>
             <header className="flex items-center justify-between border-b border-border px-4 py-3">
               <Dialog.Title className="text-sm font-semibold">{t('Apagar a conta')}</Dialog.Title>
@@ -92,7 +96,7 @@ function DeleteAccountDialog({
                   onChange={(event) => setTyped(event.target.value)}
                   autoComplete="off"
                   spellCheck={false}
-                  className="h-8 w-full rounded-md border border-border bg-bg px-2.5 font-mono text-[13px] focus:border-border-strong focus:outline-none"
+                  className="h-8 w-full rounded-md border border-border bg-bg px-2.5 font-mono text-[13px] focus:border-border-strong"
                 />
               </label>
               {remove.error && (

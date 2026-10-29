@@ -61,7 +61,12 @@ async function networkFirst(request) {
   }
 }
 
-// Avisos com o app fechado: o servidor manda { title, body, url, tag }.
+// Avisos com o app fechado: o servidor manda { title, body, url, tag }, já no
+// idioma de quem se inscreveu. O texto daqui é só para um aviso que chegue vazio.
+const FALLBACK_BODY = self.navigator.language?.toLowerCase().startsWith('pt')
+  ? 'Tem algo novo no seu painel.'
+  : "There's something new on your dashboard."
+
 self.addEventListener('push', (event) => {
   let notice = {}
   try {
@@ -71,7 +76,7 @@ self.addEventListener('push', (event) => {
   }
   event.waitUntil(
     self.registration.showNotification(notice.title ?? 'DevDesk', {
-      body: notice.body ?? 'Tem algo novo no seu painel.',
+      body: notice.body || FALLBACK_BODY,
       tag: notice.tag,
       icon: '/icons/icon-192.png',
       badge: '/icons/icon-192.png',

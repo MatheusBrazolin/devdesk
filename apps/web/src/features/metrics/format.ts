@@ -1,3 +1,5 @@
+import { LANGUAGE } from '@/lib/i18n'
+
 /** Horas para leitura rápida: "45 min", "6 h", "1 d 15 h". */
 export function formatHours(hours: number | null): string {
   if (hours === null) return '—'
@@ -8,8 +10,8 @@ export function formatHours(hours: number | null): string {
   return rest ? `${days} d ${rest} h` : `${days} d`
 }
 
-/** "7/9": dia e mês da segunda-feira da semana. */
+/** Dia e mês da segunda-feira da semana, na ordem do idioma: "7/9" ou, em inglês, "9/7". */
 export const weekLabel = (weekStart: string) => {
   const [, month, day] = weekStart.split('-').map(Number)
-  return `${day}/${month}`
+  return LANGUAGE === 'en' ? `${month}/${day}` : `${day}/${month}`
 }

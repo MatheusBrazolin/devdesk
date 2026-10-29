@@ -10,7 +10,7 @@ import type { AppDependencies } from '../dependencies.js'
 import { presentExternalEvents, presentSubscription } from '../presenters.js'
 import { readSessionToken } from '../session-cookie.js'
 
-const paramsSchema = z.object({ id: z.string() })
+const paramsSchema = z.object({ id: z.uuid() })
 
 /** Agendas externas assinadas pelo link .ics. Só leitura: nada é escrito nelas. */
 export async function externalCalendarRoutes(

@@ -22,6 +22,8 @@ export interface AppDependencies {
     webOrigin: string
     secureCookies: boolean
     demoEnabled: boolean
+    /** Entradas na demonstração por minuto por IP (padrão 10). */
+    demoLoginsPerMinute?: number
   }
   /** Nulo quando o OAuth do GitHub não está configurado. */
   github: {

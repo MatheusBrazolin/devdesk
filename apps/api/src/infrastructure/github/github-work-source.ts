@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { Clock } from '../../application/ports/security.js'
 import type { WorkSource } from '../../application/ports/work-source.js'
-import { githubReconnect, upstream } from '../../domain/errors.js'
+import { githubReconnect, githubUnavailable, githubUnexpected } from '../../domain/errors.js'
 import type { CiStatus, Issue, Milestone, PullRequest, WorkSnapshot } from '../../domain/work.js'
 import { DASHBOARD_QUERIES, type DashboardList, dashboardSearches } from './dashboard-query.js'
 import { createReadOnlyFetch } from './read-only-fetch.js'
@@ -231,11 +231,14 @@ export class GitHubWorkSource implements WorkSource {
     })
 
     if (response.status === 401) throw githubReconnect()
-    if (!response.ok) throw upstream(`GitHub respondeu ${response.status} ao montar o painel.`)
+    if (!response.ok)
+      throw githubUnavailable(`GitHub respondeu ${response.status} ao montar o painel.`)
 
     const body = await readGitHubJson(response, responseSchema, 'montar o painel')
     if (!body.data) {
-      throw upstream(`GitHub recusou a consulta: ${body.errors?.[0]?.message ?? 'sem detalhes'}`)
+      throw githubUnexpected(
+        `GitHub recusou a consulta: ${body.errors?.[0]?.message ?? 'sem detalhes'}`,
+      )
     }
     return body.data.search
   }

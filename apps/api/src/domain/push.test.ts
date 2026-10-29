@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { AttentionItem } from './attention.js'
-import { isAllowedPushEndpoint, pushRound } from './push.js'
+import { isAllowedPushEndpoint, isValidTimeZone, pushLocale, pushRound } from './push.js'
 import type { PullRequest } from './work.js'
 
 const now = new Date('2026-10-26T15:00:00Z')
@@ -101,6 +101,59 @@ describe('pushRound', () => {
     expect(round.notices).toEqual([
       expect.objectContaining({ title: 'Às 12:10: Daily', body: 'Na agenda Trabalho' }),
     ])
+  })
+})
+
+describe('pushRound no idioma e no fuso de quem recebe', () => {
+  const daily = {
+    id: 'a',
+    title: 'Daily',
+    startsAt: new Date(now.getTime() + 10 * 60_000),
+    calendar: 'Trabalho',
+  }
+  const en = { language: 'en', timeZone: 'Europe/Lisbon' } as const
+
+  it('a agenda sai em inglês, com a hora do fuso da pessoa', () => {
+    const round = pushRound(new Set(), [], [daily], now, ORIGIN, undefined, en)
+    expect(round.notices).toEqual([
+      expect.objectContaining({ title: 'At 3:10 PM: Daily', body: 'In the Trabalho calendar' }),
+    ])
+  })
+
+  it('o português também segue o fuso', () => {
+    const tokyo = { language: 'pt-BR', timeZone: 'Asia/Tokyo' } as const
+    const round = pushRound(new Set(), [], [daily], now, ORIGIN, undefined, tokyo)
+    expect(round.notices[0]!.title).toBe('Às 00:10: Daily')
+  })
+
+  it('PRs e o resumo saem em inglês, com as mesmas chaves', () => {
+    const fresh = item('ci_failed')
+    const late = item('review_requested', {
+      reviewRequestedAt: new Date(now.getTime() - 30 * 3_600_000),
+    })
+    const seen = new Set([`review_requested:${late.pullRequest.id}`])
+    const pt = pushRound(seen, [fresh, late], [], now, ORIGIN)
+    const round = pushRound(seen, [fresh, late], [], now, ORIGIN, undefined, en)
+    expect(round.keys).toEqual(pt.keys)
+    expect(round.notices.map((n) => n.title)).toEqual([
+      `Review waiting for over 24 h: acme/app#${late.pullRequest.number}`,
+      `CI failed: acme/app#${fresh.pullRequest.number}`,
+    ])
+
+    const many = [item('ci_failed'), item('conflict'), item('ready_to_merge'), item('ci_failed')]
+    const summary = pushRound(new Set(), many, [], now, ORIGIN, undefined, en).notices[0]!
+    expect(summary.title).toBe('4 new items need your attention')
+    expect(summary.body).toMatch(/^CI failed: .* · Conflict: .* · Ready to merge: /)
+  })
+
+  it('sem idioma ou com fuso desconhecido, vale português e Brasília', () => {
+    expect(pushLocale({})).toEqual({ language: 'pt-BR', timeZone: 'America/Sao_Paulo' })
+    expect(pushLocale({ language: 'en', timeZone: 'Marte/Olympus' })).toEqual({
+      language: 'en',
+      timeZone: 'America/Sao_Paulo',
+    })
+    expect(isValidTimeZone('America/New_York')).toBe(true)
+    expect(isValidTimeZone('Marte/Olympus')).toBe(false)
   })
 })
 

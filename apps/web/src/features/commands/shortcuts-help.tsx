@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/kbd'
 import { t } from '@/lib/i18n'
 import { NAV_ITEMS } from '@/lib/navigation'
+import { returnFocus } from '@/lib/return-focus'
 
 const isTyping = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
@@ -39,7 +40,10 @@ export function ShortcutsHelp() {
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/30 animate-overlay-in" />
-        <Dialog.Content className="fixed top-[10vh] left-1/2 z-50 max-h-[80vh] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 overflow-y-auto rounded-lg border border-border bg-surface shadow-pop animate-pop-in">
+        <Dialog.Content
+          onCloseAutoFocus={returnFocus}
+          className="fixed top-[10vh] left-1/2 z-50 max-h-[80vh] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 overflow-y-auto rounded-lg border border-border bg-surface shadow-pop animate-pop-in"
+        >
           <header className="flex items-center justify-between border-b border-border px-4 py-3">
             <Dialog.Title className="flex items-center gap-2 text-sm font-semibold">
               <Keyboard className="size-4 text-fg-muted" /> {t('Atalhos de teclado')}

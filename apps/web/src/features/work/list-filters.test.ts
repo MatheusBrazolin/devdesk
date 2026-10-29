@@ -16,6 +16,27 @@ const items = [
 ]
 
 describe('applyFilter', () => {
+  it('ignora acento e acha palavra por palavra, em qualquer ordem', () => {
+    const list = [
+      {
+        title: 'Migra a tabela para paginação',
+        repository: 'acme/web-app',
+        number: 1290,
+        updatedAt: '2026-10-01T00:00:00Z',
+      },
+      {
+        title: 'Outra coisa',
+        repository: 'acme/api',
+        number: 7,
+        updatedAt: '2026-10-01T00:00:00Z',
+      },
+    ]
+    expect(applyFilter(list, { q: 'paginacao' }).map((i) => i.number)).toEqual([1290])
+    expect(applyFilter(list, { q: 'tabela migra' }).map((i) => i.number)).toEqual([1290])
+    expect(applyFilter(list, { q: 'web-app#1290' }).map((i) => i.number)).toEqual([1290])
+    expect(applyFilter(list, { q: '#7' }).map((i) => i.number)).toEqual([7])
+  })
+
   it('busca no título sem diferenciar maiúsculas', () => {
     expect(applyFilter(items, { q: 'DAX' }).map((i) => i.number)).toEqual([765])
   })

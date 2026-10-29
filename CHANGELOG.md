@@ -4,10 +4,37 @@ Mudanças que valem a pena saber, versão a versão. O formato segue o [Keep a C
 
 ## [Não lançado]
 
+### Adicionado
+
+- **Tour de boas-vindas guiado**: cada passo acende o elemento de verdade (a coluna "Precisa de você", a navegação, a busca, o menu) e mostra um cartão ao lado, com Voltar, setas do teclado e Esc. No celular, vira um painel embaixo.
+- **Cronômetro de foco na barra**: com um bloco de foco correndo ou pausado, uma pílula mostra o tempo que falta em qualquer página e leva de volta ao Foco.
+- **Título da aba por página**, com as reviews pedidas na frente: "(3) Hoje · DevDesk".
+
 ### Mudado
 
 - **Precisa de você mostra seus PRs travados**: além das reviews pedidas, entram os seus PRs com conflito ou com CI falhando, em pílulas coral cheias e no topo da coluna, antes das reviews. Conflito aparece até em rascunho.
 - **Painel se atualiza sozinho mais rápido**: PR e issue novos aparecem em até cerca de 30 segundos, sem recarregar a página. Voltar para a aba já busca de novo, e com a aba escondida o painel continua conferindo a cada 2 minutos para os avisos chegarem.
+- **Busca das listas mais tolerante**: ignora acentos ("paginacao" acha "paginação"), acha palavra por palavra em qualquer ordem e procura também no autor, nas etiquetas e em "repo#número".
+- **Telas sem rolagem só onde cabe**: de 1280 × 700 ou 1024 × 860 para cima. Numa janela de 1024 × 700 o menu ocupa duas linhas e o quadro ficava com poucos pixels; agora a página rola.
+
+### Corrigido
+
+- Painéis do Hoje e o próximo compromisso do Foco dizem quando não deu para carregar, em vez de ficar em "Carregando" para sempre. O modo TV mostra "Sem conexão com o GitHub" ou "Sem atualizar desde 11:20" quando os dados param de chegar.
+- Cada termo com uma regra só: "Parados" é sempre mais de 7 dias (no Time, o de 3 dias virou "Sem movimento"); o painel da TV que conta desde a última atividade virou "Seus PRs pelo tempo sem movimento"; "Abertos por organização" virou "PRs e issues por organização".
+- Clicar em "Nova" e sair sem escrever não deixa mais uma nota "Sem título" na lista.
+- A busca das notas ignora acentos e maiúsculas ("cabecalho" acha "Cabeçalho").
+- Avisos com o app fechado saem no idioma e no fuso de cada pessoa; mensagens de erro do GitHub ficaram amigáveis e traduzidas, com o detalhe técnico só no log do servidor.
+- O painel não pergunta mais ao GitHub a cada 3 segundos quando uma atualização falha: espera um minuto antes de tentar de novo.
+- Uma atualização que falha no meio do caminho não troca mais o quadro inteiro pela mensagem de erro; os dados que já estavam na tela ficam.
+- Avisos: um item que sai da lista por um instante (o GitHub recalculando o conflito, por exemplo) não avisa de novo; tipos desligados não avisam ao abrir o app; com a janela atrás de outra, o aviso vai para o sistema.
+- "/" nas listas foca só a busca da lista, sem abrir a busca geral junto.
+- Fechar um diálogo devolve o foco para o botão que o abriu; campos de texto voltaram a mostrar o contorno de foco; link "Pular para o conteúdo".
+- Celular: a busca de Pull requests e Issues tinha 18 px de altura; os botões do modo TV ganharam nome para leitores de tela, e os controles não somem enquanto têm o foco.
+- Inglês: datas na ordem certa ("Fri 30", "Oct 19 – 25", "9:30 AM") e semanas das métricas em mês/dia.
+- Singular e plural: "1 aberto", "1 parado há mais de 7 dias", "1 comentário".
+- Standup: diz "Ontem" só quando é ontem; nos outros dias, a data.
+- Modo TV sem dados não diz mais "tudo verde".
+- API: pedidos de agenda para datas muito distantes (que travavam o servidor) e textos com caractere nulo agora respondem 400; escrita vinda de outro site é recusada; entrar na demonstração tem limite por minuto; o cache do painel guarda um hash em vez do fim do token.
 
 ## [1.2.0] - 2026-10-28
 

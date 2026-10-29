@@ -121,7 +121,7 @@ export function TeamSection({ settings }: { settings: Settings }) {
               placeholder={t('dono/repositorio')}
               spellCheck={false}
               autoComplete="off"
-              className="h-8 min-w-0 flex-1 rounded-md border border-border bg-bg px-2.5 font-mono text-[12px] focus:border-border-strong focus:outline-none"
+              className="h-8 min-w-0 flex-1 rounded-md border border-border bg-bg px-2.5 font-mono text-[12px] focus:border-border-strong"
             />
             <Button type="submit" variant="outline" disabled={!draft.trim() || save.isPending}>
               <Plus /> {t('Adicionar')}

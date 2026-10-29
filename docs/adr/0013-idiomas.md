@@ -21,7 +21,9 @@ a opção de idioma, sem uma biblioteca grande e sem reescrever as telas.
 - Trocar de idioma recarrega a página. Datas e números usam `LOCALE`, e textos
   guardados em constantes de módulo mudam junto, sem estado escondido.
 - As mensagens de erro da API, que chegam em português, passam pelo mesmo
-  dicionário no front. A API continua em português.
+  dicionário no front. A API continua em português, com uma exceção: os avisos
+  com o app fechado saem no idioma e no fuso guardados com cada inscrição, já
+  que nenhum front está aberto para traduzir.
 - Testes garantem que toda tradução tem os mesmos marcadores do original e que
   a mesma frase não tem duas traduções diferentes em pastas diferentes.
 

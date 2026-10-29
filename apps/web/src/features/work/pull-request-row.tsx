@@ -137,7 +137,7 @@ export function PullRequestRow({
             'hidden w-8 items-center justify-end gap-1 font-mono text-[11px] text-fg-subtle sm:flex',
             pr.comments === 0 && 'invisible',
           )}
-          title={t('{n} comentários', { n: pr.comments })}
+          title={plural(pr.comments, '{n} comentário', '{n} comentários')}
         >
           <MessageSquare className="size-3" />
           {pr.comments}

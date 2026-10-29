@@ -90,12 +90,18 @@ export async function authRoutes(app: FastifyInstance, deps: AppDependencies): P
     return { user: presentUser(user) }
   })
 
-  app.post('/auth/demo', async (_request, reply) => {
-    const session = await useCases.startDemoSession.execute()
-    setSessionCookie(reply, cookies, session)
-    const user = await useCases.getCurrentUser.execute(session.token)
-    return { user: presentUser(user) }
-  })
+  // Cada entrada cria uma conta (apagada em 24 h): poucas por minuto por IP, para
+  // ninguém encher o banco grátis criando contas em série.
+  app.post(
+    '/auth/demo',
+    { config: { rateLimit: { max: config.demoLoginsPerMinute ?? 10, timeWindow: '1 minute' } } },
+    async (_request, reply) => {
+      const session = await useCases.startDemoSession.execute()
+      setSessionCookie(reply, cookies, session)
+      const user = await useCases.getCurrentUser.execute(session.token)
+      return { user: presentUser(user) }
+    },
+  )
 
   app.post('/auth/logout', async (request, reply) => {
     await useCases.logout.execute(readSessionToken(request))

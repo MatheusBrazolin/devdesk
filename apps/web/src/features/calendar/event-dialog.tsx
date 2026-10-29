@@ -7,6 +7,7 @@ import { cn } from '@/lib/cn'
 import { addDaysToKey, dateKey } from '@/lib/calendar-dates'
 import { t } from '@/lib/i18n'
 import { useDeleteEvent, useSaveEvent } from './queries'
+import { returnFocus } from '@/lib/return-focus'
 
 const pad = (n: number) => String(n).padStart(2, '0')
 const localTime = (iso: string) => {
@@ -91,7 +92,10 @@ export function EventDialog({ open, onOpenChange, event, day }: EventDialogProps
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/30 animate-overlay-in" />
-        <Dialog.Content className="fixed top-[12vh] left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 rounded-lg border border-border bg-surface shadow-pop animate-pop-in">
+        <Dialog.Content
+          onCloseAutoFocus={returnFocus}
+          className="fixed top-[12vh] left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 rounded-lg border border-border bg-surface shadow-pop animate-pop-in"
+        >
           {/* Remontar a cada abertura zera o rascunho. */}
           {open && (
             <EventForm
@@ -129,7 +133,7 @@ function EventForm({
   }
 
   const field =
-    'h-8 w-full rounded-md border border-border bg-bg px-2.5 text-[13px] focus:border-border-strong focus:outline-none'
+    'h-8 w-full rounded-md border border-border bg-bg px-2.5 text-[13px] focus:border-border-strong'
 
   return (
     <form onSubmit={submit}>
@@ -251,7 +255,7 @@ function EventForm({
           aria-label={t('Descrição')}
           rows={3}
           maxLength={5000}
-          className="w-full resize-none rounded-md border border-border bg-bg px-2.5 py-2 text-[13px] placeholder:text-fg-subtle focus:border-border-strong focus:outline-none"
+          className="w-full resize-none rounded-md border border-border bg-bg px-2.5 py-2 text-[13px] placeholder:text-fg-subtle focus:border-border-strong"
         />
 
         {event?.link && (

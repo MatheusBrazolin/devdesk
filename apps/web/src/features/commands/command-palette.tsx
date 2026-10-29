@@ -17,6 +17,7 @@ import { useCreateNote } from '@/features/notes/queries'
 import { LANGUAGE, setLanguage, t } from '@/lib/i18n'
 import { NAV_ITEMS } from '@/lib/navigation'
 import { SearchResults } from './search-results'
+import { returnFocus } from '@/lib/return-focus'
 
 interface PaletteContextValue {
   open: () => void
@@ -45,6 +46,8 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
         return
       }
       // "/" abre direto na busca, como no GitHub, quando não se está escrevendo.
+      // A busca da lista (Pull requests, Issues) já tratou o "/": ela vem antes.
+      if (event.defaultPrevented) return
       if (event.key === '/' && !event.metaKey && !event.ctrlKey && !isTyping(event.target)) {
         if (document.querySelector('[role="dialog"], [role="alertdialog"]')) return
         event.preventDefault()
@@ -101,6 +104,7 @@ function CommandPalette({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/30 animate-overlay-in" />
         <Dialog.Content
+          onCloseAutoFocus={returnFocus}
           aria-describedby={undefined}
           className="fixed top-[18vh] left-1/2 z-50 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 overflow-hidden rounded-lg border border-border bg-surface shadow-pop animate-pop-in"
         >
@@ -117,7 +121,10 @@ function CommandPalette({
               />
               <Kbd>esc</Kbd>
             </div>
-            <Command.List className="max-h-80 overflow-y-auto p-2 [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-2 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-fg-subtle">
+            <Command.List
+              label={t('Sugestões')}
+              className="max-h-80 overflow-y-auto p-2 [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-2 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-fg-subtle"
+            >
               <Command.Empty className="py-10 text-center text-sm text-fg-subtle">
                 {t('Nada encontrado.')}
               </Command.Empty>

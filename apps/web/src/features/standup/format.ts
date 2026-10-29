@@ -1,11 +1,17 @@
 import type { CalendarEvent, StandupItem } from '@devdesk/shared'
-import { LOCALE, t } from '@/lib/i18n'
+import { HOUR_STYLE, LOCALE, t } from '@/lib/i18n'
 import { translateDetail, waitingDays } from './detail'
+
+/** "Ontem (qua., 28 de out.)" só quando é ontem mesmo; senão, "Em sex., 23 de out.". */
+export const sinceTitle = (label: string, isYesterday: boolean) =>
+  isYesterday ? t('Ontem ({data})', { data: label }) : t('Em {data}', { data: label })
 
 export type StandupFormat = 'markdown' | 'slack' | 'texto'
 
 export interface StandupText {
   sinceLabel: string
+  /** Falso quando o dia mostrado não é ontem (segunda olhando a sexta, ou um dia antigo). */
+  sinceIsYesterday?: boolean
   done: StandupItem[]
   today: StandupItem[]
   blockers: StandupItem[]
@@ -28,7 +34,7 @@ const TODAY: Partial<Record<StandupItem['kind'], string>> = {
   ready_to_merge: t('Fazer merge de'),
 }
 
-const timeFormat = new Intl.DateTimeFormat(LOCALE, { hour: '2-digit', minute: '2-digit' })
+const timeFormat = new Intl.DateTimeFormat(LOCALE, { hour: HOUR_STYLE, minute: '2-digit' })
 
 function link(item: StandupItem, format: StandupFormat): string {
   const label = `${item.repository}#${item.number}`
@@ -83,7 +89,7 @@ export function formatStandup(input: StandupText, format: StandupFormat): string
   const blockers = input.blockers.map((item) => blockerLine(link(item, format), item.detail))
 
   return [
-    bold(t('Ontem ({data})', { data: input.sinceLabel }), format),
+    bold(sinceTitle(input.sinceLabel, input.sinceIsYesterday ?? true), format),
     ...(done.length ? done : [`- ${t('Nada registrado no GitHub.')}`]),
     '',
     bold(t('Hoje'), format),

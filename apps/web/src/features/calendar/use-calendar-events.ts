@@ -41,5 +41,5 @@ export function useCalendarEvents(range: { from: string; to: string }) {
       },
     [own.data, external.data],
   )
-  return { data, unavailable: external.data?.unavailable ?? [] }
+  return { data, isError: own.isError, unavailable: external.data?.unavailable ?? [] }
 }

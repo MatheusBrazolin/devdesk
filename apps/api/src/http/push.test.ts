@@ -106,6 +106,56 @@ describe('avisos com o app fechado', () => {
     expect((await run(app)).json()).toEqual({ users: 1, sent: 0 })
   })
 
+  it('cada navegador recebe no idioma em que se inscreveu', async () => {
+    const { app, headers, githubWork, pushSender, pushRepository } = await signedIn()
+    const english = { endpoint: `${ENDPOINT}-en`, keys: subscription.keys }
+    for (const payload of [
+      subscription,
+      { ...english, language: 'en', timeZone: 'Europe/Lisbon' },
+    ]) {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/push/subscriptions',
+        headers,
+        payload,
+      })
+      expect(res.statusCode).toBe(204)
+    }
+    expect(pushRepository.subscriptions.get(english.endpoint)?.subscription).toMatchObject({
+      language: 'en',
+      timeZone: 'Europe/Lisbon',
+    })
+
+    await run(app)
+    githubWork.result = { authored: [failingPr()] }
+    expect((await run(app)).json()).toEqual({ users: 1, sent: 2 })
+    const titles = Object.fromEntries(pushSender.sent.map((s) => [s.endpoint, s.notice.title]))
+    expect(titles).toEqual({
+      [ENDPOINT]: 'CI falhou: acme/web#9',
+      [english.endpoint]: 'CI failed: acme/web#9',
+    })
+  })
+
+  it('fuso que o Intl não conhece não é guardado; idioma desconhecido é recusado', async () => {
+    const { app, headers, pushRepository } = await signedIn()
+    const odd = await app.inject({
+      method: 'POST',
+      url: '/api/push/subscriptions',
+      headers,
+      payload: { ...subscription, timeZone: 'Marte/Olympus' },
+    })
+    expect(odd.statusCode).toBe(204)
+    expect(pushRepository.subscriptions.get(ENDPOINT)?.subscription.timeZone).toBeNull()
+
+    const klingon = await app.inject({
+      method: 'POST',
+      url: '/api/push/subscriptions',
+      headers,
+      payload: { ...subscription, language: 'tlh' },
+    })
+    expect(klingon.statusCode).toBe(400)
+  })
+
   it('esquece o navegador que o serviço de push deu por encerrado', async () => {
     const { app, headers, githubWork, pushSender, pushRepository } = await signedIn()
     await app.inject({

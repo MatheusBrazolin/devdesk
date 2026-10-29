@@ -41,13 +41,9 @@ const FORMATS: { value: StandupFormat; label: string }[] = [
   { value: 'texto', label: t('Texto') },
 ]
 
-/** "20 a 26 de out." ou "27 de out. a 2 de nov." */
+/** "20 – 26 de out." ou "Oct 20 – 26": o Intl junta o mês na ordem de cada idioma. */
 function weekLabel(first: string, last: string): string {
-  const start = fromKey(first)
-  const end = fromKey(last)
-  return start.getMonth() === end.getMonth()
-    ? t('{inicio} a {fim}', { inicio: start.getDate(), fim: dayMonth.format(end) })
-    : t('{inicio} a {fim}', { inicio: dayMonth.format(start), fim: dayMonth.format(end) })
+  return dayMonth.formatRange(fromKey(first), fromKey(last))
 }
 
 /**
@@ -250,7 +246,7 @@ export function WeekPage() {
             onChange={(event) => setDraft(event.target.value)}
             aria-label={t('Texto do resumo')}
             spellCheck={false}
-            className="scroll-thin min-h-72 flex-1 resize-none desk:min-h-0 bg-transparent px-4 py-3 font-mono text-[12px] leading-relaxed focus:outline-none"
+            className="scroll-thin min-h-72 flex-1 resize-none desk:min-h-0 bg-transparent px-4 py-3 font-mono text-[12px] leading-relaxed focus-visible:outline-offset-[-2px]"
           />
           <footer className="flex flex-wrap items-center gap-2 border-t border-border px-4 py-3">
             <Button onClick={() => void copy()} disabled={!text}>

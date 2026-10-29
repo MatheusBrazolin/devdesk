@@ -82,7 +82,7 @@ export function FocusPage() {
               </CardHeader>
               {dashboard.isPending ? (
                 <CurrentSkeleton />
-              ) : dashboard.isError ? (
+              ) : dashboard.isError && !dashboard.data ? (
                 <DashboardError error={dashboard.error} onRetry={() => void dashboard.refetch()} />
               ) : current ? (
                 <AnimatePresence mode="wait">
@@ -329,7 +329,9 @@ function NextEventCard() {
         </CardTitle>
       </CardHeader>
       <div className="px-4 py-3">
-        {!events.data ? (
+        {!events.data && events.isError ? (
+          <p className="text-[13px] text-fg-subtle">{t('Não foi possível ler a agenda agora.')}</p>
+        ) : !events.data ? (
           <Skeleton className="h-4 w-40" />
         ) : next ? (
           <p className="text-[13px]">

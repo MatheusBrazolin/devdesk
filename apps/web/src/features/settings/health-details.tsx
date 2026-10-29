@@ -1,14 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
 import { githubHealthQuery } from './queries'
 import { SOURCE_LABELS } from './token-health'
-import { LOCALE, t } from '@/lib/i18n'
+import { HOUR_STYLE, LOCALE, t } from '@/lib/i18n'
 
 const dayFormat = new Intl.DateTimeFormat(LOCALE, {
   day: 'numeric',
   month: 'long',
   year: 'numeric',
 })
-const timeFormat = new Intl.DateTimeFormat(LOCALE, { hour: '2-digit', minute: '2-digit' })
+const timeFormat = new Intl.DateTimeFormat(LOCALE, { hour: HOUR_STYLE, minute: '2-digit' })
 
 /** O que o acesso ao GitHub enxerga agora: de onde vem, até quando vale, quais organizações e a cota. */
 export function HealthDetails() {

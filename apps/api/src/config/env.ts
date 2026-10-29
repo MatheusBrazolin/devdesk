@@ -43,6 +43,8 @@ const envSchema = z
      * rodam em paralelo, todos do mesmo 127.0.0.1.
      */
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(300),
+    /** Entradas na demonstração por minuto por IP: cada uma cria uma conta no banco. */
+    DEMO_LOGINS_PER_MINUTE: z.coerce.number().int().positive().default(10),
     /**
      * Chaves VAPID dos avisos com o app fechado (gere com: npx web-push
      * generate-vapid-keys). Sem elas, os avisos funcionam só com o app aberto.

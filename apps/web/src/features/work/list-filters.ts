@@ -26,16 +26,42 @@ export function daysSince(iso: string, now: Date = new Date()): number {
 export const isStale = (item: Pick<Item, 'updatedAt'>, now: Date = new Date()) =>
   daysSince(item.updatedAt, now) > STALE_AFTER_DAYS
 
+/** Minúsculas e sem acento: "Paginação" e "paginacao" são a mesma busca. */
+export const fold = (text: string) =>
+  text
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+
+/** Tudo em que a busca procura: título, repositório, "repo#número", autor e etiquetas. */
+function haystack(item: Item): string {
+  const extra = item as Partial<Pick<Issue, 'labels'>> & Partial<Pick<PullRequest, 'author'>>
+  return fold(
+    [
+      item.title,
+      `${item.repository}#${item.number}`,
+      extra.author?.login ?? '',
+      ...(extra.labels ?? []).map((label) => label.name),
+    ].join(' '),
+  )
+}
+
+/**
+ * Cada palavra da busca precisa aparecer em algum lugar, em qualquer ordem:
+ * "migra tabela" acha "Migra a tabela de pedidos". Um número sozinho
+ * ("1290" ou "#1290") também acha pelo número.
+ */
 export function applyFilter<T extends Item>(items: T[], { q, org }: ListFilter): T[] {
-  const needle = q?.trim().toLowerCase().replace(/^#/, '')
+  const words = fold(q ?? '')
+    .split(/\s+/)
+    .map((word) => word.replace(/^#/, ''))
+    .filter(Boolean)
   return items.filter((item) => {
     if (org && ownerOf(item.repository) !== org) return false
-    if (!needle) return true
-    return (
-      item.title.toLowerCase().includes(needle) ||
-      item.repository.toLowerCase().includes(needle) ||
-      String(item.number) === needle
-    )
+    if (words.length === 0) return true
+    if (words.length === 1 && String(item.number) === words[0]) return true
+    const text = haystack(item)
+    return words.every((word) => text.includes(word))
   })
 }
 

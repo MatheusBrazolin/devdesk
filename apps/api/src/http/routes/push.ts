@@ -8,6 +8,9 @@ import { readSessionToken } from '../session-cookie.js'
 const subscriptionSchema = z.object({
   endpoint: z.url().max(2_000),
   keys: z.object({ p256dh: z.string().min(1).max(200), auth: z.string().min(1).max(100) }),
+  // Opcionais: navegadores inscritos antes mandam só endpoint e chaves.
+  language: z.enum(['pt-BR', 'en']).optional(),
+  timeZone: z.string().max(100).optional(),
 })
 const endpointSchema = z.object({ endpoint: z.string().max(2_000) })
 

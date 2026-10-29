@@ -59,9 +59,9 @@ export function TeamPage() {
             <MetricTile
               icon={Hourglass}
               tone="info"
-              label={t('Parados')}
+              label={t('Sem movimento')}
               value={data ? String(data.totals.stale) : null}
-              hint={t('sem movimento há 3 dias')}
+              hint={t('há 3 dias ou mais')}
             />
             <MetricTile
               icon={Clock3}

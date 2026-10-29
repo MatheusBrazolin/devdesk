@@ -8,11 +8,12 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Computador: de 1024 px de largura e 700 de altura para cima, cada página
- * cabe na janela e o que cresce rola por dentro do próprio painel. Abaixo
- * disso (celular, janela baixa), a página rola normalmente.
+ * Computador: cada página cabe na janela e o que cresce rola por dentro do
+ * próprio painel. Vale de 1280 × 700 para cima, ou de 1024 × 860: entre 1024
+ * e 1280 o menu ocupa duas linhas, e numa janela baixa o quadro ficava com
+ * poucos pixels. Fora disso (celular, janela baixa), a página rola normalmente.
  */
-@custom-variant desk (@media (min-width: 1024px) and (min-height: 700px));
+@custom-variant desk (@media (min-width: 1280px) and (min-height: 700px), (min-width: 1024px) and (min-height: 860px));
 
 /*
  * Tokens semânticos, na direção visual "Quadro": grafite com acento lavanda,

@@ -7,15 +7,22 @@ import { pushSeen, pushSubscriptions } from '../db/schema.js'
 export class DrizzlePushRepository implements PushRepository {
   constructor(private readonly db: Database) {}
 
-  async save(userId: string, { endpoint, keys }: PushSubscription): Promise<void> {
-    // O mesmo navegador pode ter trocado de conta: o endpoint passa para quem pediu agora.
+  async save(
+    userId: string,
+    { endpoint, keys, language, timeZone }: PushSubscription,
+  ): Promise<void> {
+    // O mesmo navegador pode ter trocado de conta ou de idioma: vale o pedido de agora.
+    const fields = {
+      userId,
+      p256dh: keys.p256dh,
+      auth: keys.auth,
+      language: language ?? null,
+      timeZone: timeZone ?? null,
+    }
     await this.db
       .insert(pushSubscriptions)
-      .values({ userId, endpoint, p256dh: keys.p256dh, auth: keys.auth })
-      .onConflictDoUpdate({
-        target: pushSubscriptions.endpoint,
-        set: { userId, p256dh: keys.p256dh, auth: keys.auth },
-      })
+      .values({ endpoint, ...fields })
+      .onConflictDoUpdate({ target: pushSubscriptions.endpoint, set: fields })
   }
 
   async delete(userId: string, endpoint: string): Promise<void> {
@@ -36,6 +43,8 @@ export class DrizzlePushRepository implements PushRepository {
     return rows.map((row) => ({
       endpoint: row.endpoint,
       keys: { p256dh: row.p256dh, auth: row.auth },
+      language: row.language === 'en' || row.language === 'pt-BR' ? row.language : null,
+      timeZone: row.timeZone,
     }))
   }
 

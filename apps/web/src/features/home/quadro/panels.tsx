@@ -6,14 +6,14 @@ import { useCalendarEvents } from '@/features/calendar/use-calendar-events'
 import { notesQuery } from '@/features/notes/queries'
 import { addDaysToKey, compareEvents, eventSpan, formatTime, fromKey } from '@/lib/calendar-dates'
 import { cn } from '@/lib/cn'
-import { LOCALE, t } from '@/lib/i18n'
+import { t, weekdayDayFormat } from '@/lib/i18n'
 import { useToday } from '@/lib/use-today'
 import { loadByOwner } from '../dashboard-metrics'
 import { ageRows } from './board'
 import { EmptyLine } from './board-view'
 
 const AGE_LABELS = [t('até 1 dia'), t('2 a 14 dias'), t('mais de 14 dias')]
-const dayFormat = new Intl.DateTimeFormat(LOCALE, { weekday: 'short', day: 'numeric' })
+const dayFormat = weekdayDayFormat('short')
 
 function Panel({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -27,15 +27,26 @@ function Panel({ title, children }: { title: string; children: ReactNode }) {
   )
 }
 
+/** Quando a busca falhou e não há nada guardado: dizer, em vez de "Carregando" para sempre. */
+const Failed = () => <EmptyLine>{t('Não foi possível carregar agora.')}</EmptyLine>
+
 const Count = ({ value, className }: { value: number; className?: string }) => (
   <span className={cn('font-quadro-mono text-[14px]', className)}>{value}</span>
 )
 
 /** Seus PRs abertos pela idade; mais de 14 dias em amarelo quando tem algum. */
-export function AgePanel({ authored }: { authored: PullRequest[] | null }) {
+export function AgePanel({
+  authored,
+  failed,
+}: {
+  authored: PullRequest[] | null
+  failed?: boolean
+}) {
   return (
     <Panel title={t('Idade dos seus PRs')}>
-      {authored === null ? (
+      {authored === null && failed ? (
+        <Failed />
+      ) : authored === null ? (
         <EmptyLine>{t('Carregando')}</EmptyLine>
       ) : (
         <ul className="flex flex-col gap-2.5">
@@ -61,15 +72,19 @@ export function AgePanel({ authored }: { authored: PullRequest[] | null }) {
 export function OwnersPanel({
   authored,
   issues,
+  failed,
 }: {
   authored: PullRequest[] | null
   issues: Issue[] | null
+  failed?: boolean
 }) {
   const owners = authored && issues ? loadByOwner(authored, issues).slice(0, 5) : null
   const max = Math.max(...(owners ?? []).map((o) => o.pullRequests + o.issues), 1)
   return (
-    <Panel title={t('Abertos por organização')}>
-      {owners === null ? (
+    <Panel title={t('PRs e issues por organização')}>
+      {owners === null && failed ? (
+        <Failed />
+      ) : owners === null ? (
         <EmptyLine>{t('Carregando')}</EmptyLine>
       ) : owners.length === 0 ? (
         <EmptyLine>{t('Nada aberto.')}</EmptyLine>
@@ -103,8 +118,10 @@ const MAX_ITEMS = 3
 /** Os próximos compromissos e as notas fixadas, em poucas linhas. */
 export function AgendaNotesPanel() {
   const today = useToday()
-  const events = useCalendarEvents({ from: today, to: addDaysToKey(today, 6) }).data?.events ?? null
-  const notes = useQuery(notesQuery()).data
+  const calendar = useCalendarEvents({ from: today, to: addDaysToKey(today, 6) })
+  const events = calendar.data?.events ?? null
+  const notesState = useQuery(notesQuery())
+  const notes = notesState.data
   const upcoming = (events ?? [])
     .filter((event) => eventSpan(event).last >= today)
     .sort(compareEvents)
@@ -114,7 +131,9 @@ export function AgendaNotesPanel() {
   return (
     <Panel title={t('Agenda e notas')}>
       <div className="flex flex-col gap-2">
-        {events === null ? (
+        {events === null && calendar.isError ? (
+          <Failed />
+        ) : events === null ? (
           <EmptyLine>{t('Carregando')}</EmptyLine>
         ) : upcoming.length === 0 ? (
           <EmptyLine>{t('Nada marcado nos próximos 7 dias.')}</EmptyLine>
@@ -142,7 +161,9 @@ export function AgendaNotesPanel() {
         )}
       </div>
       <div className="flex flex-col gap-2 border-t border-q-line pt-4">
-        {notes === undefined ? (
+        {notes === undefined && notesState.isError ? (
+          <Failed />
+        ) : notes === undefined ? (
           <EmptyLine>{t('Carregando')}</EmptyLine>
         ) : pinned.length === 0 ? (
           <EmptyLine>{t('Nenhuma nota fixada.')}</EmptyLine>

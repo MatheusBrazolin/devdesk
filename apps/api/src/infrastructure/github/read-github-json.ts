@@ -1,5 +1,5 @@
 import type { z } from 'zod'
-import { upstream } from '../../domain/errors.js'
+import { githubUnexpected } from '../../domain/errors.js'
 
 /**
  * Lê e valida uma resposta do GitHub. Formato inesperado é falha do GitHub
@@ -14,10 +14,9 @@ export async function readGitHubJson<S extends z.ZodType>(
   try {
     body = await response.json()
   } catch (error) {
-    throw upstream(`GitHub devolveu uma resposta ilegível ao ${what}.`, error)
+    throw githubUnexpected(`resposta ilegível ao ${what}`, error)
   }
   const parsed = schema.safeParse(body)
-  if (!parsed.success)
-    throw upstream(`GitHub devolveu uma resposta inesperada ao ${what}.`, parsed.error)
+  if (!parsed.success) throw githubUnexpected(`resposta inesperada ao ${what}`, parsed.error)
   return parsed.data
 }

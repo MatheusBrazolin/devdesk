@@ -86,7 +86,7 @@ export function TokenConnectForm({ id, onConnected }: { id: string; onConnected?
           spellCheck={false}
           autoComplete="off"
           disabled={save.isPending}
-          className="h-8 min-w-0 flex-1 rounded-md border border-border bg-bg px-2.5 font-mono text-[12px] focus:border-border-strong focus:outline-none disabled:opacity-60"
+          className="h-8 min-w-0 flex-1 rounded-md border border-border bg-bg px-2.5 font-mono text-[12px] focus:border-border-strong disabled:opacity-60"
         />
         <Button type="submit" disabled={!draft.trim() || save.isPending}>
           {save.isPending ? <Loader2 className="animate-spin" /> : <KeyRound />}

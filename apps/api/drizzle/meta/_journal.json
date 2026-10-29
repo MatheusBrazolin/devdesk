@@ -64,6 +64,20 @@
       "when": 1793123405142,
       "tag": "0008_personal_token",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793286984959,
+      "tag": "0009_notes_unaccent",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793286991438,
+      "tag": "0010_push_locale",
+      "breakpoints": true
     }
   ]
 }

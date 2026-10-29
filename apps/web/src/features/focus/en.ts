@@ -51,4 +51,7 @@ export default {
   'em {h} h': 'in {h} h',
   'Fim do bloco de foco': 'Focus block finished',
   '{n} minutos concluídos. Hora de uma pausa.': '{n} minutes done. Time for a break.',
+  'Não foi possível ler a agenda agora.': 'Couldn’t read the calendar right now.',
+  'Foco pausado, faltam {tempo}': 'Focus paused, {tempo} left',
+  'Foco: faltam {tempo}': 'Focus: {tempo} left',
 } satisfies Record<string, string>
